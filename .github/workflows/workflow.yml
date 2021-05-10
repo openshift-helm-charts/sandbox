@@ -1,0 +1,55 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+on:
+  pull_request_target:
+
+jobs:
+  # we need to run verification with access to secrets, because we need to get access
+  # to cluster where we try to install charts
+  verify-chart:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # do not use checkout action since we are running in target context and have access to secrets
+    # use approach demonstrated in
+    # https://github.com/operator-framework/community-operators/blob/master/.github/workflows/operator_ci.yaml#L105
+    # https://raw.githubusercontent.com/operator-framework/operator-test-playbooks/master/upstream/test/oprt.sh
+    steps:
+    
+      - name: sanity-checks
+        run: |
+          echo check if users have rights to submit charts, and if PR contains only charts
+    # save output of this step (e.g. report) to be refferred in other jobs/steps
+      - name: verify
+        run: |
+          echo Verify chart, generate report or use the existing one
+          
+  approve:
+    
+    runs-on: ubuntu-latest
+    needs:
+      - verify-chart
+    steps:
+      
+      - uses: hmarr/auto-approve-action@v2.0.0
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          
+      - name: automerge
+        uses: "pascalgn/automerge-action@v0.13.1"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          MERGE_LABELS: ""
+          
+  release-chart:
+  
+    runs-on: ubuntu-latest
+    needs:
+      - approve
+    steps:
+      - name: release
+        run: |
+          echo release chart as GitHub release and add entry to index.yaml
+      
