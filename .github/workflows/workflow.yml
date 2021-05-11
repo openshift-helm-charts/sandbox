@@ -23,7 +23,7 @@ jobs:
         run: |
           git log --oneline
           ls -al
-          cat README
+          cat README.md
           echo check if users have rights to submit charts, and if PR contains only charts
     # save output of this step (e.g. report) to be refferred in other jobs/steps
       - name: verify
