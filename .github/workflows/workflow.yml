@@ -17,9 +17,13 @@ jobs:
     # https://github.com/operator-framework/community-operators/blob/master/.github/workflows/operator_ci.yaml#L105
     # https://raw.githubusercontent.com/operator-framework/operator-test-playbooks/master/upstream/test/oprt.sh
     steps:
-    
+      - uses: actions/checkout@v2
+      
       - name: sanity-checks
         run: |
+          git log --oneline
+          ls -al
+          cat README
           echo check if users have rights to submit charts, and if PR contains only charts
     # save output of this step (e.g. report) to be refferred in other jobs/steps
       - name: verify
