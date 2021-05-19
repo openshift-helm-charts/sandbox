@@ -1,0 +1,23 @@
+apiVersion: v1
+entries:
+  acme-psql-service:
+  - annotations:
+      charts.openshift.io/archs: x86_64
+      charts.openshift.io/certifiedOpenShiftVersions: '4.7'
+      charts.openshift.io/digest: sha256:70ebb4e0352c4af502880d5034b194baaa26511af686d8b067c1a4c03da48acb
+      charts.openshift.io/lastCertifiedTimestamp: '2021-05-19T15:26:32.155183+00:00'
+      charts.openshift.io/name: PSQL RedHat Demo Chart 1
+      charts.openshift.io/provider: RedHat
+      charts.openshift.io/providerType: partner
+      charts.openshift.io/submissionTimestamp: '2021-05-19T15:26:47.583292+00:00'
+      charts.openshift.io/supportURL: https://github.com/dperaza4dustbit/helm-chart
+    apiVersion: v2
+    appVersion: 10.0.0
+    description: A Helm chart for a RedHat Certified PSQL
+    kubeVersion: 1.20.0
+    name: psql-service
+    type: application
+    urls:
+    - https://github.com/openshift-helm-charts/sandbox/releases/download/acme-psql-service-0.1.0/acme-psql-service-0.1.0.tgz
+    version: 0.1.0
+generated: '2021-05-19T15:26:47.583292+00:00'
