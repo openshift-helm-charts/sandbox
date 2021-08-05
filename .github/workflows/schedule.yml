@@ -1,0 +1,129 @@
+name: Scheduled Software Version Check
+on:
+  # Daily trigger to check updates
+  # XXX: Uncomment when ready to ship
+  # schedule:
+  # - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Run tests but do not create issues {true,false}'
+        required: true
+        default: 'true'
+      notify-id:
+        description: 'Issue notification {github id}'
+        required: false
+        default: ''
+      vendor-type:
+        description: 'Vendor type {all,partner,redhat,community}'
+        required: true
+        default: 'all'
+jobs:
+  check-ocp:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Install oc
+        run: |
+          curl -sLO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+          tar zxvf openshift-client-linux.tar.gz oc
+
+      - name: Log into OpenShift cluster
+        run: |
+          API_SERVER=$(echo -n ${{ secrets.API_SERVER }} | base64 -d)
+          ./oc login --insecure-skip-tls-verify --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}
+        shell: bash
+
+      - name: Get current OpenShift version
+        id: get_curr_ocp_version
+        run: |
+          OCP_VERSION=$(./oc version -o json | jq '.releaseClientVersion')
+          printf "[INFO] Current OCP Version: %s\n" ${OCP_VERSION}
+          echo "::set-output name=ocp_version::${OCP_VERSION}"
+        shell: bash
+
+      - name: Checkout software-version branch
+        uses: actions/checkout@v2
+        with:
+          ref: 'software-version'
+
+      - name: Read previous OpenShift version
+        id: get_prev_ocp_version
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq e '.openshift' software-version.yaml
+
+      - name: Compare OpenShift versions
+        id: compare_ocp_versions
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.get_curr_ocp_version.outputs.ocp_version }}" = "${{ steps.get_prev_ocp_version.outputs.result }}" ]; then
+            # No change in the OpenShift version
+            printf "OCP_VERSION has not changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.ocp_version }}"
+            echo "::set-output name=run_tests::false"
+          else
+            # New OpenShift version is set
+            printf "OCP_VERSION has changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.ocp_version }}"
+            echo "::set-output name=run_tests::true"
+          fi
+        shell: bash
+
+      - name: Update software-version.yaml
+        if: steps.compare_ocp_versions.outputs.run_tests == 'true'
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq eval -i '.openshift = ${{ steps.get_curr_ocp_version.outputs.ocp_version }}' 'software-version.yaml'
+
+      - name: Push software-version.yaml
+        if: |
+          steps.compare_ocp_versions.outputs.run_tests == 'true' &&
+          (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry-run != 'true'))
+        run: |
+          COMMIT_MESSAGE=$(printf "software-version.yaml: Update OpenShift version from %s to %s" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.ocp_version }}")
+          git remote -v
+          git branch -vv
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "${COMMIT_MESSAGE}"
+          git push
+
+      - name: Checkout main branch
+        if: steps.compare_ocp_versions.outputs.run_tests == 'true'
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.workflow_dispatch.ref }}
+
+      - name: Set up Python 3.x Part 1
+        if: steps.compare_ocp_versions.outputs.run_tests == 'true'
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Set up Python 3.x Part 2
+        if: steps.compare_ocp_versions.outputs.run_tests == 'true'
+        run: |
+          # set up python
+          python3 -m venv ve1
+          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
+          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+
+
+      - name: (Manual) Run tests on existing charts
+        if: steps.compare_ocp_versions.outputs.run_tests == 'true'
+        env:
+          CLUSTER_TOKEN: ${{ secrets.CLUSTER_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event.inputs.dry-run }}
+          VENDOR_TYPE: ${{ github.event.inputs.vendor-type }}
+          NOTIFY_ID: ${{ github.event.inputs.notify-id }}
+          BOT_NAME: ${{ secrets.BOT_NAME }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          SOFTWARE_NAME: "OpenShift"
+          SOFTWARE_VERSION: ${{ steps.get_curr_ocp_version.outputs.ocp_version }}
+        run: |
+          printf "[INFO] Dry run: '%s'\n" "${{ env.DRY_RUN }}"
+          printf "[INFO] Vendor type: '%s'\n" "${{ env.VENDOR_TYPE }}"
+          printf "[INFO] Notify ID: '%s'\n" "${{ env.NOTIFY_ID }}"
+          printf "[INFO] Software Name: '%s'\n" "${{ env.SOFTWARE_NAME }}"
+          printf "[INFO] Software Version: '%s'\n" "${{ env.SOFTWARE_VERSION }}"
+          ve1/bin/pytest tests/functional/test_submitted_charts.py --log-cli-level=WARNING
