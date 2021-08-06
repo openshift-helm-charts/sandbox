@@ -1,7 +1,7 @@
 name: Test Workflow
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened, edited]
   workflow_dispatch:
     inputs:
@@ -32,12 +32,34 @@ jobs:
     if: github.event.pull_request.draft == false
 
     steps:
+      # - name: Configure Git
+      #   run: |
+      #     git config --global user.name "github-actions[bot]"
+      #     git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.BOT_TOKEN }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+
+      - name: Create new temporary branch
+        run: |
+          # git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+          git remote -v
+          git branch -vv
+          # HEAD=$(git rev-parse --short HEAD)
+          # echo "head=${HEAD}" >> $GITHUB_ENV
+          # git checkout -b ${HEAD}
+          # git push origin ${HEAD}
+        shell: bash
+
+      # - name: Push to Origin
+      #   uses: ad-m/github-push-action@master
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: ${{ env.head }}
 
       - name: Set up Python 3.x Part 1
         uses: actions/setup-python@v2
@@ -75,12 +97,12 @@ jobs:
           NOTIFY_ID: ${{ github.event.inputs.notify-id }}
           SOFTWARE_NAME: ${{ github.event.inputs.software-name }}
           SOFTWARE_VERSION: ${{ github.event.inputs.software-version }}
-          BOT_NAME: ${{ secrets.BOT_NAME }}
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          BOT_NAME: github-actions[bot]
+          BOT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Run the wokflow tests
-          if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-              ve1/bin/pytest tests/ --log-cli-level=INFO --ignore=tests/functional/test_submitted_charts.py
+          if [ "$GITHUB_EVENT_NAME" == "pull_request_target" ]; then
+              ve1/bin/pytest tests/functional/test_report_only_no_errors.py --log-cli-level=INFO --ignore=tests/functional/test_submitted_charts.py
           else
               echo "[INFO] Dry run ${{ env.DRY_RUN }}"
               echo "[INFO] Vendor type ${{ env.VENDOR_TYPE }}"
