@@ -247,12 +247,6 @@ def the_user_has_created_a_report_without_errors(secrets):
 @when("the redhat associate sends the pull request with the report")
 def the_user_sends_the_pull_request_with_the_report(secrets):
     """The user sends the pull request with the report."""
-
-    # actions_bot_name = 'github-actions[bot]'
-    # if secrets.bot_name == actions_bot_name:
-    #     head = secrets.pr_branch
-    # else:
-    #     head = f'{secrets.bot_name}:{secrets.pr_branch}'
     data = {'head': secrets.pr_branch, 'base': secrets.base_branch,
             'title': secrets.pr_branch}
 
@@ -261,7 +255,6 @@ def the_user_sends_the_pull_request_with_the_report(secrets):
     r = github_api(
         'post', f'repos/{secrets.test_repo}/pulls', secrets.bot_token, json=data)
     j = json.loads(r.text)
-    logger.info(j)
     secrets.pr_number = j['number']
 
 
