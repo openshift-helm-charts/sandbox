@@ -189,7 +189,7 @@ def submission_tests_run_for_submitted_charts(secrets):
         pr_number_list = []
 
         repo = git.Repo(os.getcwd())
-        set_git_username_email(repo, secrets.bot_name, f'{secrets.bot_name}@test.email')
+        set_git_username_email(repo, secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
         if os.environ.get('WORKFLOW_DEVELOPMENT'):
             logger.info("Wokflow development enabled")
             repo.git.add(A=True)
@@ -209,7 +209,7 @@ def submission_tests_run_for_submitted_charts(secrets):
         # Run submission flow test with charts in PROD_REPO:PROD_BRANCH
         os.chdir(temp_dir)
         repo = git.Repo(temp_dir)
-        set_git_username_email(repo, secrets.bot_name, f'{secrets.bot_name}@test.email')
+        set_git_username_email(repo, secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
         repo.git.fetch(
             f'https://github.com/{PROD_REPO}.git', f'{PROD_BRANCH}:{PROD_BRANCH}', '-f')
         repo.git.checkout(PROD_BRANCH, 'charts')
@@ -325,12 +325,7 @@ def submission_tests_run_for_submitted_charts(secrets):
                           f'HEAD:refs/heads/{pr_branch}', '-f')
 
             # Create PR from test_repo:pr_branch to test_repo:base_branch
-            actions_bot_name = 'github-actions[bot]'
-            if secrets.bot_name == actions_bot_name:
-                head = pr_branch
-            else:
-                head = f'{secrets.bot_name}:{pr_branch}'
-            data = {'head': head, 'base': base_branch,
+            data = {'head': pr_branch, 'base': base_branch,
                     'title': pr_branch}
 
             logger.info(
@@ -340,6 +335,9 @@ def submission_tests_run_for_submitted_charts(secrets):
             j = json.loads(r.text)
             pr_number_list.append(
                 (vendor_type, vendor_name, chart_name, chart_version, j['number']))
+
+            # XXX
+            logger.info(f">>> pr_number_list: {pr_number_list}")
 
         os.chdir(old_cwd)
         for vendor_type, vendor_name, chart_name, chart_version, pr_number in pr_number_list:
@@ -426,7 +424,6 @@ def submission_tests_run_for_submitted_charts(secrets):
                 logger.info(f"Check '{required_assets}' is in release assets")
                 release_id = release['id']
                 get_release_assets(secrets, release_id, required_assets)
-                return
             finally:
                 logger.info(f"Delete release '{expected_tag}'")
                 github_api(
