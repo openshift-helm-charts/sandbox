@@ -363,6 +363,10 @@ def main():
             print("[INFO] Genereate report")
             report_path = generate_report(chart_file_name)
 
+        # XXX:
+        import logging
+        logging.info(f">>> report_path: {report_path}")
+
         print("[INFO] Updating chart annotation")
         update_chart_annotation(category, organization, chart_file_name, chart, report_path)
         chart_url = f"https://github.com/{args.repository}/releases/download/{organization}-{chart}-{version}/{organization}-{chart}-{version}.tgz"
