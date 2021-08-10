@@ -165,7 +165,7 @@ def create_index_from_report(category, report_path):
 
     return chart_entry, chart_url
 
-
+# Adding diggest to annotations
 def set_package_digest(chart_entry):
     print("[INFO] set package digests.")
 
