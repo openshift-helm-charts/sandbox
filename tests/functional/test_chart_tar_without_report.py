@@ -76,8 +76,6 @@ vendor:
     r = github_api(
         'get', f'repos/{test_repo}/branches', bot_token)
     branches = json.loads(r.text)
-    # XXX: test
-    logger.info(branches)
     branch_names = [branch['name'] for branch in branches]
     if current_branch not in branch_names:
         logger.info(
