@@ -14,6 +14,21 @@ jobs:
       github.event.pull_request.draft == false &&
       (github.event.action != 'labeled' || github.event.label.name == 'force-publish')
     steps:
+      - name: Add 'test' label to PR
+        if: |
+          github.event.pull_request.user.login == 'openshift-helm-charts-bot'
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue_number = ${{ github.event.number }};
+            github.issues.addLabels({
+                issue_number: Number(issue_number),
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ['test']
+            })
+
       - name: Checkout
         uses: actions/checkout@v2
 
