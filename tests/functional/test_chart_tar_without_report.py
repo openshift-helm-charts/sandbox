@@ -256,6 +256,7 @@ def the_user_sends_the_pull_request_with_the_chart_tar(secrets):
         'post', f'repos/{secrets.test_repo}/pulls', secrets.bot_token, json=data)
     j = json.loads(r.text)
     secrets.pr_number = j['number']
+    add_label_to_pr(secrets, secrets.pr_number)
 
 
 @then("hashicorp sees the pull request is merged")

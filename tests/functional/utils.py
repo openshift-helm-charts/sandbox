@@ -233,6 +233,14 @@ def get_name_and_version_from_chart_src(path):
     return chart_yaml['name'], chart_yaml['version']
 
 
+def add_label_to_pr(secrets, pr_number):
+    labels = ['test']
+    data = {'labels': labels}
+    r = github_api(
+        'post', f'repos/{secrets.test_repo}/issues/{pr_number}/labels', os.environ.get("GITHUB_TOKEN"), json=data)
+    return r
+
+
 def github_api_get(endpoint, bot_token, headers={}):
     if not headers:
         headers = {'Accept': 'application/vnd.github.v3+json',
