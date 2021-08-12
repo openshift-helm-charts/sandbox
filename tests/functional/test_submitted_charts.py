@@ -189,7 +189,8 @@ def submission_tests_run_for_submitted_charts(secrets):
         pr_number_list = []
 
         repo = git.Repo(os.getcwd())
-        set_git_username_email(repo, secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
+        set_git_username_email(repo, secrets.bot_name,
+                               GITHUB_ACTIONS_BOT_EMAIL)
         if os.environ.get('WORKFLOW_DEVELOPMENT'):
             logger.info("Wokflow development enabled")
             repo.git.add(A=True)
@@ -209,7 +210,8 @@ def submission_tests_run_for_submitted_charts(secrets):
         # Run submission flow test with charts in PROD_REPO:PROD_BRANCH
         os.chdir(temp_dir)
         repo = git.Repo(temp_dir)
-        set_git_username_email(repo, secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
+        set_git_username_email(repo, secrets.bot_name,
+                               GITHUB_ACTIONS_BOT_EMAIL)
         repo.git.fetch(
             f'https://github.com/{PROD_REPO}.git', f'{PROD_BRANCH}:{PROD_BRANCH}', '-f')
         repo.git.checkout(PROD_BRANCH, 'charts')
@@ -335,6 +337,7 @@ def submission_tests_run_for_submitted_charts(secrets):
             j = json.loads(r.text)
             pr_number_list.append(
                 (vendor_type, vendor_name, chart_name, chart_version, j['number']))
+            add_label_to_pr(secrets, j['number'])
 
         os.chdir(old_cwd)
         for vendor_type, vendor_name, chart_name, chart_version, pr_number in pr_number_list:
