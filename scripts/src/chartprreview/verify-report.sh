@@ -1,17 +1,19 @@
 #!/bin/bash
 
 delim=G
-mandatoryChecks=( "${delim}contains-test${delim}"
-            "${delim}contains-values${delim}"
-            "${delim}contains-values-schema${delim}"
-            "${delim}has-kubeversion${delim}"
-            "${delim}has-readme${delim}"
-            "${delim}helm-lint${delim}"
-            "${delim}images-are-certified${delim}"
-            "${delim}is-helm-v3${delim}"
-            "${delim}not-contain-csi-objects${delim}"
-            "${delim}chart-testing${delim}"
-            "${delim}not-contains-crds${delim}" )
+mandatoryChecksPartner=( "${delim}v1.0/contains-test${delim}"
+            "${delim}v1.0/contains-values${delim}"
+            "${delim}v1.0/contains-values-schema${delim}"
+            "${delim}v1.0/has-kubeversion${delim}"
+            "${delim}v1.0/has-readme${delim}"
+            "${delim}v1.0/helm-lint${delim}"
+            "${delim}v1.0/images-are-certified${delim}"
+            "${delim}v1.0/is-helm-v3${delim}"
+            "${delim}v1.0/not-contain-csi-objects${delim}"
+            "${delim}v1.0/chart-testing${delim}"
+            "${delim}v1.0/not-contains-crds${delim}" )
+mandatoryChecksRedHat=${mandatoryChecksPartner}
+mandatoryChecksCommunity=( "${delim}v1.0/helm-lint${delim}" )
 
 getDigest() {
 
@@ -197,6 +199,22 @@ getAnnotations() {
 getFails() {
 
   report=$1
+  profile=$2
+
+  case "${profile}" in
+    partner)
+      mandatoryChecks=${mandatoryChecksPartner}
+      ;;
+    redhat)
+      mandatoryChecks=${mandatoryChecksRedHat}
+      ;;
+    community)
+      mandatoryChecks=${mandatoryChecksCommunity}
+      ;;
+    *)
+      mandatoryChecks=${mandatoryChecksPartner}
+      ;;
+  esac
 
   results=false
   fails=()
@@ -210,6 +228,18 @@ getFails() {
         results=true
       elif [ "$results" = true ]; then
         if [[ $line == *" - "* ]]; then
+            if [ "$multireason" = true ]; then
+              if [ -n "$check" ] && [ -n "$type" ] && [ -n "$outcome" ] && [ -n "$reason" ]; then
+                if [[ $outcome != "PASS" ]] && [[ $type == "Mandatory" ]]; then
+                    fails+=("$check : $reason")
+                else
+                  passed=$((passed+1))
+                fi
+
+                remove="$delim$check$delim"
+                mandatoryChecks=("${mandatoryChecks[@]/$remove}")
+              fi
+            fi
             multireason=false
             nextlinereason=false
             check=""
@@ -224,21 +254,21 @@ getFails() {
         elif [[ $line == *"outcome:"* ]]; then
            outcome=`echo $line | cut -d: -f2- | xargs`
         elif [[ $line == *"reason:"* ]]; then
-           reason=`echo $line | cut -d: -f2- | xargs`
+           reason=`echo $line | cut -d: -f2-`
            if [[ $reason == *'|-' ]]; then
              multireason=true
              reason=""
            elif [[ $reason == *'|' ]]; then
              nextlinereason=true
              reason=""
+           elif [[ $reason == *\'* ]]; then
+             multireason=true
+             reason=`printf "$reason\n" | sed "s/\"/'/g"`
+             continue
            fi
         elif [ "$multireason" = true ]; then
-          reason=`echo $line | xargs`
-          if [[ $line == *"Image is Red Hat certified"* ]]; then
-            outcome="PASS"
-          else
-            outcome="FAIL"
-          fi
+          reason+=`printf "$line\n" | sed "s/\"/'/g"`
+          continue
         elif [ "$nextlinereason" = true ]; then
           reason=`echo $line | xargs`
           nextlinereason=false
@@ -301,7 +331,8 @@ fi
 
 
 if [ $command == "results" ]; then
-  getFails "$report"
+  profile=$3
+  getFails "$report" "$profile"
 elif  [ $command == "annotations" ]; then
   getAnnotations "$report"
 elif  [ $command == "metadata" ]; then
