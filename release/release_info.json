@@ -1,0 +1,27 @@
+{
+  "version": "0.0.0",
+  "info" : [
+      "Initial release of development repository"
+  ],
+  "chart-repo" : {
+    "clone" : "https://github.com/openshift-helm-charts/charts.git",
+    "branch" : "main",
+    "update": [
+      "charts"
+    ]
+  },
+  "dev_repo" : {
+    "clone" : "https://github.com/openshift-helm-charts/development.git",
+    "branch" : "main",
+    "replace": [
+      ".github",
+      "scripts",
+      "assets",
+      "docs",
+      "tests"
+    ],
+    "update" : [],
+    "delete" : [],
+    "ignore" : []
+  }
+}
