@@ -8,6 +8,7 @@ import tempfile
 from datetime import datetime, timezone
 import hashlib
 import urllib.parse
+import logging
 
 import semver
 import requests
@@ -83,6 +84,9 @@ def prepare_chart_source_for_release(category, organization, chart, version):
         os.remove(os.path.join(".cr-release-packages", new_chart_file_name))
     except FileNotFoundError:
         pass
+    print(f">>> filenames: {chart_file_name} {new_chart_file_name}")
+    print(f">>> ll .: {os.listdir()}")
+    print(f">>> ll .cr-release-packages: {os.listdir('.cr-release-packages')}")
     shutil.copy(f"{chart}-{version}.tgz" , f".cr-release-packages/{new_chart_file_name}")
 
 def prepare_chart_tarball_for_release(category, organization, chart, version):
@@ -94,6 +98,9 @@ def prepare_chart_tarball_for_release(category, organization, chart, version):
         os.remove(os.path.join(".cr-release-packages", new_chart_file_name))
     except FileNotFoundError:
         pass
+    print(f">>> filenames: {chart_file_name} {new_chart_file_name}")
+    print(f">>> ll .: {os.listdir(path)}")
+    print(f">>> ll .cr-release-packages: {os.listdir('.cr-release-packages')}")
     shutil.copy(path, f".cr-release-packages/{new_chart_file_name}")
     shutil.copy(path, chart_file_name)
 
