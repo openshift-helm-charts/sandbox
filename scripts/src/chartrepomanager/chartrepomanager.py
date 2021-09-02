@@ -8,6 +8,8 @@ import tempfile
 from datetime import datetime, timezone
 import hashlib
 import urllib.parse
+import logging
+from pathlib import Path
 
 import semver
 import requests
@@ -83,6 +85,9 @@ def prepare_chart_source_for_release(category, organization, chart, version):
         os.remove(os.path.join(".cr-release-packages", new_chart_file_name))
     except FileNotFoundError:
         pass
+    print(f">>> filenames: {chart_file_name} {new_chart_file_name}")
+    print(f">>> ll .: {os.listdir()}")
+    print(f">>> ll .cr-release-packages: {os.listdir('.cr-release-packages')}")
     shutil.copy(f"{chart}-{version}.tgz" , f".cr-release-packages/{new_chart_file_name}")
 
 def prepare_chart_tarball_for_release(category, organization, chart, version):
@@ -94,6 +99,9 @@ def prepare_chart_tarball_for_release(category, organization, chart, version):
         os.remove(os.path.join(".cr-release-packages", new_chart_file_name))
     except FileNotFoundError:
         pass
+    print(f">>> filenames: {chart_file_name} {new_chart_file_name}")
+    print(f">>> ll .: {os.listdir(path)}")
+    print(f">>> ll .cr-release-packages: {os.listdir('.cr-release-packages')}")
     shutil.copy(path, f".cr-release-packages/{new_chart_file_name}")
     shutil.copy(path, chart_file_name)
 
@@ -344,6 +352,7 @@ def main():
 
     print("[INFO] Report Content : ", os.environ.get("REPORT_CONTENT"))
     if chart_source_exists or chart_tarball_exists:
+        Path('.cr-release-packages').mkdir(parents=True, exist_ok=True)
         if chart_source_exists:
             prepare_chart_source_for_release(category, organization, chart, version)
         if chart_tarball_exists:
