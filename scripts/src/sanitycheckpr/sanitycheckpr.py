@@ -28,6 +28,8 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
     reportpattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/report.yaml")
     page_number = 1
     max_page_size,page_size = 100,100
+    match_found = False
+    none_chart_files = {}
 
     while page_size == max_page_size:
 
@@ -38,17 +40,14 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
         page_size = len(files)
         page_number += 1
 
-        match_found = False
         for f in files:
-            filename = f["filename"]
-            match = pattern.match(filename)
+            file_path = f["filename"]
+            match = pattern.match(file_path)
             if not match:
-                msg = f"[ERROR] PR should only modify chart related files: {filename}"
-                print(msg)
-                print(f"::set-output name=sanity-error-message::{msg}")
-                sys.exit(1)
+                file_name = os.path.basename(file_path)
+                none_chart_files[file_name] = file_path
             else:
-                if reportpattern.match(filename):
+                if reportpattern.match(file_path):
                     print("[INFO] Report found")
                     print("::set-output name=report-exists::true")
                 if not match_found:
@@ -59,6 +58,25 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                     print(msg)
                     print(f"::set-output name=sanity-error-message::{msg}")
                     sys.exit(1)
+    
+    if none_chart_files:
+        msg = f"[ERROR] PR should only modify chart related files: {file_path}"
+        print(msg)
+        print(f"::set-output name=sanity-error-message::{msg}")
+
+        if "OWNERS" in none_chart_files:
+            file_path = none_chart_files["OWNERS"]
+            path_parts = file_path.split("/")
+            category = path_parts[1] # Second after charts
+            if category == "partners":
+                msg = "[ERROR] OWNERS file should never be set directly by partners. See certification docs"
+                print(msg)
+                print(f"::set-output name=owners-error-message::{msg}")
+            elif match_found:
+                msg = "[ERROR] Send OWNERS file by itself in a PR"
+                print(msg)
+                print(f"::set-output name=owners-error-message::{msg}")
+        sys.exit(1)
 
 
     if match_found:
