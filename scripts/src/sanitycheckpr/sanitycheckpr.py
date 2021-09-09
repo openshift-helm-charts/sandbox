@@ -73,6 +73,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
         msg = f"[ERROR] PR includes one or more files not related to charts, e.g., {example_file}"
         print(msg)
         print(f"::set-output name=sanity-error-message::{msg}")
+        # Test the test to sandboxes
 
         if "OWNERS" in none_chart_files:
             file_path = none_chart_files["OWNERS"]
