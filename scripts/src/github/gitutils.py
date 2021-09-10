@@ -84,12 +84,12 @@ def create_charts_pr(version):
     branch_name = f"Release-{version}"
     repo.create_head(branch_name)
     print(f"checkout branch {branch_name}")
-    git.checkout(branch_name)
+    repo.git.checkout(branch_name)
 
     changed = [ item.a_path for item in repo.index.diff(None) ]
     for change in changed:
         print(f"Add file: {change}")
-        git.add(change)
+        repo.git.add(change)
 
     print(f"commit changes with message: {branch_name}")
     repo.index.commit(branch_name)
