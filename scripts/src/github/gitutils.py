@@ -5,8 +5,10 @@ from git import Repo
 from git.exc import GitCommandError
 
 GITHUB_BASE_URL = 'https://api.github.com'
-CHARTS_REPO = 'openshift-helm-charts/charts'
-DEVELOPMENT_REPO = 'openshift-helm-charts/development'
+#CHARTS_REPO = 'openshift-helm-charts/charts'
+#DEVELOPMENT_REPO = 'openshift-helm-charts/development'
+CHARTS_REPO = 'mmulholla/charts'
+DEVELOPMENT_REPO = 'mmulholla/development'
 
 # GitHub actions bot email for git email
 GITHUB_ACTIONS_BOT_EMAIL = 'mmulholl@redhat.com'
@@ -31,17 +33,22 @@ def github_api_post(endpoint, bot_token, headers={}, json={}):
 
     return r
 
+def github_api_get(endpoint, bot_token, headers={}):
+    if not headers:
+        headers = {'Accept': 'application/vnd.github.v3+json',
+                   'Authorization': f'Bearer {bot_token}'}
+    r = requests.get(f'{GITHUB_BASE_URL}/{endpoint}', headers=headers)
+
+    return r
 
 def github_api(method, endpoint, bot_token, headers={}, data={}, json={}):
     if method == 'get':
         return github_api_get(endpoint, bot_token, headers=headers)
     elif method == 'post':
         return github_api_post(endpoint, bot_token, headers=headers, json=json)
-    elif method == 'delete':
-        return github_api_delete(endpoint, bot_token, headers=headers)
     else:
         raise ValueError(
-            "Github API method not implemented in helper function")
+            f"Github API method {method} not implemented in helper function")
 
 def get_bot_name_and_token():
     bot_name = os.environ.get("BOT_NAME")
@@ -81,6 +88,14 @@ def create_charts_pr(version):
 
     print(f"commit changes with message: {branch_name}")
     repo.index.commit(branch_name)
+
+    print(f"get existing branches: {branch_name}")
+    r = github_api(
+        'get', f'repos/{CHARTS_REPO}/branches', bot_token)
+
+    branches = json.loads(r.text)
+    branch_names = [branch['name'] for branch in branches]
+    print(f"Existing branches : {branch_names}")
 
     print(f"push the branch to {CHARTS_REPO}")
     repo.git.push(f'https://x-access-token:{bot_token}@github.com/{CHARTS_REPO}',
