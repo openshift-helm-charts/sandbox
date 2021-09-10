@@ -66,7 +66,7 @@ def make_required_changes(release_info_dir,origin,destination):
     for replace in replaces:
         replace_this=f"{destination}/{replace}"
         with_this = f"{origin}/{replace}"
-        if os.path.isdir(replace_this):
+        if os.path.isdir(with_this) or os.path.isdir(replace_this):
             print(f"Replace directory {replace_this} with {with_this}")
             os.system(f"rm -rf {replace_this}")
             os.system(f"cp -r {with_this} {replace_this}")
@@ -80,7 +80,7 @@ def make_required_changes(release_info_dir,origin,destination):
         merge_this = f"{origin}/{merge}"
         into_this = f"{destination}/{merge}"
 
-        if os.path.isdir(merge_this):
+        if os.path.isdir(merge_this) or os.path.isdir(into_this):
             print(f"Merge directory {merge_this} with {into_this}")
             os.system(f"rsync -r {merge_this}/ {into_this}/")
         else:
@@ -112,6 +112,7 @@ def main():
     args = parser.parse_args()
 
     start_directory = os.getcwd()
+    print(f"working directory: {start_directory}")
 
     print(f"make changes to charts from development")
     make_required_changes(args.dev_dir,args.dev_dir,args.charts_dir)
