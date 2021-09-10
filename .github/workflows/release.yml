@@ -84,7 +84,7 @@ jobs:
         run: |
           # sync the repositories
           ve1/bin/releaser --version=${{ steps.check_version_in_PR.outputs.PR_version }}
-          --development_dir="./pr-branch" --charts_dir="./charts-repo
+          --development_dir="./pr-branch" --charts_dir="./charts-repo"
 
       - name: Approve PR
         id: approve_pr
