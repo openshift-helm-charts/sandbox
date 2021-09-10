@@ -108,8 +108,9 @@ def create_charts_pr(version):
 
     r = github_api(
         'post', f'repos/{CHARTS_REPO}/pulls', bot_token, json=data)
+
     j = json.loads(r.text)
-    print(f"pull request number: {j['number']} ")
+    print(f"pull request info: {j}")
 
 
 def commit_development_updates(version):
