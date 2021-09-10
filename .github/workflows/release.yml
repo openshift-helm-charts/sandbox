@@ -27,7 +27,7 @@ jobs:
         with:
           repository: openshift-helm-charts/charts
           token: ${{ secrets.BOT_TOKEN }}
-          path: "charts_repo"
+          path: "charts-repo"
 
       - name: Set up Python 3.x Part 1
         uses: actions/setup-python@v2
