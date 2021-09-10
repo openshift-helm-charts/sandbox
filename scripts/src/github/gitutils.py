@@ -90,10 +90,6 @@ def create_charts_pr(version):
     print(f"commit changes with message: {branch_name}")
     repo.index.commit(branch_name)
 
-    print(f"get existing branches: {branch_name}")
-    r = github_api(
-        'get', f'repos/{CHARTS_REPO}/branches', bot_token)
-
     branches = json.loads(r.text)
     branch_names = [branch['name'] for branch in branches]
     print(f"Existing branches : {branch_names}")
@@ -104,7 +100,7 @@ def create_charts_pr(version):
 
     print("make the pull request")
     data = {'head': branch_name, 'base': 'main',
-            'title': branch_name, 'body': branch_name}
+            'title': branch_name, 'body': f'Workflow and script updates from development repository {branch_name}'}
 
     r = github_api(
         'post', f'repos/{CHARTS_REPO}/pulls', bot_token, json=data)
