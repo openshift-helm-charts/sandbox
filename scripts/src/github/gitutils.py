@@ -72,11 +72,10 @@ def get_bot_name_and_token():
 
 
 def create_charts_pr(version):
-    #repo = Repo(os.getcwd())
 
-    #git = repo.git
+    repo = Repo(os.getcwd())
 
-    repo=git.Repo()
+    #repo=git.Repo()
 
     bot_name, bot_token = get_bot_name_and_token()
     set_git_username_email(repo,bot_name,GITHUB_ACTIONS_BOT_EMAIL)
