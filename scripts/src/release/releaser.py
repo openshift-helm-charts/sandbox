@@ -19,24 +19,20 @@ BUILD_YAML_FILE=".github/workflows/build.yml"
 
 RELEASE_INFO_FILE="release/release_info.json"
 
-CHARTS_DIR = "charts_repo"
 
 def update_workflow():
 
     data = {}
+    with open(SCHEDULE_YAML_FILE,'r') as yaml_file:
+        data = yaml.full_load(yaml_file)
 
-    if "sandbox" not in gitutils.CHARTS_REPO:
+    new_yaml_snippet = {'schedule': [{'cron': '0 0 * * * '}]}
+    data[True].update(new_yaml_snippet)
 
-        with open(SCHEDULE_YAML_FILE,'r') as yaml_file:
-            data = yaml.full_load(yaml_file)
+    print(f"add cron job in {os.getcwd()}/{SCHEDULE_YAML_FILE}")
 
-        new_yaml_snippet = {'schedule': [{'cron': '0 0 * * * '}]}
-        data[True].update(new_yaml_snippet)
-
-        print(f"add cron job in {os.getcwd()}/{SCHEDULE_YAML_FILE}")
-
-        with open(SCHEDULE_YAML_FILE,'w') as updated_yaml_file:
-            yaml.safe_dump(data, updated_yaml_file)
+    with open(SCHEDULE_YAML_FILE,'w') as updated_yaml_file:
+        yaml.safe_dump(data, updated_yaml_file)
 
     with open(BUILD_YAML_FILE,'r') as yaml_file:
         data = yaml.full_load(yaml_file)
@@ -118,11 +114,11 @@ def main():
     start_directory = os.getcwd()
 
     print(f"make changes to charts from development")
-    make_required_changes(args.dev_dir,args.dev_dir,args.chart_dir)
+    make_required_changes(args.dev_dir,args.dev_dir,args.charts_dir)
     print(f"make changes to development from charts")
-    make_required_changes(args.dev_dir,args.chart_dir,args.dev_dir)
+    make_required_changes(args.dev_dir,args.charts_dir,args.dev_dir)
     print(f"edit files in charts")
-    os.chdir(CHARTS_DIR)
+    os.chdir(args.charts_dir)
     update_workflow()
     print(f"create charts pull request")
 
