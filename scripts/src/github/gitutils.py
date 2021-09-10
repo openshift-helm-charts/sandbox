@@ -90,10 +90,6 @@ def create_charts_pr(version):
     print(f"commit changes with message: {branch_name}")
     repo.index.commit(branch_name)
 
-    branches = json.loads(r.text)
-    branch_names = [branch['name'] for branch in branches]
-    print(f"Existing branches : {branch_names}")
-
     print(f"push the branch to {CHARTS_REPO}")
     repo.git.push(f'https://x-access-token:{bot_token}@github.com/{CHARTS_REPO}',
                f'HEAD:refs/heads/{branch_name}','-f')
