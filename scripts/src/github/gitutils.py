@@ -72,9 +72,9 @@ def get_bot_name_and_token():
 
 
 def create_charts_pr(version):
-    //repo = Repo(os.getcwd())
+    #repo = Repo(os.getcwd())
 
-    //git = repo.git
+    #git = repo.git
 
     repo=git.Repo()
 
