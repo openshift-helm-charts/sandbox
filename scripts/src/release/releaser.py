@@ -57,16 +57,15 @@ def get_release_info(directory):
     return data
 
 
-def make_required_changes(origin,destination):
+def make_required_changes(release_info_dir,origin,destination):
 
     print(f"Make required changes from {origin} to {destination}")
 
     repository = "development"
-    release_file_dir = "./"
     if "charts" in origin or "development" in destination:
         repository = "charts"
 
-    replaces = release_info.get_replaces(repository,release_file_dir)
+    replaces = release_info.get_replaces(repository,release_info_dir)
 
     for replace in replaces:
         replace_this=f"{destination}{replace}"
@@ -79,7 +78,7 @@ def make_required_changes(origin,destination):
             print(f"Replace file {replace_this} with {with_this}")
             os.system(f"cp {with_this} {replace_this}")
 
-    merges =  release_info.get_merges(repository,release_file_dir)
+    merges =  release_info.get_merges(repository,release_info_dir)
 
     for merge in merges:
         merge_this = f"{origin}{merge}"
@@ -93,7 +92,7 @@ def make_required_changes(origin,destination):
             os.system(f"cp {merge_this} {into_this}")
 
 
-    ignores = release_info.get_ignores(repository,release_file_dir)
+    ignores = release_info.get_ignores(repository,release_info_dir)
     for ignore in ignores:
         ignore_this = f"{destination}{ignore}"
         if os.path.isdir(ignore_this):
@@ -110,13 +109,18 @@ def main():
 
     parser.add_argument("-v", "--version", dest="version", type=str, required=True,
                         help="Version to compare")
+    parser.add_argument("-v", "--development_dir", dest="dev_dir", type=str, required=True,
+                       help="Directory of development code with latest release info.")
+    parser.add_argument("-v", "--charts_dir", dest="charts_dir", type=str, required=True,
+                        help="Directory of charts code.")
     args = parser.parse_args()
 
     start_directory = os.getcwd()
+
     print(f"make changes to charts from development")
-    make_required_changes("./",CHARTS_DIR)
+    make_required_changes(args.dev_dir,args.dev_dir,args.chart_dir)
     print(f"make changes to development from charts")
-    make_required_changes(CHARTS_DIR,"./")
+    make_required_changes(args.dev_dir,args.chart_dir,args.dev_dir)
     print(f"edit files in charts")
     os.chdir(CHARTS_DIR)
     update_workflow()
