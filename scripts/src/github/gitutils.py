@@ -74,8 +74,6 @@ def create_charts_pr(version):
 
     repo = Repo(os.getcwd())
 
-    #repo=git.Repo()
-
     bot_name, bot_token = get_bot_name_and_token()
     set_git_username_email(repo,bot_name,GITHUB_ACTIONS_BOT_EMAIL)
 
@@ -117,10 +115,9 @@ def create_charts_pr(version):
 def commit_development_updates(version):
 
     repo = Repo(os.getcwd())
-    git = repo.git
 
     print("checkout main")
-    git.checkout("main")
+    repo.git.checkout("main")
 
     changed = [ item.a_path for item in repo.index.diff(None) ]
     for change in changed:
@@ -128,7 +125,7 @@ def commit_development_updates(version):
         git.add(change)
 
     print(f"commit changes with message: Version-{version}")
-    repo.index.commit(f"Version-{version}")
+    repo.index.commit(f"Version-{version} Update charts from chart repository")
 
     print(f"push the branch to {DEVELOPMENT_REPO}")
     bot_name, bot_token = get_bot_name_and_token()

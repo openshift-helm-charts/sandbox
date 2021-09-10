@@ -18,6 +18,8 @@ def _get_release_info(directory):
     with open(f"{directory}{RELEASE_INFO_FILE}",'r') as json_file:
         data = json.load(json_file)
 
+    print(f"Release info content: {data}")
+
     return data
 
 def get_version(directory):

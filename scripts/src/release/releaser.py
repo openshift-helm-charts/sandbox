@@ -59,6 +59,8 @@ def get_release_info(directory):
 
 def make_required_changes(origin,destination):
 
+    print(f"Make required changes from {origin} to {destination}")
+
     repository = "development"
     release_file_dir = "./"
     if "charts" in origin or "development" in destination:
