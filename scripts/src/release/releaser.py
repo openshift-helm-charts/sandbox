@@ -24,23 +24,26 @@ CHARTS_DIR = "charts_repo"
 def update_workflow():
 
     data = {}
-    with open(SCHEDULE_YAML_FILE,'r') as yaml_file:
-        data = yaml.full_load(yaml_file)
 
-    new_yaml_snippet = {'schedule': [{'cron': '0 0 * * * '}]}
-    data[True].update(new_yaml_snippet)
+    if "sandbox" not in gitutils.CHARTS_REPO:
 
-    print(f"add cron job in {os.getcwd()}/{SCHEDULE_YAML_FILE}")
+        with open(SCHEDULE_YAML_FILE,'r') as yaml_file:
+            data = yaml.full_load(yaml_file)
 
-    with open(SCHEDULE_YAML_FILE,'w') as updated_yaml_file:
-        yaml.safe_dump(data, updated_yaml_file)
+        new_yaml_snippet = {'schedule': [{'cron': '0 0 * * * '}]}
+        data[True].update(new_yaml_snippet)
+
+        print(f"add cron job in {os.getcwd()}/{SCHEDULE_YAML_FILE}")
+
+        with open(SCHEDULE_YAML_FILE,'w') as updated_yaml_file:
+            yaml.safe_dump(data, updated_yaml_file)
 
     with open(BUILD_YAML_FILE,'r') as yaml_file:
         data = yaml.full_load(yaml_file)
 
     verifier_image = data["jobs"]["chart-certification"]["env"]["VERIFIER_IMAGE"]
     data["jobs"]["chart-certification"]["env"]["VERIFIER_IMAGE"] = verifier_image.replace('chart-verifier:main','chart-verifier:latest')
-    print(f"chnage verifier image with: {data['jobs']['chart-certification']['env']['VERIFIER_IMAGE']}")
+    print(f"change verifier image with: {data['jobs']['chart-certification']['env']['VERIFIER_IMAGE']}")
 
     with open(BUILD_YAML_FILE,'w') as updated_yaml_file:
         yaml.safe_dump(data, updated_yaml_file)

@@ -7,8 +7,9 @@ from git.exc import GitCommandError
 GITHUB_BASE_URL = 'https://api.github.com'
 #CHARTS_REPO = 'openshift-helm-charts/charts'
 #DEVELOPMENT_REPO = 'openshift-helm-charts/development'
-CHARTS_REPO = 'mmulholla/charts'
+#CHARTS_REPO = 'mmulholla/charts'
 DEVELOPMENT_REPO = 'mmulholla/development'
+CHARTS_REPO = 'openshift-helm-charts/sandbox'
 
 # GitHub actions bot email for git email
 GITHUB_ACTIONS_BOT_EMAIL = 'mmulholl@redhat.com'

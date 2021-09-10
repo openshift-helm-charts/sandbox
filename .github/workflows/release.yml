@@ -24,7 +24,7 @@ jobs:
       - name: Checkout charts repo
         uses: actions/checkout@v2
         with:
-          repository: openshift-helm-charts/charts
+          repository: openshift-helm-charts/sandbox
           path: "charts_repo"
 
       - name: Set up Python 3.x Part 1
