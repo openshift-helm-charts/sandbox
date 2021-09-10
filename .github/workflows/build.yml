@@ -1,250 +1,243 @@
 name: CI
-
-on:
+true:
   pull_request_target:
-    types: [opened, synchronize, reopened, edited, ready_for_review, labeled]
-
+    types:
+    - opened
+    - synchronize
+    - reopened
+    - edited
+    - ready_for_review
+    - labeled
 jobs:
   chart-certification:
-    name: Chart Certification
-    runs-on: ubuntu-20.04
     env:
       VERIFIER_IMAGE: quay.io/redhat-certification/chart-verifier:latest
-    if: |
-      github.event.pull_request.draft == false &&
-      (github.event.action != 'labeled' || github.event.label.name == 'force-publish')
+    if: 'github.event.pull_request.draft == false &&
+
+      (github.event.action != ''labeled'' || github.event.label.name == ''force-publish'')
+
+      '
+    name: Chart Certification
+    runs-on: ubuntu-20.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+    - continue-on-error: true
+      env:
+        GITHUB_REF: ${{ github.ref }}
+      id: sanity_check_pr_content
+      name: Sanity Check PR Content
+      run: 'python3 -m venv ve1
 
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
+        cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
 
-      - name: Sanity Check PR Content
-        id: sanity_check_pr_content
-        continue-on-error: true
-        env:
-          GITHUB_REF: ${{ github.ref }}
-        run: |
-          python3 -m venv ve1
-          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
-          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
-          INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "refs/heads/gh-pages"; else echo "${GITHUB_REF}-gh-pages"; fi)
-          ./ve1/bin/sanity-check-pr --index-branch=${INDEX_BRANCH} --repository=${{ github.repository }} --api-url=${{ github.event.pull_request._links.self.href }}
+        cd scripts && ../ve1/bin/python3 setup.py install && cd ..
 
-      - uses: actions/github-script@v3
-        if: ${{ steps.sanity_check_pr_content.outcome == 'success'}}
-        continue-on-error: true
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.issues.addLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['sanity-ok']
-            })
+        INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "refs/heads/gh-pages";
+        else echo "${GITHUB_REF}-gh-pages"; fi)
 
-      - uses: actions/github-script@v3
-        if: ${{ steps.sanity_check_pr_content.outcome == 'failure'}}
-        continue-on-error: true
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.issues.removeLabel({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'sanity-ok'
-            })
+        ./ve1/bin/sanity-check-pr --index-branch=${INDEX_BRANCH} --repository=${{
+        github.repository }} --api-url=${{ github.event.pull_request._links.self.href
+        }}
 
-      - name: Reflect on Sanity Check PR Content
-        if: ${{ steps.sanity_check_pr_content.outcome == 'failure'}}
-        run: |
-          echo "The 'Sanity Check PR Content' step has failed."
-          exit 1
+        '
+    - continue-on-error: true
+      if: ${{ steps.sanity_check_pr_content.outcome == 'success'}}
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: "github.issues.addLabels({\n  issue_number: context.issue.number,\n\
+          \  owner: context.repo.owner,\n  repo: context.repo.repo,\n  labels: ['sanity-ok']\n\
+          })\n"
+    - continue-on-error: true
+      if: ${{ steps.sanity_check_pr_content.outcome == 'failure'}}
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: "github.issues.removeLabel({\n  issue_number: context.issue.number,\n\
+          \  owner: context.repo.owner,\n  repo: context.repo.repo,\n  name: 'sanity-ok'\n\
+          })\n"
+    - if: ${{ steps.sanity_check_pr_content.outcome == 'failure'}}
+      name: Reflect on Sanity Check PR Content
+      run: 'echo "The ''Sanity Check PR Content'' step has failed."
 
-      - name: 'Remove label from PR'
-        uses: actions/github-script@v3
-        continue-on-error: true
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            var issue_number = ${{ github.event.number }};
-            github.issues.removeLabel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: Number(issue_number),
-              name: 'authorized-request'
-            })
+        exit 1
 
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          path: "pr-branch"
+        '
+    - continue-on-error: true
+      name: Remove label from PR
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: "var issue_number = ${{ github.event.number }};\ngithub.issues.removeLabel({\n\
+          \  owner: context.repo.owner,\n  repo: context.repo.repo,\n  issue_number:\
+          \ Number(issue_number),\n  name: 'authorized-request'\n})\n"
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: pr-branch
+        ref: ${{ github.event.pull_request.head.ref }}
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+    - id: get-date
+      if: ${{ steps.sanity_check_pr_content.outputs.report-exists != 'true' }}
+      name: Get Date
+      run: 'echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
 
-      - name: Get Date
-        id: get-date
-        if: ${{ steps.sanity_check_pr_content.outputs.report-exists != 'true' }}
-        run: |
-          echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
-        shell: bash
+        '
+      shell: bash
+    - id: cache
+      if: ${{ steps.sanity_check_pr_content.outputs.report-exists != 'true' }}
+      uses: actions/cache@v2
+      with:
+        key: ${{ steps.get-date.outputs.date }}
+        path: oc
+    - if: ${{ steps.sanity_check_pr_content.outputs.report-exists != 'true' && steps.cache.outputs.cache-hit
+        != 'true' }}
+      name: Install oc
+      run: 'curl -sLO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
 
-      - uses: actions/cache@v2
-        if: ${{ steps.sanity_check_pr_content.outputs.report-exists != 'true' }}
-        id: cache
-        with:
-          path: oc
-          key: ${{ steps.get-date.outputs.date }}
+        tar zxvf openshift-client-linux.tar.gz oc
 
-      - name: Install oc
-        if: ${{ steps.sanity_check_pr_content.outputs.report-exists != 'true' && steps.cache.outputs.cache-hit != 'true' }}
-        run: |
-          curl -sLO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
-          tar zxvf openshift-client-linux.tar.gz oc
+        '
+    - id: get-repository
+      if: ${{ steps.sanity_check_pr_content.outputs.report-exists != 'true' }}
+      name: Get Repository
+      run: 'REPO=$(echo ${{ github.repository }} | tr ''\/'' ''-'')
 
-      - name: Get Repository
-        if: ${{ steps.sanity_check_pr_content.outputs.report-exists != 'true' }}
-        id: get-repository
-        run: |
-          REPO=$(echo ${{ github.repository }} | tr '\/' '-')
-          echo "::set-output name=repository::${REPO}"
-        shell: bash
+        echo "::set-output name=repository::${REPO}"
 
-      - name: 'Verify PR - generate report'
-        id: verify_pr
-        env:
-          KUBECONFIG: /tmp/ci-kubeconfig
-          VENDOR_TYPE: ${{ steps.sanity_check_pr_content.outputs.category }}
-        run: |
-          API_SERVER=$( echo -n ${{ secrets.API_SERVER }} | base64 -d)
-          gpg --version
-          docker pull ${{ env.VERIFIER_IMAGE }}
-          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-          if [ "${{steps.sanity_check_pr_content.outputs.report-exists}}" != "true" ]; then
-            ./oc login --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}
-            ve1/bin/sa-for-chart-testing --create charts-${{ github.event.number }} --token token.txt --server ${API_SERVER}
-          fi
-          cd pr-branch
-          ../ve1/bin/chart-pr-review --directory=../pr --verify-user=${{ github.event.pull_request.user.login }} --api-url=${{ github.event.pull_request._links.self.href }}
-          cd ..
+        '
+      shell: bash
+    - env:
+        KUBECONFIG: /tmp/ci-kubeconfig
+        VENDOR_TYPE: ${{ steps.sanity_check_pr_content.outputs.category }}
+      id: verify_pr
+      name: Verify PR - generate report
+      run: "API_SERVER=$( echo -n ${{ secrets.API_SERVER }} | base64 -d)\ngpg --version\n\
+        docker pull ${{ env.VERIFIER_IMAGE }}\ncurl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3\
+        \ | bash\nif [ \"${{steps.sanity_check_pr_content.outputs.report-exists}}\"\
+        \ != \"true\" ]; then\n  ./oc login --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}\n\
+        \  ve1/bin/sa-for-chart-testing --create charts-${{ github.event.number }}\
+        \ --token token.txt --server ${API_SERVER}\nfi\ncd pr-branch\n../ve1/bin/chart-pr-review\
+        \ --directory=../pr --verify-user=${{ github.event.pull_request.user.login\
+        \ }} --api-url=${{ github.event.pull_request._links.self.href }}\ncd ..\n"
+    - env:
+        KUBECONFIG: /tmp/ci-kubeconfig
+      if: always() && steps.sanity_check_pr_content.outputs.report-exists != 'true'
+      name: Delete Namespace
+      run: 'API_SERVER=$( echo -n ${{ secrets.API_SERVER }} | base64 -d)
 
+        ./oc login --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}
 
-      - name: Delete Namespace
-        if: always() && steps.sanity_check_pr_content.outputs.report-exists != 'true'
-        env:
-          KUBECONFIG: /tmp/ci-kubeconfig
-        run: |
-          API_SERVER=$( echo -n ${{ secrets.API_SERVER }} | base64 -d)
-          ./oc login --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}
-          ve1/bin/sa-for-chart-testing --delete charts-${{ github.event.number }}
+        ve1/bin/sa-for-chart-testing --delete charts-${{ github.event.number }}
 
-      - name: Save PR artifact
-        if: always()
-        run: |
-          ve1/bin/pr-artifact --directory=./pr --pr-number=${{ github.event.number }} --api-url=${{ github.event.pull_request._links.self.href }}
+        '
+    - if: always()
+      name: Save PR artifact
+      run: 've1/bin/pr-artifact --directory=./pr --pr-number=${{ github.event.number
+        }} --api-url=${{ github.event.pull_request._links.self.href }}
 
-      - name: 'Prepare PR comment'
-        if: always()
-        env:
-          SANITY_ERROR_MESSAGE: ${{ steps.sanity_check_pr_content.outputs.sanity-error-message }}
-        run: |
-          python3 scripts/prepare_pr_comment.py ${{ steps.sanity_check_pr_content.outcome }} ${{ steps.verify_pr.conclusion }} ${{ github.repository }}
+        '
+    - env:
+        SANITY_ERROR_MESSAGE: ${{ steps.sanity_check_pr_content.outputs.sanity-error-message
+          }}
+      if: always()
+      name: Prepare PR comment
+      run: 'python3 scripts/prepare_pr_comment.py ${{ steps.sanity_check_pr_content.outcome
+        }} ${{ steps.verify_pr.conclusion }} ${{ github.repository }}
 
-      - name: 'Comment on PR'
-        if: always()
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            var fs = require('fs');
-            var issue_number = ${{ github.event.number }};
-            var comment = fs.readFileSync('./pr/comment', {encoding:'utf8', flag:'r'});
-            github.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: Number(issue_number),
-              body: comment
-            });
+        '
+    - if: always()
+      name: Comment on PR
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: "var fs = require('fs');\nvar issue_number = ${{ github.event.number\
+          \ }};\nvar comment = fs.readFileSync('./pr/comment', {encoding:'utf8', flag:'r'});\n\
+          github.issues.createComment({\n  owner: context.repo.owner,\n  repo: context.repo.repo,\n\
+          \  issue_number: Number(issue_number),\n  body: comment\n});\n"
+    - if: ${{ always() && steps.sanity_check_pr_content.outcome == 'success'}}
+      name: Add label to PR
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: "var fs = require('fs');\nvar issue_number = ${{ github.event.number\
+          \ }};\nvar vendor_label = fs.readFileSync('./pr/vendor');\nvar chart_name\
+          \ = fs.readFileSync('./pr/chart');\nif (vendor_label.toString() !== \"\"\
+          \ && chart_name.toString() !== \"\") {\n  github.issues.addLabels({\n  \
+          \  issue_number: Number(issue_number),\n    owner: context.repo.owner,\n\
+          \    repo: context.repo.repo,\n    labels: ['authorized-request']\n})};\n"
+    - id: approve_pr
+      if: ${{ steps.verify_pr.conclusion == 'success' }}
+      name: Approve PR
+      uses: hmarr/auto-approve-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        MERGE_LABELS: ''
+        MERGE_METHOD: squash
+      id: merge_pr
+      if: ${{ steps.approve_pr.conclusion == 'success' }}
+      name: Merge PR
+      uses: pascalgn/automerge-action@v0.13.1
+    - name: Check for PR merge
+      run: './ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href
+        }}
 
-      - name: 'Add label to PR'
-        if: ${{ always() && steps.sanity_check_pr_content.outcome == 'success'}}
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            var fs = require('fs');
-            var issue_number = ${{ github.event.number }};
-            var vendor_label = fs.readFileSync('./pr/vendor');
-            var chart_name = fs.readFileSync('./pr/chart');
-            if (vendor_label.toString() !== "" && chart_name.toString() !== "") {
-              github.issues.addLabels({
-                issue_number: Number(issue_number),
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                labels: ['authorized-request']
-            })};
+        '
+    - env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      name: Block until there is no running workflow
+      uses: softprops/turnstyle@v1
+    - name: Configure Git
+      run: 'git config --global user.name "github-actions[bot]"
 
-      - name: 'Approve PR'
-        id: approve_pr
-        if: ${{ steps.verify_pr.conclusion == 'success' }}
-        uses: hmarr/auto-approve-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: 'Merge PR'
-        id: merge_pr
-        if: ${{ steps.approve_pr.conclusion == 'success' }}
-        uses: pascalgn/automerge-action@v0.13.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MERGE_METHOD: squash
-          MERGE_LABELS: ""
+        '
+    - env:
+        CHART_ENTRY_NAME: ${{ steps.sanity_check_pr_content.outputs.chart-entry-name
+          }}
+        CHART_NAME_WITH_VERSION: ${{ steps.sanity_check_pr_content.outputs.chart-name-with-version
+          }}
+        GITHUB_REF: ${{ github.ref }}
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        REDHAT_TO_COMMUNITY: ${{ steps.verify_pr.outputs.redhat_to_community }}
+        REPORT_CONTENT: ${{steps.verify_pr.outputs.report_content}}
+      id: release-charts
+      name: Release Charts
+      run: 'curl -L -o cr.tar.gz https://github.com/helm/chart-releaser/releases/download/v1.2.0/chart-releaser_1.2.0_linux_amd64.tar.gz
 
-      - name: Check for PR merge
-        run: |
-          ./ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href }}
+        tar zxvf cr.tar.gz
 
-      - name: Block until there is no running workflow
-        uses: softprops/turnstyle@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        sudo cp -f cr /usr/local/bin/cr
 
-      - name: Configure Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "refs/heads/gh-pages";
+        else echo "${GITHUB_REF}-gh-pages"; fi)
 
-      - name: Release Charts
-        env:
-          GITHUB_REF: ${{ github.ref }}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          REPORT_CONTENT: ${{steps.verify_pr.outputs.report_content}}
-          CHART_ENTRY_NAME: ${{ steps.sanity_check_pr_content.outputs.chart-entry-name }}
-          CHART_NAME_WITH_VERSION: ${{ steps.sanity_check_pr_content.outputs.chart-name-with-version }}
-          REDHAT_TO_COMMUNITY: ${{ steps.verify_pr.outputs.redhat_to_community }}
-        id: release-charts
-        run: |
-          curl -L -o cr.tar.gz https://github.com/helm/chart-releaser/releases/download/v1.2.0/chart-releaser_1.2.0_linux_amd64.tar.gz
-          tar zxvf cr.tar.gz
-          sudo cp -f cr /usr/local/bin/cr
-          INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "refs/heads/gh-pages"; else echo "${GITHUB_REF}-gh-pages"; fi)
-          CWD=`pwd`
-          cd pr-branch
-          ../ve1/bin/chart-repo-manager --repository=${{ github.repository }} --index-branch=${INDEX_BRANCH} --api-url=${{ github.event.pull_request._links.self.href }} --pr-number=${{ github.event.number }}
-          cd ${CWD}
+        CWD=`pwd`
 
-      - name: Release
-        if: ${{ steps.release-charts.outputs.tag != '' }}
-        uses: softprops/action-gh-release@v0.1.5
-        continue-on-error: true
-        with:
-          tag_name: ${{ steps.release-charts.outputs.tag }}
-          files: pr-branch/report.yaml
-          fail_on_unmatched_files: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        cd pr-branch
+
+        ../ve1/bin/chart-repo-manager --repository=${{ github.repository }} --index-branch=${INDEX_BRANCH}
+        --api-url=${{ github.event.pull_request._links.self.href }} --pr-number=${{
+        github.event.number }}
+
+        cd ${CWD}
+
+        '
+    - continue-on-error: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      if: ${{ steps.release-charts.outputs.tag != '' }}
+      name: Release
+      uses: softprops/action-gh-release@v0.1.5
+      with:
+        fail_on_unmatched_files: true
+        files: pr-branch/report.yaml
+        tag_name: ${{ steps.release-charts.outputs.tag }}
