@@ -12,10 +12,10 @@ RELEASE_INFO_FILE="release/release_info.json"
 def _get_release_info(directory):
 
     if not directory:
-        directory = "./"
+        directory = "."
 
     data = {}
-    with open(f"{directory}{RELEASE_INFO_FILE}",'r') as json_file:
+    with open(f"{directory}/{RELEASE_INFO_FILE}",'r') as json_file:
         data = json.load(json_file)
 
     print(f"Release info content: {data}")
@@ -56,19 +56,19 @@ def get_ignores(repo,directory):
 
 def main():
 
-    print(f"[INFO] Version : {get_version('./')}")
+    print(f"[INFO] Version : {get_version('.')}")
 
-    print(f"[INFO] Dev repo merges : {get_merges('development','./')}")
+    print(f"[INFO] Dev repo merges : {get_merges('development','.')}")
 
-    print(f"[INFO] Dev repo replace : {get_replaces('development','./')}")
+    print(f"[INFO] Dev repo replace : {get_replaces('development','.')}")
 
-    print(f"[INFO] Dev repo ignore : {get_ignores('development','./')}")
+    print(f"[INFO] Dev repo ignore : {get_ignores('development','.')}")
 
-    print(f"[INFO] Chart repo merges : {get_merges('charts','./')}")
+    print(f"[INFO] Chart repo merges : {get_merges('charts','.')}")
 
-    print(f"[INFO] Chart repo replace : {get_replaces('charts','./')}")
+    print(f"[INFO] Chart repo replace : {get_replaces('charts','.')}")
 
-    print(f"[INFO] Chart repo ignore : {get_ignores('charts','./')}")
+    print(f"[INFO] Chart repo ignore : {get_ignores('charts','.')}")
 
 
 if __name__ == "__main__":

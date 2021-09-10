@@ -64,8 +64,8 @@ def make_required_changes(release_info_dir,origin,destination):
     replaces = release_info.get_replaces(repository,release_info_dir)
 
     for replace in replaces:
-        replace_this=f"{destination}{replace}"
-        with_this = f"{origin}{replace}"
+        replace_this=f"{destination}/{replace}"
+        with_this = f"{origin}/{replace}"
         if os.path.isdir(replace_this):
             print(f"Replace directory {replace_this} with {with_this}")
             os.system(f"rm -rf {replace_this}")
@@ -77,8 +77,8 @@ def make_required_changes(release_info_dir,origin,destination):
     merges =  release_info.get_merges(repository,release_info_dir)
 
     for merge in merges:
-        merge_this = f"{origin}{merge}"
-        into_this = f"{destination}{merge}"
+        merge_this = f"{origin}/{merge}"
+        into_this = f"{destination}/{merge}"
 
         if os.path.isdir(merge_this):
             print(f"Merge directory {merge_this} with {into_this}")
