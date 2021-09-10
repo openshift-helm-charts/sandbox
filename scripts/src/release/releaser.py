@@ -109,9 +109,9 @@ def main():
 
     parser.add_argument("-v", "--version", dest="version", type=str, required=True,
                         help="Version to compare")
-    parser.add_argument("-v", "--development_dir", dest="dev_dir", type=str, required=True,
+    parser.add_argument("-d", "--development_dir", dest="dev_dir", type=str, required=True,
                        help="Directory of development code with latest release info.")
-    parser.add_argument("-v", "--charts_dir", dest="charts_dir", type=str, required=True,
+    parser.add_argument("-c", "--charts_dir", dest="charts_dir", type=str, required=True,
                         help="Directory of charts code.")
     args = parser.parse_args()
 
