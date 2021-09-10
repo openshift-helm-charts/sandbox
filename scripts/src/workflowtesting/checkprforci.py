@@ -19,6 +19,7 @@ def check_if_ci_only_is_modified(api_url):
     pattern_workflow = re.compile(r".github/workflows/.*")
     pattern_script = re.compile(r"scripts/.*")
     pattern_test = re.compile(r"tests/.*")
+    pattern_release = re.compile(r"release/.*")
     page_number = 1
     max_page_size,page_size = 100,100
 
@@ -40,6 +41,8 @@ def check_if_ci_only_is_modified(api_url):
             elif pattern_script.match(filename):
                 workflow_found = True
             elif pattern_test.match(filename):
+                workflow_found = True
+            elif pattern_release.match(filename):
                 workflow_found = True
             else:
                 return False
