@@ -19,12 +19,14 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.BOT_TOKEN }}
           path: "pr-branch"
 
       - name: Checkout charts repo
         uses: actions/checkout@v2
         with:
           repository: openshift-helm-charts/sandbox
+          token: ${{ secrets.BOT_TOKEN }}
           path: "charts_repo"
 
       - name: Set up Python 3.x Part 1

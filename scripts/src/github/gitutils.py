@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import git
 from git import Repo
 from git.exc import GitCommandError
 
@@ -10,6 +11,7 @@ GITHUB_BASE_URL = 'https://api.github.com'
 #CHARTS_REPO = 'mmulholla/charts'
 DEVELOPMENT_REPO = 'mmulholla/development'
 CHARTS_REPO = 'openshift-helm-charts/sandbox'
+TEST_REPO = 'openshift-helm-charts/sandbox'
 
 # GitHub actions bot email for git email
 GITHUB_ACTIONS_BOT_EMAIL = 'mmulholl@redhat.com'
@@ -70,9 +72,11 @@ def get_bot_name_and_token():
 
 
 def create_charts_pr(version):
-    repo = Repo(os.getcwd())
+    //repo = Repo(os.getcwd())
 
-    git = repo.git
+    //git = repo.git
+
+    repo=git.Repo()
 
     bot_name, bot_token = get_bot_name_and_token()
     set_git_username_email(repo,bot_name,GITHUB_ACTIONS_BOT_EMAIL)
