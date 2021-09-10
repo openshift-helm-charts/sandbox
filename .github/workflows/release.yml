@@ -25,7 +25,7 @@ jobs:
       - name: Checkout charts repo
         uses: actions/checkout@v2
         with:
-          repository: openshift-helm-charts/sandbox
+          repository: openshift-helm-charts/charts
           token: ${{ secrets.BOT_TOKEN }}
           path: "charts_repo"
 
@@ -42,7 +42,6 @@ jobs:
           python3 -m venv ve1
           cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
           cd scripts && ../ve1/bin/python3 setup.py install && cd ..
-
 
       - name: Check if only release file in PR
         id: check_version_in_PR
