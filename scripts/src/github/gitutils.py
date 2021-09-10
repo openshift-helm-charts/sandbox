@@ -112,16 +112,21 @@ def commit_development_updates(version):
     print("checkout main")
     repo.git.checkout("main")
 
+    file_addded = False
     changed = [ item.a_path for item in repo.index.diff(None) ]
-    for change in changed:
-        print(f"Add file: {change}")
-        git.add(change)
 
-    print(f"commit changes with message: Version-{version}")
-    repo.index.commit(f"Version-{version} Update charts from chart repository")
+    if changed:
+        for change in changed:
+            print(f"Add file: {change}")
+            git.add(change)
 
-    print(f"push the branch to {DEVELOPMENT_REPO}")
-    bot_name, bot_token = get_bot_name_and_token()
+        print(f"commit changes with message: Version-{version}")
+        repo.index.commit(f"Version-{version} Update charts from chart repository")
 
-    repo.git.push(f'https://x-access-token:{bot_token}@github.com/{DEVELOPMENT_REPO}',
+        print(f"push the branch to {DEVELOPMENT_REPO}")
+        bot_name, bot_token = get_bot_name_and_token()
+
+        repo.git.push(f'https://x-access-token:{bot_token}@github.com/{DEVELOPMENT_REPO}',
                   f'HEAD:refs/heads/main', '-f')
+    else:
+        print(f"no changes required for {DEVELOPMENT_REPO}")

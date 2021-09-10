@@ -32,7 +32,7 @@ def update_workflow():
     print(f"add cron job in {os.getcwd()}/{SCHEDULE_YAML_FILE}")
 
     with open(SCHEDULE_YAML_FILE,'w') as updated_yaml_file:
-        yaml.safe_dump(data, updated_yaml_file)
+        yaml.safe_dump(data, updated_yaml_file,default_flow_style=False)
 
     with open(BUILD_YAML_FILE,'r') as yaml_file:
         data = yaml.full_load(yaml_file)
@@ -42,7 +42,7 @@ def update_workflow():
     print(f"change verifier image with: {data['jobs']['chart-certification']['env']['VERIFIER_IMAGE']}")
 
     with open(BUILD_YAML_FILE,'w') as updated_yaml_file:
-        yaml.safe_dump(data, updated_yaml_file)
+        yaml.safe_dump(data, updated_yaml_file,default_flow_style=False)
 
 def get_release_info(directory):
 
