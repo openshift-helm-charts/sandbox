@@ -103,6 +103,7 @@ def push_chart_release(repository, organization, commit_hash):
     token = os.environ.get("GITHUB_TOKEN")
     print("[INFO] Upload chart using the chart-releaser")
     release_name_template = f"{organization}-"+"{{ .Name }}-{{ .Version }}"
+    print(release_name_template)
     if os.environ.get('TRIGGERED_BY_TEST') == 'true':
         pr_number = os.environ.get("PR_NUMBER")
         release_name_template += f'-test-pr{pr_number}'
