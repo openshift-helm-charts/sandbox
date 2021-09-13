@@ -9,7 +9,6 @@ import os
 import argparse
 import sys
 from release import release_info
-from git import Repo
 
 sys.path.append('../')
 from github import gitutils
@@ -22,27 +21,38 @@ RELEASE_INFO_FILE="release/release_info.json"
 
 def update_workflow():
 
-    data = {}
-    with open(SCHEDULE_YAML_FILE,'r') as yaml_file:
-        data = yaml.full_load(yaml_file)
+    lines=[]
+    with open(SCHEDULE_YAML_FILE,'r') as schedule_file:
 
-    new_yaml_snippet = {'schedule': [{'cron': '0 0 * * * '}]}
-    data[True].update(new_yaml_snippet)
+        lines = schedule_file.readlines()
 
-    print(f"add cron job in {os.getcwd()}/{SCHEDULE_YAML_FILE}")
+        for line in lines:
+            if line.rstrip() == "on:":
+                insert_location = lines.index(line)+1
+                if lines[insert_location].rstrip() != '  schedule:':
+                    print("[INFO] add cron jon to schedule.yaml")
+                    lines.insert(insert_location,'  schedule:\n')
+                    lines.insert(insert_location+1,'    - cron: 0 0 * * *\n')
+                    break
 
-    with open(SCHEDULE_YAML_FILE,'w') as updated_yaml_file:
-        yaml.safe_dump(data, updated_yaml_file,default_flow_style=False)
+    with open(SCHEDULE_YAML_FILE,'w') as schedule_file:
+        schedule_file.write("".join(lines))
 
-    with open(BUILD_YAML_FILE,'r') as yaml_file:
-        data = yaml.full_load(yaml_file)
 
-    verifier_image = data["jobs"]["chart-certification"]["env"]["VERIFIER_IMAGE"]
-    data["jobs"]["chart-certification"]["env"]["VERIFIER_IMAGE"] = verifier_image.replace('chart-verifier:main','chart-verifier:latest')
-    print(f"change verifier image with: {data['jobs']['chart-certification']['env']['VERIFIER_IMAGE']}")
+    with open(BUILD_YAML_FILE,'r') as build_file:
 
-    with open(BUILD_YAML_FILE,'w') as updated_yaml_file:
-        yaml.safe_dump(data, updated_yaml_file,default_flow_style=False)
+        lines = build_file.readlines()
+
+        for line in lines:
+            if "VERIFIER_IMAGE:" in line:
+                if "chart-verifier:main" in line:
+                    line_index = lines.index(line)
+                    print(f"replace: {lines[line_index].rstrip()}")
+                    lines[line_index] = lines[line_index].replace('chart-verifier:main','chart-verifier:latest')
+                    print(f"with   : {lines[line_index].rstrip()}")
+
+    with open(BUILD_YAML_FILE,'w') as build_file:
+        build_file.write("".join(lines))
 
 def get_release_info(directory):
 
