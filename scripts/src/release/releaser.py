@@ -27,12 +27,11 @@ def update_workflow():
         lines = schedule_file.readlines()
 
         for line in lines:
-            if line.rstrip() == "on:":
                 insert_location = lines.index(line)+1
                 if lines[insert_location].rstrip() != '  schedule:':
                     print("[INFO] add cron jon to schedule.yaml")
                     lines.insert(insert_location,'  schedule:\n')
-                    lines.insert(insert_location+1,'    - cron: 0 0 * * *\n')
+                    lines.insert(insert_location+1,'    - cron: "0 0 * * *"\n')
                     break
 
     with open(SCHEDULE_YAML_FILE,'w') as schedule_file:
