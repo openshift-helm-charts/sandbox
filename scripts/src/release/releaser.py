@@ -30,9 +30,9 @@ def update_workflow():
             insert_location = lines.index(line)+1
             if lines[insert_location].rstrip() != '  # Daily trigger to check updates':
                 print("[INFO] add cron job to schedule.yaml")
-                lines.insert(insert_location,'  # Daily trigger to check updates\n')
-                lines.insert(insert_location,'  schedule:\n')
-                lines.insert(insert_location+2,'    - cron: "0 0 * * *"\n')
+                lines.insert(insert_location,'  # Daily trigger to check updates\r')
+                lines.insert(insert_location,'  schedule:\r')
+                lines.insert(insert_location+2,'    - cron: "0 0 * * *"\r')
                 break
 
     with open(SCHEDULE_YAML_FILE,'w') as schedule_file:
