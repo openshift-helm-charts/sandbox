@@ -86,7 +86,7 @@ def prepare_chart_source_for_release(category, organization, chart, version):
     shutil.copy(f"{chart}-{version}.tgz" , f".cr-release-packages/{new_chart_file_name}")
 
 def prepare_chart_tarball_for_release(category, organization, chart, version):
-    print("[INFO] prepare chart tarball for release. %s, %s, %s, %s" % (category, organization, chart, version))
+    print("[Super INFO] prepare chart tarball for release. %s, %s, %s, %s" % (category, organization, chart, version))
     chart_file_name = f"{chart}-{version}.tgz"
     new_chart_file_name = f"{organization}-{chart}-{version}.tgz"
     path = os.path.join("charts", category, organization, chart, version, chart_file_name)
