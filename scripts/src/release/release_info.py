@@ -15,11 +15,9 @@ def _get_release_info(directory):
         directory = "."
 
     data = {}
-    print(f"get release file: {directory}/{RELEASE_INFO_FILE}")
     with open(f"{directory}/{RELEASE_INFO_FILE}",'r') as json_file:
         data = json.load(json_file)
 
-    print(f"release file content: {data}")
     return data
 
 def get_version(directory):
@@ -32,25 +30,34 @@ def get_info(directory):
 
 
 def get_replaces(repo,directory):
+    print(f"get replaces for {repo}")
     info = _get_release_info(directory)
     if repo in info:
         if "replace" in info[repo]:
+            print(f"replaces found: {info[repo]['replace']}")
             return info[repo]["replace"]
+    print("no replaces found")
     return []
 
 def get_merges(repo,directory):
+    print(f"get merges for {repo}")
     info = _get_release_info(directory)
     if repo in info:
         if "merge" in info[repo]:
+            print(f"merges found: {info[repo]['merge']}")
             return info[repo]["merge"]
+    print("no merges found")
     return []
 
 
 def get_ignores(repo,directory):
+    print(f"get ignores for {repo}")
     info = _get_release_info(directory)
     if repo in info:
         if "ignore" in info[repo]:
+            print(f"ignores found: {info[repo]['ignore']}")
             return info[repo]["ignore"]
+    print("no ignores found")
     return []
 
 
