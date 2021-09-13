@@ -1,5 +1,7 @@
 name: Check Software Version
 on:
+  schedule:
+    - cron: 0 0 * * *
   # Daily trigger to check updates
   schedule:
     - cron: "0 0 * * *"
