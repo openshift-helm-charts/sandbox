@@ -33,6 +33,7 @@ def update_workflow():
                 lines.insert(insert_location,'  # Daily trigger to check updates\n')
                 lines.insert(insert_location,'  schedule:\n')
                 lines.insert(insert_location+2,'    - cron: "0 0 * * *"\n')
+                break
 
     with open(SCHEDULE_YAML_FILE,'w') as schedule_file:
         schedule_file.write("".join(lines))
