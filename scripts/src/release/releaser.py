@@ -74,7 +74,8 @@ def make_required_changes(release_info_dir,origin,destination):
         with_this = f"{origin}/{replace}"
         if os.path.isdir(with_this) or os.path.isdir(replace_this):
             print(f"Replace directory {replace_this} with {with_this}")
-            os.system(f"rm -rf {replace_this}")
+            if os.path.isdir(replace_this):
+                os.system(f"rm -rf {replace_this}")
             os.system(f"cp -r {with_this} {replace_this}")
         else:
             print(f"Replace file {replace_this} with {with_this}")
