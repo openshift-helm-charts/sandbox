@@ -1,0 +1,129 @@
+name: Release-Workflow
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited, ready_for_review, labeled]
+
+jobs:
+  chart-workflow-release:
+    name: Chart Workflow Release
+    runs-on: ubuntu-20.04
+    env:
+      CHARTS_REPOSITORY: openshift-helm-charts/charts
+      DEVELOPMENT_REPOSITORY: openshift-helm-charts/development
+    if: |
+      github.event.pull_request.draft == false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.BOT_TOKEN }}
+          path: "pr-branch"
+
+      - name: Checkout charts repo
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.CHARTS_REPOSITORY }}
+          token: ${{ secrets.BOT_TOKEN }}
+          path: "charts-repo"
+
+      - name: Checkout development repo
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.DEVELOPMENT_REPOSITORY }}
+          token: ${{ secrets.BOT_TOKEN }}
+          path: "dev-repo"
+
+      - name: Set up Python 3.x Part 1
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - name: Set up Python scripts in pr-branch
+        working-directory: ./pr-branch
+        run: |
+          # set up python scripts
+          echo "set up python script in $PWD"
+          python3 -m venv ve1
+          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
+          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+
+      - name: Check if only release file in PR
+        id: check_version_in_PR
+        working-directory: ./pr-branch
+        run: |
+          # check if release file only is included in PR
+          ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }}
+
+      - name: Set up Python scripts on main branch
+        if: ${{ steps.check_version_in_PR.outputs.PR_includes_release == 'true' }}
+        run: |
+          # set up python scripts
+          echo "set up python script in $PWD"
+          python3 -m venv ve1
+          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
+          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+
+      - name: Check for restricted files and user permissiom
+        id: check_authorization
+        if: ${{ steps.check_version_in_PR.outputs.PR_includes_release == 'true' }}
+        run: |
+          # check for a restricted file and, if found, check user has permissiom
+          ve1/bin/check-user --api-url=${{ github.event.pull_request._links.self.href }} --user=${{ github.event.pull_request.user.login }}
+
+      - name: Check if version updated
+        id: check_version_updated
+        if: ${{ steps.check_version_in_PR.outputs.PR_includes_release == 'true' }}
+        run: |
+          # check if version file was changed
+          ve1/bin/release-checker --version=${{ steps.check_version_in_PR.outputs.PR_version }}
+
+      - name: Sync the repositories
+        id: sync_repositories
+        if: ${{ steps.check_version_in_PR.outputs.PR_includes_release == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BOT_NAME: ${{ secrets.BOT_NAME }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          PR_BODY: ${{ steps.check_version_in_PR.outputs.PR_release_body }}
+        run: |
+          # sync the repositories
+          ve1/bin/releaser --version=${{ steps.check_version_in_PR.outputs.PR_version }} --pr_dir="./pr-branch" --development_dir="./dev-repo" --charts_dir="./charts-repo"
+
+      - name: Approve PR
+        id: approve_pr
+        if: ${{ steps.check_version_updated.outputs.updated == 'true'}}
+        uses: hmarr/auto-approve-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge PR
+        id: merge_pr
+        if: ${{ steps.check_version_updated.outputs.updated == 'true'}}
+        uses: pascalgn/automerge-action@v0.13.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_METHOD: squash
+          MERGE_LABELS: ""
+
+      - name: Check for PR merge
+        if: ${{ steps.check_version_updated.outputs.updated == 'true'}}
+        run: |
+          ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href }}
+
+      - name: Create the the release
+        id: create_release
+        if: ${{ steps.check_version_updated.outputs.updated == 'true'}}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.check_version_in_PR.outputs.PR_version }}
+          body: ${{ steps.check_version_in_PR.outputs.PR_release_body }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
