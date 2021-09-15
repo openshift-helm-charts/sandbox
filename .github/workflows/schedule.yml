@@ -97,6 +97,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.workflow_dispatch.ref }}
+          token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
 
       - name: Set up Python 3.x Part 1
         if: |
@@ -223,6 +225,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.workflow_dispatch.ref }}
+          token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
 
       - name: Set up Python 3.x Part 1
         if: |
