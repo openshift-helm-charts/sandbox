@@ -3,16 +3,10 @@
   "info" : [
       "Initial release of development repository"
   ],
-  "chart-repo" : {
-    "clone" : "https://github.com/openshift-helm-charts/charts.git",
-    "branch" : "main",
-    "update": [
-      "charts"
-    ]
+  "charts" : {
+    "merge": ["charts"]
   },
-  "dev_repo" : {
-    "clone" : "https://github.com/openshift-helm-charts/development.git",
-    "branch" : "main",
+  "development" : {
     "replace": [
       ".github",
       "scripts",
@@ -20,8 +14,6 @@
       "docs",
       "tests"
     ],
-    "update" : [],
-    "delete" : [],
-    "ignore" : []
+    "ignore" : [".github/workflows/release.yml"]
   }
 }
