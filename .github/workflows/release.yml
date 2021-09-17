@@ -9,8 +9,7 @@ jobs:
     name: Chart Workflow Release
     runs-on: ubuntu-20.04
     env:
-      CHARTS_REPOSITORY: openshift-helm-charts/charts
-      DEVELOPMENT_REPOSITORY: openshift-helm-charts/development
+      REPOSITORY_ORGANIZATION: mmulholla
     if: |
       github.event.pull_request.draft == false
     steps:
@@ -28,14 +27,14 @@ jobs:
       - name: Checkout charts repo
         uses: actions/checkout@v2
         with:
-          repository: ${{ env.CHARTS_REPOSITORY }}
+          repository: ${{ env.REPOSITORY_ORGANIZATION }}/charts
           token: ${{ secrets.BOT_TOKEN }}
           path: "charts-repo"
 
       - name: Checkout development repo
         uses: actions/checkout@v2
         with:
-          repository: ${{ env.DEVELOPMENT_REPOSITORY }}
+          repository: ${{ env.REPOSITORY_ORGANIZATION }}/development
           token: ${{ secrets.BOT_TOKEN }}
           path: "dev-repo"
 
@@ -87,7 +86,6 @@ jobs:
         id: sync_repositories
         if: ${{ steps.check_version_in_PR.outputs.PR_includes_release == 'true' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BOT_NAME: ${{ secrets.BOT_NAME }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           PR_BODY: ${{ steps.check_version_in_PR.outputs.PR_release_body }}
