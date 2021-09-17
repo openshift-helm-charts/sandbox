@@ -19,8 +19,8 @@ from git import Repo
 from git.exc import GitCommandError
 
 GITHUB_BASE_URL = 'https://api.github.com'
-CHARTS_REPO = os.environ.get("CHARTS_REPOSITORY")
-DEVELOPMENT_REPO = os.environ.get("DEVELOPMENT_REPOSITORY")
+CHARTS_REPO = f"{os.environ.get('REPOSITORY_ORGANIZATION')}/charts"
+DEVELOPMENT_REPO = f"{os.environ.get('REPOSITORY_ORGANIZATION')}/development"
 
 # GitHub actions bot email for git email
 GITHUB_ACTIONS_BOT_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com'
@@ -37,23 +37,18 @@ def set_git_username_email(repo, username, email):
 
 
 def github_api_post(endpoint, bot_token, headers={}, json={}):
-    if not headers:
-        headers = {'Accept': 'application/vnd.github.v3+json',
-                   'Authorization': f'Bearer {bot_token}'}
     r = requests.post(f'{GITHUB_BASE_URL}/{endpoint}',
                       headers=headers, json=json)
-
     return r
 
 def github_api_get(endpoint, bot_token, headers={}):
-    if not headers:
-        headers = {'Accept': 'application/vnd.github.v3+json',
-                   'Authorization': f'Bearer {bot_token}'}
     r = requests.get(f'{GITHUB_BASE_URL}/{endpoint}', headers=headers)
-
     return r
 
 def github_api(method, endpoint, bot_token, headers={}, data={}, json={}):
+    if not headers:
+        headers = {'Accept': 'application/vnd.github.v3+json',
+                   'Authorization': f'Bearer {bot_token}'}
     if method == 'get':
         return github_api_get(endpoint, bot_token, headers=headers)
     elif method == 'post':
@@ -66,17 +61,13 @@ def get_bot_name_and_token():
     bot_name = os.environ.get("BOT_NAME")
     bot_token = os.environ.get("BOT_TOKEN")
     if not bot_name and not bot_token:
-        print("bot name and token not found use GITHUB_TOKEN")
-        bot_name = "github-actions[bot]"
-        bot_token = os.environ.get("GITHUB_TOKEN")
-        if not bot_token:
-            raise Exception("BOT_TOKEN environment variable not defined")
+        raise Exception("BOT_TOKEN environment variable not defined")
     elif not bot_name:
         raise Exception("BOT_TOKEN set but BOT_NAME not specified")
     elif not bot_token:
         raise Exception("BOT_NAME set but BOT_TOKEN not specified")
     else:
-        print(f"found bot name ({bot_name}) and token: ")
+        print(f"found bot name ({bot_name}) and token.")
     return bot_name, bot_token
 
 

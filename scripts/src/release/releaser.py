@@ -90,11 +90,11 @@ def make_required_changes(release_info_dir,origin,destination):
         if os.path.isdir(with_this) or os.path.isdir(replace_this):
             print(f"Replace directory {replace_this} with {with_this}")
             if os.path.isdir(replace_this):
-                os.system(f"rm -rf {replace_this}")
-            os.system(f"cp -r {with_this} {replace_this}")
+                shutil.rmtree(replace_this)
+            shutil.copytree(with_this,replace_this)
         else:
             print(f"Replace file {replace_this} with {with_this}")
-            os.system(f"cp {with_this} {replace_this}")
+            shutil.copy2(with_this,replace_this)
 
     merges =  release_info.get_merges(repository,release_info_dir)
 
@@ -104,10 +104,10 @@ def make_required_changes(release_info_dir,origin,destination):
 
         if os.path.isdir(merge_this) or os.path.isdir(into_this):
             print(f"Merge directory {merge_this} with {into_this}")
-            os.system(f"rsync -r {merge_this}/ {into_this}/")
+            shutil.move(merge_this,into_this/)
         else:
             print(f"Merge file {merge_this} with {into_this}")
-            os.system(f"cp {merge_this} {into_this}")
+            shutil.copy2(merge_this,into_this)
 
 
     ignores = release_info.get_ignores(repository,release_info_dir)
@@ -115,10 +115,10 @@ def make_required_changes(release_info_dir,origin,destination):
         ignore_this = f"{destination}/{ignore}"
         if os.path.isdir(ignore_this):
             print(f"Ignore/delete directory {ignore_this}")
-            os.system(f"rm -rf {ignore_this}")
+            shutil.rmtree(ignore_this)
         else:
             print(f"Ignore/delete file {ignore_this}")
-            os.system(f"rm {ignore_this}")
+            os.remove(ignore_this)
 
 
 def main():
