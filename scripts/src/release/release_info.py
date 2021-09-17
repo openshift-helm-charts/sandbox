@@ -5,20 +5,30 @@ Used by github actions,specifically as part of the charts auto release process d
 Provides get functions for all data in the release_info.json file.
 """
 import json
+import os
 
 
 RELEASE_INFO_FILE="release/release_info.json"
 
+RELEASE_INFOS = {}
+
 def _get_release_info(directory):
 
+    global RELEASE_INFOS
+
     if not directory:
-        directory = "."
+        directory = "./"
 
-    data = {}
-    with open(f"{directory}/{RELEASE_INFO_FILE}",'r') as json_file:
-        data = json.load(json_file)
+    root_dir = os.path.dirname(f"{os.getcwd()}/{directory}")
 
-    return data
+    if not RELEASE_INFOS[root_dir]:
+
+        print(f"Open release_info file: {root_dir}/{RELEASE_INFO_FILE}")
+
+        with open(f"{root_dir}/{RELEASE_INFO_FILE}",'r') as json_file:
+            RELEASE_INFOS[root_dir] = json.load(json_file)
+
+    return RELEASE_INFOS[root_dir]
 
 def get_version(directory):
     info = _get_release_info(directory)
