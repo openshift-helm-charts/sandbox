@@ -23,6 +23,6 @@ To start the proecess:
     1. Creates a pull request against the chart repository containing workflow updates from the development repository.
         - This PR will need to be manually merged once all tests are finished and clean.
     1. Creates and pushes a commit to the main branch of the development repository. The branch contains chart updates from the chart repository.
-        - It is expected that the time between cloning the repository and pushing the commit to main will be short enough to prevent overwriting other merged chnages.
+        - It is expected that the time between cloning the repository and pushing the commit to main will be short enough to prevent overwriting other merged changes.
     1. Assuming all is good, auto-merges the release/release_info.json pull request, and then creates a release and tag for the release in the development repository.
 
