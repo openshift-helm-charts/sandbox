@@ -17,8 +17,8 @@ def check_if_ci_only_is_modified(api_url):
     files_api_url = f'{api_url}/files'
     headers = {'Accept': 'application/vnd.github.v3+json'}
 
-    workflow_files = [r".github/workflows/.*", r"scripts/.*", r"tests/.*"]
-    skip_build_files = [r"release/release_info.json", r"README.md", r"docs/([\w-]+)\.md"]
+    workflow_files = [re.compile(r".github/workflows/.*"),re.compile(r"scripts/.*"),re.compile(r"tests/.*")]
+    skip_build_files = [re.compile(r"release/release_info.json"),re.compile(r"README.md"),re.compile(r"docs/([\w-]+)\.md")]
     page_number = 1
     max_page_size,page_size = 100,100
 
@@ -34,7 +34,6 @@ def check_if_ci_only_is_modified(api_url):
         page_number += 1
 
         for f in files:
-            matched = False
             filename = f["filename"]
             if any([pattern.match(filename) for pattern in workflow_files]):
                 workflow_found = True
