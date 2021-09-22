@@ -102,7 +102,10 @@ def create_charts_pr(version):
             'post', f'repos/{CHARTS_REPO}/pulls', bot_token, json=data)
 
         j = json.loads(r.text)
-        print(f"pull request info: {j['number']}")
+        if 'number' in j:
+            print(f"pull request info: {j['number']}")
+        else:
+            print(f"Unexpected  response from PR. status code: {r.status_code}, text: {j}")
     else:
         print(f"no changes required for {CHARTS_REPO}")
 
