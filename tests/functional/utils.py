@@ -271,7 +271,7 @@ def github_api(method, endpoint, bot_token, headers={}, data={}, json={}):
         return github_api_delete(endpoint, bot_token, headers=headers)
     else:
         raise ValueError(
-            "Github API method not implemented in helper function")
+            "Github API method not implemented in helper function github_api")
 
 def get_unique_vendor(vendor):
     suffix = str(int(time.time())) # unique string based on current time in seconds
