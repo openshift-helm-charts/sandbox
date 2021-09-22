@@ -59,7 +59,9 @@ def github_api(method, endpoint, bot_token, headers={}, data={}, json={}):
 
 def get_bot_name_and_token():
     bot_name = os.environ.get("BOT_NAME")
+    print(f"Bot name : {bot_name[0:2]}")
     bot_token = os.environ.get("BOT_TOKEN")
+    print(f"Bot token : {bot_token[-3:]}")
     if not bot_name and not bot_token:
         raise Exception("BOT_TOKEN environment variable not defined")
     elif not bot_name:
