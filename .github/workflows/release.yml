@@ -40,10 +40,11 @@ jobs:
 
       - name: Show values
         run: |
-          echo "sender: ${{ github.event.pull_request.sender.login }}"
+          echo "sender: ${{ github.event.sender.login }}"
+          echo "user: ${{ github.event.pull_request.user.login }}"
           echo "branch: ${{ github.event.pull_request.head.ref }}
           echo "pr title: ${{ github.event.pull_request.title }}
-          echo "pr body: ${{ github.event.pull_request.body }}
+          echo "pr body: ${{ github.event.pull_request.body }}"
 
       - name: Check if only release file in PR
         id: check_version_in_PR
