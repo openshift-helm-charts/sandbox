@@ -51,7 +51,7 @@ def get_modified_charts(directory, api_url):
             category, organization, chart, version = m.groups()
             return category, organization, chart, version
 
-    msg = "[ERROR] One or more files included in the pull request are not part of the chart"
+    msg = "[ERROR] One or more files included in the pull request are not part of the chart blah"
     write_error_log(directory, msg)
     sys.exit(1)
 
