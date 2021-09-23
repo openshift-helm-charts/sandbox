@@ -24,6 +24,34 @@ jobs:
           token: ${{ secrets.BOT_TOKEN }}
           path: "pr-branch"
 
+      - name: Set up Python 3.x Part 1
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - name: Set up Python scripts in pr-branch
+        working-directory: ./pr-branch
+        run: |
+          # set up python scripts
+          echo "set up python script in $PWD"
+          python3 -m venv ve1
+          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
+          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+
+      - name: Show values
+        run: |
+          echo "sender: ${{ github.event.pull_request.sender.login }}"
+          echo "branch: ${{ github.event.pull_request.head.ref }}
+          echo "pr title: ${{ github.event.pull_request.title }}
+          echo "pr body: ${{ github.event.pull_request.body }}
+
+      - name: Check if only release file in PR
+        id: check_version_in_PR
+        working-directory: ./pr-branch
+        run: |
+          # check if release file only is included in PR
+          ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }}
+
       - name: Checkout charts repo
         uses: actions/checkout@v2
         with:
@@ -42,22 +70,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.9"
-
-      - name: Set up Python scripts in pr-branch
-        working-directory: ./pr-branch
-        run: |
-          # set up python scripts
-          echo "set up python script in $PWD"
-          python3 -m venv ve1
-          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
-          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
-
-      - name: Check if only release file in PR
-        id: check_version_in_PR
-        working-directory: ./pr-branch
-        run: |
-          # check if release file only is included in PR
-          ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }}
 
       - name: Set up Python scripts on main branch
         if: ${{ steps.check_version_in_PR.outputs.PR_includes_release == 'true' }}

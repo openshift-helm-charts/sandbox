@@ -147,7 +147,9 @@ def main():
     update_workflow()
 
     print(f"create charts pull request")
-    gitutils.create_charts_pr(args.version)
+    branch_name = f"Release-{args.version}"
+    message = f'Workflow and script updates from development repository {branch_name}'
+    #gitutils.create_pr(branch_name,[],gitutils.CHARTS_REPO,message)
 
     os.chdir(start_directory)
 
@@ -155,8 +157,9 @@ def main():
     make_required_changes(args.pr_dir,args.charts_dir,args.dev_dir)
 
     os.chdir(args.dev_dir)
-    print(f"commit development changes")
-    gitutils.commit_development_updates(args.version,release_info.RELEASE_INFO_FILE)
+    print(f"create development pull request")
+    message = f'Workflow and script updates from development repository {branch_name}'
+    gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],gitutils.DEVELOPMENT_REPO,message)
 
     os.chdir(start_directory)
 
