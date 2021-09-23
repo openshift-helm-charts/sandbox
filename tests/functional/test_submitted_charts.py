@@ -411,8 +411,9 @@ def submission_tests_run_for_submitted_charts(secrets):
             repo.git.branch('-D', f'{base_branch}-gh-pages')
 
             # Check release is published
-            expected_tag = f'{vendor_name}-{chart_name}-{chart_version}-test-pr{pr_number}'
+            expected_tag = f'{vendor_name}-{chart_name}-{chart_version}'
             try:
+                logger.info(f"Checking '{expected_tag}' was released")
                 release = get_release_by_tag(secrets, expected_tag)
                 logger.info(f"Released '{expected_tag}' successfully")
 
