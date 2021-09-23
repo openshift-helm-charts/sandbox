@@ -64,7 +64,7 @@ def check_report_exists(category, organization, chart, version):
 def generate_report(chart_file_name):
     cwd = os.getcwd()
     report_content = urllib.parse.unquote(os.environ.get("REPORT_CONTENT"))
-    print("[INFO] Report content:")
+    print("[INFO] Report DavP content:")
     print(report_content)
     report_path = os.path.join(cwd, "report.yaml")
     with open(report_path, "w") as fd:
