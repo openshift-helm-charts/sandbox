@@ -74,6 +74,7 @@ def get_release_by_tag(secrets, release_tag):
     r = github_api(
         'get', f'repos/{secrets.test_repo}/releases', secrets.bot_token)
     releases = json.loads(r.text)
+    print(releases)
     for release in releases:
         if release['tag_name'] == release_tag:
             return release

@@ -323,6 +323,7 @@ def the_release_is_published(secrets):
 
     expected_tag = f'{secrets.vendor}-{secrets.chart_name}-{secrets.chart_version}-test-pr{secrets.pr_number}'
     try:
+        logger.info(f"Checking '{expected_tag}' was released")
         release = get_release_by_tag(secrets, expected_tag)
         logger.info(f"Released '{expected_tag}' successfully")
 
