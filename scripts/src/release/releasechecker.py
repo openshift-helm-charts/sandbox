@@ -31,7 +31,7 @@ import requests
 import semver
 import sys
 from release import release_info
-from release import releasechecker
+from release import releaser
 
 sys.path.append('../')
 from owners import checkuser
@@ -46,7 +46,6 @@ def check_if_only_charts_are_included(api_url):
     chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
     page_number = 1
     max_page_size,page_size = 100,100
-    non_chart_file_found=False
     file_count = 0
 
     while page_size == max_page_size:
@@ -61,13 +60,11 @@ def check_if_only_charts_are_included(api_url):
 
         for f in files:
             file_path = f["filename"]
-            match = pattern.match(file_path)
+            match = chart_pattern.match(file_path)
             if not match:
                 return False
 
     return True
-
-
 
 
 def check_if_only_version_file_is_modified(api_url):
@@ -102,10 +99,10 @@ def check_if_release_branch(sender,pr_branch,pr_title,api_url):
     if not sender==os.environ.get("BOT_NAME"):
         print(f"Sender indicates PR is not part of a release: {sender}")
         return False
-    if not pr_branch.startsWith(releasechecker.DEV_PR_BRANCH_NAME_PREFIX):
+    if not pr_branch.startsWith(releaser.DEV_PR_BRANCH_NAME_PREFIX):
         print(f"PR branch indicates PR is not part of a release: {pr_branch}")
         return False
-    if not pr_title.startsWith(releasechecker.DEV_PR_BRANCH_TITLE_PREFIX):
+    if not pr_title.startsWith(releaser.DEV_PR_BRANCH_TITLE_PREFIX):
         print(f"PR title indicates PR is not part of a release: {pr_title}")
         return False
 
