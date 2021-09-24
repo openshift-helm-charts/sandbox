@@ -22,6 +22,10 @@ GITHUB_BASE_URL = 'https://api.github.com'
 CHARTS_REPO = f"{os.environ.get('REPOSITORY_ORGANIZATION')}/charts"
 DEVELOPMENT_REPO = f"{os.environ.get('REPOSITORY_ORGANIZATION')}/development"
 
+PR_CREATED = "PR_CREATED"
+PR_NOT_NEEDED = "PR_NOT_NEEDED"
+PR_FAILED = "PR_FAILED"
+
 # GitHub actions bot email for git email
 GITHUB_ACTIONS_BOT_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com'
 
@@ -101,33 +105,15 @@ def create_pr(branch_name,skip_files,repository,message):
         j = json.loads(r.text)
         if 'number' in j:
             print(f"pull request info: {j['number']}")
+            return PR_CREATED
         else:
             print(f"Unexpected response from PR. status code: {r.status_code}, text: {j}")
+            return PR_FAILED
 
     else:
         print(f"no changes required for {repository}")
+        return PR_NOT_NEEDED
 
-
-
-def commit_and_push(version,skip_files,repo,branch,message):
-
-    repo = Repo(os.getcwd())
-
-    print(f"checkout {branch}")
-    repo.git.checkout(branch)
-
-    if add_changes(repo,skip_files):
-
-        print(f"commit changes with message: Version-{version} {message}")
-        repo.index.commit(f"Version-{version} {message}")
-
-        print(f"push the branch to {repo}")
-        bot_name, bot_token = get_bot_name_and_token()
-
-        repo.git.push(f'https://x-access-token:{bot_token}@github.com/{repo}',
-                  f'HEAD:refs/heads/{branch}', '-f')
-    else:
-        print(f"no changes required for {repo}")
 
 
 def add_changes(repo,skip_files):

@@ -31,6 +31,8 @@ from github import gitutils
 
 SCHEDULE_YAML_FILE=".github/workflows/schedule.yml"
 BUILD_YAML_FILE=".github/workflows/build.yml"
+DEV_PR_BRANCH_NAME_PREFIX="Auto:Release-"
+DEV_PR_BRANCH_TITLE_PREFIX="Workflow and script updates from development repository"
 
 SCHEDULE_INSERT = [
     '  # Daily trigger to check updates',
@@ -149,7 +151,15 @@ def main():
     print(f"create charts pull request")
     branch_name = f"Release-{args.version}"
     message = f'Workflow and script updates from development repository {branch_name}'
-    #gitutils.create_pr(branch_name,[],gitutils.CHARTS_REPO,message)
+    outcome = gitutils.create_pr(branch_name,[],gitutils.CHARTS_REPO,message)
+    if outcome == gitutils.PR_CREATED:
+        print(f'::set-output name=charts_pr_created::true')
+    elif outcome == gitutils.PR_NOT_NEEDED:
+        print(f'::set-output name=charts_pr_not_needed::true')
+    else:
+        print(f'::set-output name=charts_pr_error::true')
+        os.chdir(start_directory)
+        return
 
     os.chdir(start_directory)
 
@@ -158,8 +168,15 @@ def main():
 
     os.chdir(args.dev_dir)
     print(f"create development pull request")
-    message = f'Workflow and script updates from development repository {branch_name}'
-    gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],gitutils.DEVELOPMENT_REPO,message)
+    branch_name = f"{DEV_PR_BRANCH_NAME_PREFIX}{args.version}"
+    message = f'{DEV_PR_BRANCH_TITLE_PREFIX} {branch_name}'
+    outcome = gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],gitutils.DEVELOPMENT_REPO,message)
+    if outcome == gitutils.PR_CREATED:
+        print(f'::set-output name=dev_pr_created::true')
+    elif outcome == gitutils.PR_NOT_NEEDED:
+        print(f'::set-output name=dev_pr_not_needed::true')
+    else:
+        print(f'::set-output name=dev_pr_error::true')
 
     os.chdir(start_directory)
 
