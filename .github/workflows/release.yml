@@ -60,14 +60,14 @@ jobs:
         id: reflect_on_pr_content
         run: |
           # Determine if and how processing should continue
-          if [ "${{ steps.check_created_release_pr.outputs.dev_release_branch }}" = "true" ]; then
+          if [ "${{ steps.check_created_release_pr.outputs.dev_release_branch }}" = 'true' ]; then
              echo "PR created by release processing"
              echo "::set-output name=merge::true"
              echo "::set-output name=release::true"
-          elif [ "${{ steps.check_only_version_in_PR_and_authorized.outputs.dev_release_branch }}" = "true" ]; then
+          elif [ "${{ steps.check_only_version_in_PR_and_authorized.outputs.dev_release_branch }}" = 'true' ]; then
              echo "PR contains only release_info file"
              echo ":set-output name=create_pull_requests::true"
-          elif [ "${{ steps.check_only_version_in_PR_and_authorized.outputs.sender_not_authorized }}" = "true" ]; then
+          elif [ "${{ steps.check_only_version_in_PR_and_authorized.outputs.sender_not_authorized }}" = 'true' ]; then
              echo "Unauthorized Request"
              exit 1
           else
@@ -76,7 +76,7 @@ jobs:
           fi
 
       - name: Checkout charts repo
-        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == "true" }}
+        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
         uses: actions/checkout@v2
         with:
           repository: ${{ env.REPOSITORY_ORGANIZATION }}/charts
@@ -84,7 +84,7 @@ jobs:
           path: "charts-repo"
 
       - name: Checkout development repo
-        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == "true" }}
+        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
         uses: actions/checkout@v2
         with:
           repository: ${{ env.REPOSITORY_ORGANIZATION }}/development
@@ -92,13 +92,13 @@ jobs:
           path: "dev-repo"
 
       - name: Set up Python 3.x Part 1
-        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == "true" }}
+        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
         uses: actions/setup-python@v2
         with:
           python-version: "3.9"
 
       - name: Set up Python scripts on main branch
-        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == "true" }}
+        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
         run: |
           # set up python scripts
           echo "set up python script in $PWD"
@@ -108,7 +108,7 @@ jobs:
 
       - name: Check if version updated
         id: check_version_updated
-        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == "true" }}
+        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
         run: |
           # check if version file was changed
           ve1/bin/release-checker --version=${{ steps.check_version_in_PR.outputs.PR_version }}
@@ -129,13 +129,13 @@ jobs:
         if: ${{ steps.check_version_updated.outputs.release_updated == 'true' }}
         run: |
           # determine what should be done next
-          if [ "${{ steps.sync_repositories.charts_pr_error }}" = "true" ] || [ "${{ steps.sync_repositories.dev_pr_error }}" = "true" ]; then
+          if [ "${{ steps.sync_repositories.charts_pr_error }}" = 'true' ] || [ "${{ steps.sync_repositories.dev_pr_error }}" = 'true' ]; then
               echo "Errors creating pull requests"
               exit 1
-          if [ "${{ steps.sync_repositories.charts_pr_created }}" = "true" ] || [ "${{ steps.sync_repositories.charts_pr_created }}" = "true" ]; then
+          if [ "${{ steps.sync_repositories.charts_pr_created }}" = 'true' ] || [ "${{ steps.sync_repositories.charts_pr_created }}" = 'true' ]; then
               echo "At least one PR was created - we have a release"
               echo "::set-output name=merge::true"
-          if [ "${{ steps.sync_repositories.dev_pr_not_needed }}" = "true" ]; then
+          if [ "${{ steps.sync_repositories.dev_pr_not_needed }}" = 'true' ]; then
               echo "No charts so create release"
               echo "::set-output name=release::true"
           fi
