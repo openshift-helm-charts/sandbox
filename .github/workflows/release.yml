@@ -111,7 +111,7 @@ jobs:
         if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
         run: |
           # check if version file was changed
-          ./ve1/bin/release-checker --version=${{ steps.check_version_in_PR.outputs.PR_version }}
+          ./ve1/bin/release-checker --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}
 
       - name: Sync the repositories
         id: sync_repositories
@@ -142,8 +142,13 @@ jobs:
 
       - name: Check Values
         run: |
-          echo "steps.relflect_progress.outputs.merge : ${{ steps.relflect_progress.outputs.merge }}"
-          echo "steps.reflect_on_pr_content.outputs.merge :  ${{ steps.reflect_on_pr_content.outputs.merge }}"
+          echo "steps.relflect_progress.outputs.merge: ${{ steps.relflect_progress.outputs.merge }}"
+          echo "steps.reflect_on_pr_content.outputs.merge:  ${{ steps.reflect_on_pr_content.outputs.merge }}"
+          echo "steps.check_version_updated.outputs.release_updated: ${{ steps.check_version_updated.outputs.release_updated }}"
+          echo "steps.reflect_on_pr_content.outputs.create_pull_requests: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests }}"
+          echo "steps.reflect_progress.outputs.release:  ${{ steps.reflect_progress.outputs.release }}"
+          echo "steps.reflect_on_pr_content.release:  ${{ steps.reflect_on_pr_content.outputs.release }}"
+          echo "steps.check_only_version_in_PR_and_authorized.outputs.PR_version: ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}"
 
       - name: Approve PR
         id: approve_pr

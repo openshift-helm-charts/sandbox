@@ -139,7 +139,7 @@ def main():
                         help="PR title")
 
     args = parser.parse_args()
-    if args.sender and check_if_release_branch(args.sender,args.pr_branch,args.pr_title,args.api_url):
+    if args.pr_branch and check_if_release_branch(args.sender,args.pr_branch,args.pr_title,args.api_url):
         print(f'::set-output name=dev_release_branch::true')
     elif args.api_url and check_if_only_version_file_is_modified(args.api_url):
         ## should be on PR branch
@@ -163,4 +163,6 @@ def main():
                 print(f'::set-output name=release_updated::true')
             else:
                 print(f'[ERROR] Release found in PR files is not new  : {args.version}.')
+        else:
+            print(f'[ERROR] no valid parameter set to release checker.')
 
