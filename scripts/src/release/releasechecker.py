@@ -131,7 +131,7 @@ def main():
                         help="API URL for the pull request")
     parser.add_argument("-v", "--version", dest="version", type=str, required=False,
                         help="Version to compare")
-    parser.add_argument("-s", "--sender", dest="sender", type=str, required=False,
+    parser.add_argument("-s", "--", dest="sender", type=str, required=False,
                         help="sender of the PR")
     parser.add_argument("-b", "--pr_branch", dest="pr_branch", type=str, required=False,
                         help="PR branch name")
@@ -139,6 +139,13 @@ def main():
                         help="PR title")
 
     args = parser.parse_args()
+
+    print(f"[INFO] arg api-url : {args.api_url}")
+    print(f"[INFO] arg version : {args.version}")
+    print(f"[INFO] arg sender : {args.sender}")
+    print(f"[INFO] arg pr_branch : {args.pr_branch}")
+    print(f"[INFO] arg pr_title : {args.pr_title}")
+
     if args.pr_branch and check_if_release_branch(args.sender,args.pr_branch,args.pr_title,args.api_url):
         print(f'::set-output name=dev_release_branch::true')
     elif args.api_url and check_if_only_version_file_is_modified(args.api_url):
