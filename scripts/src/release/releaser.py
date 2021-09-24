@@ -31,7 +31,7 @@ from github import gitutils
 
 SCHEDULE_YAML_FILE=".github/workflows/schedule.yml"
 BUILD_YAML_FILE=".github/workflows/build.yml"
-DEV_PR_BRANCH_NAME_PREFIX="Auto:Release-"
+DEV_PR_BRANCH_NAME_PREFIX="Auto-Release-"
 DEV_PR_BRANCH_TITLE_PREFIX="Workflow and script updates from development repository"
 
 SCHEDULE_INSERT = [
