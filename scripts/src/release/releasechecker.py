@@ -99,10 +99,10 @@ def check_if_release_branch(sender,pr_branch,pr_title,api_url):
     if not sender==os.environ.get("BOT_NAME"):
         print(f"Sender indicates PR is not part of a release: {sender}")
         return False
-    if not pr_branch.startsWith(releaser.DEV_PR_BRANCH_NAME_PREFIX):
+    if not pr_branch.startswith(releaser.DEV_PR_BRANCH_NAME_PREFIX):
         print(f"PR branch indicates PR is not part of a release: {pr_branch}")
         return False
-    if not pr_body.startsWith(releaser.DEV_PR_BRANCH_BODY_PREFIX):
+    if not pr_body.startswith(releaser.DEV_PR_BRANCH_BODY_PREFIX):
         print(f"PR title indicates PR is not part of a release: {pr_title}")
         return False
 
