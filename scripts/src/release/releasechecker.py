@@ -94,7 +94,7 @@ def check_if_only_version_file_is_modified(api_url):
 
     return version_file_found
 
-def check_if_release_branch(sender,pr_branch,pr_title,api_url):
+def check_if_release_branch(sender,pr_branch,pr_body,api_url):
 
     if not sender==os.environ.get("BOT_NAME"):
         print(f"Sender indicates PR is not part of a release: {sender}")
@@ -103,7 +103,7 @@ def check_if_release_branch(sender,pr_branch,pr_title,api_url):
         print(f"PR branch indicates PR is not part of a release: {pr_branch}")
         return False
     if not pr_body.startswith(releaser.DEV_PR_BRANCH_BODY_PREFIX):
-        print(f"PR title indicates PR is not part of a release: {pr_title}")
+        print(f"PR title indicates PR is not part of a release: {pr_body}")
         return False
 
     return check_if_only_charts_are_included(api_url)

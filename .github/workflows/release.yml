@@ -65,11 +65,11 @@ jobs:
           # Determine if and how processing should continue
           if [ "${{ steps.check_created_release_pr.dev_release_branch }}" = 'true' ]; then
              echo "PR created by release processing"
-             echo "::set-output name=merge::true"
-             echo "::set-output name=release::true"
+             echo '::set-output name=merge::true'
+             echo '::set-output name=release::true'
           elif [ "${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_includes_release_only }}" = 'true' ]; then
              echo "PR contains only release_info file"
-             echo "::set-output name=create_pull_requests::true"
+             echo '::set-output name=create_pull_requests::true'
           elif [ "${{ steps.check_only_version_in_PR_and_authorized.outputs.sender_not_authorized }}" = 'true' ]; then
              echo "Unauthorized Request"
              exit 1
@@ -147,16 +147,16 @@ jobs:
           fi
           if [ "${{ steps.sync_repositories.outputs.charts_pr_created }}" = 'true' ] || [ "${{ steps.sync_repositories.outputs.charts_pr_created }}" = 'true' ]; then
               echo "At least one PR was created - just merge this one"
-              echo "::set-output name=merge::true"
+              echo '::set-output name=merge::true'
           fi
           if [ "${{ steps.sync_repositories.outputs.dev_pr_not_needed }}" = 'true' ]; then
-              echo "No charts so create release"
-              echo "::set-output name=release::true"
+              echo "No dev PR so create release"
+              echo '::set-output name=release::true'
           fi
 
       - name: Check Values 2
         run: |
-          echo "steps.relflect_progress.outputs.merge: ${{ steps.relflect_progress.outputs.merge }}"
+          echo "steps.reflect_progress.outputs.merge: ${{ steps.reflect_progress.outputs.merge }}"
           echo "steps.reflect_on_pr_content.outputs.merge:  ${{ steps.reflect_on_pr_content.outputs.merge }}"
           echo "steps.check_version_updated.outputs.release_updated: ${{ steps.check_version_updated.outputs.release_updated }}"
           echo "steps.reflect_on_pr_content.outputs.create_pull_requests: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests }}"
@@ -181,7 +181,7 @@ jobs:
           MERGE_LABELS: ""
 
       - name: Check for PR merge
-        if: ${{ steps.relflect_progress.outputs.merge == 'true' }} ||  ${{ steps.reflect_on_pr_content.outputs.merge == 'true' }}
+        if: ${{ steps.reflect_progress.outputs.merge == 'true' }} ||  ${{ steps.reflect_on_pr_content.outputs.merge == 'true' }}
         run: |
           ./ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href }}
 
