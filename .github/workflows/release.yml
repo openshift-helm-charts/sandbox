@@ -63,7 +63,7 @@ jobs:
         id: reflect_on_pr_content
         run: |
           # Determine if and how processing should continue
-          if [ "${{ steps.check_created_release_pr.dev_release_branch }}" = 'true' ]; then
+          if [ "${{ steps.check_created_release_pr.outputs.dev_release_branch }}" = 'true' ]; then
              echo "PR created by release processing"
              echo '::set-output name=merge::true'
              echo '::set-output name=release::true'
@@ -122,7 +122,7 @@ jobs:
           echo "steps.check_version_updated.outputs.release_updated: ${{ steps.check_version_updated.outputs.release_updated }}"
           echo "steps.reflect_on_pr_content.outputs.create_pull_requests: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests }}"
           echo "steps.reflect_progress.outputs.release:  ${{ steps.reflect_progress.outputs.release }}"
-          echo "steps.reflect_on_pr_content.release:  ${{ steps.reflect_on_pr_content.outputs.release }}"
+          echo "steps.reflect_on_pr_content.outputs.release:  ${{ steps.reflect_on_pr_content.outputs.release }}"
           echo "steps.check_only_version_in_PR_and_authorized.outputs.PR_version: ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}"
 
       - name: Sync the repositories
