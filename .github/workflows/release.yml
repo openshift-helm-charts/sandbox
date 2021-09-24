@@ -142,9 +142,11 @@ jobs:
           if [ "${{ steps.sync_repositories.charts_pr_error }}" = 'true' ] || [ "${{ steps.sync_repositories.dev_pr_error }}" = 'true' ]; then
               echo "Errors creating pull requests"
               exit 1
+          fi
           if [ "${{ steps.sync_repositories.charts_pr_created }}" = 'true' ] || [ "${{ steps.sync_repositories.charts_pr_created }}" = 'true' ]; then
-              echo "At least one PR was created - we have a release"
+              echo "At least one PR was created - just merge this one"
               echo "::set-output name=merge::true"
+          fi
           if [ "${{ steps.sync_repositories.dev_pr_not_needed }}" = 'true' ]; then
               echo "No charts so create release"
               echo "::set-output name=release::true"
