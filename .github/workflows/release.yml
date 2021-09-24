@@ -166,7 +166,7 @@ jobs:
 
       - name: Approve PR
         id: approve_pr
-        if: ${{ steps.relflect_progress.outputs.merge == 'true'|| steps.reflect_on_pr_content.outputs.merge == 'true' }}
+        if: ${{ steps.relflect_progress.outputs.merge == 'true' || steps.reflect_on_pr_content.outputs.merge == 'true' }}
         uses: hmarr/auto-approve-action@v2
         with:
           github-token:  ${{ secrets.GITHUB_TOKEN }}
@@ -190,7 +190,7 @@ jobs:
         if: ${{ steps.reflect_progress.outputs.release == 'true' || steps.reflect_on_pr_content.outputs.release == 'true' }}
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.check_version_in_PR.outputs.PR_version }}
-          body: ${{ steps.check_version_in_PR.outputs.PR_release_body }}
+          tag_name: ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}
+          body: ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
