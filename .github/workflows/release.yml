@@ -166,14 +166,14 @@ jobs:
 
       - name: Approve PR
         id: approve_pr
-        if: ${{ steps.relflect_progress.outputs.merge == 'true' }} ||  ${{ steps.reflect_on_pr_content.outputs.merge == 'true' }}
+        if: ${{ steps.relflect_progress.outputs.merge == 'true'|| steps.reflect_on_pr_content.outputs.merge == 'true' }}
         uses: hmarr/auto-approve-action@v2
         with:
           github-token:  ${{ secrets.GITHUB_TOKEN }}
 
       - name: Merge PR
         id: merge_pr
-        if: ${{ steps.reflect_progress.outputs.merge == 'true' }} ||  ${{ steps.reflect_on_pr_content.outputs.merge == 'true' }}
+        if: ${{ steps.reflect_progress.outputs.merge == 'true' || steps.reflect_on_pr_content.outputs.merge == 'true' }}
         uses: pascalgn/automerge-action@v0.13.1
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
@@ -181,13 +181,13 @@ jobs:
           MERGE_LABELS: ""
 
       - name: Check for PR merge
-        if: ${{ steps.reflect_progress.outputs.merge == 'true' }} ||  ${{ steps.reflect_on_pr_content.outputs.merge == 'true' }}
+        if: ${{ steps.reflect_progress.outputs.merge == 'true' || steps.reflect_on_pr_content.outputs.merge == 'true' }}
         run: |
           ./ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href }}
 
       - name: Create the the release
         id: create_release
-        if: ${{ steps.reflect_progress.outputs.release == 'true' }} ||  ${{ steps.reflect_on_pr_content.outputs.release == 'true' }}
+        if: ${{ steps.reflect_progress.outputs.release == 'true' || steps.reflect_on_pr_content.outputs.release == 'true' }}
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.check_version_in_PR.outputs.PR_version }}
