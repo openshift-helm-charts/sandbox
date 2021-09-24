@@ -156,7 +156,7 @@ jobs:
               echo "No dev PR so create release"
               echo '::set-output release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}'
               echo '::set-output release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}'
-          else if [ "${{ steps.reflect_on_pr_content.outputs.release }}" = 'true' ]; then
+          elif [ "${{ steps.reflect_on_pr_content.outputs.release }}" = 'true' ]; then
               echo "Dev PR so create release"
               echo '::set-output release_body::${{ github.event.pull_request.body }}'
               echo '::set-output release_tag::${{ steps.check_created_release_pr.outputs.PR_version }}'
