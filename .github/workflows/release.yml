@@ -141,7 +141,6 @@ jobs:
 
       - name: reflect on release creation progress
         id: reflect_progress
-        if: ${{ steps.check_version_updated.outputs.release_updated == 'true' }}
         run: |
           # determine what should be done next
           if [ "${{ steps.sync_repositories.outputs.charts_pr_error }}" = 'true' ] || [ "${{ steps.sync_repositories.outputs.dev_pr_error }}" = 'true' ]; then
