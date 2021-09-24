@@ -131,14 +131,13 @@ jobs:
         env:
           BOT_NAME: ${{ secrets.BOT_NAME }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          PR_BODY: ${{ steps.check_version_in_PR.outputs.PR_release_body }}
         run: |
           # sync the repositories
           ./ve1/bin/releaser --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}\
                              --pr_dir="./pr-branch" \
                              --development_dir="./dev-repo" \
                              --charts_dir="./charts-repo" \
-                             --dev_pr_body = ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}
+                             --dev_pr_body="${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}"
 
       - name: reflect on release creation progress
         id: reflect_progress
