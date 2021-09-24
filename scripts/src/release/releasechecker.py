@@ -131,7 +131,7 @@ def main():
                         help="API URL for the pull request")
     parser.add_argument("-v", "--version", dest="version", type=str, required=False,
                         help="Version to compare")
-    parser.add_argument("-s", "--", dest="sender", type=str, required=False,
+    parser.add_argument("-s", "--sender", dest="sender", type=str, required=False,
                         help="sender of the PR")
     parser.add_argument("-b", "--pr_branch", dest="pr_branch", type=str, required=False,
                         help="PR branch name")
