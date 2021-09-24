@@ -149,7 +149,7 @@ jobs:
               exit 1
           fi
           if [ "${{ steps.sync_repositories.outputs.charts_pr_created }}" = 'true' ] || [ "${{ steps.sync_repositories.outputs.charts_pr_created }}" = 'true' ]; then
-              echo "At least one PR was created - just merge this one"
+              echo "At least one PR was created - merge this one"
               echo '::set-output name=merge::true'
           fi
           if [ "${{ steps.sync_repositories.outputs.dev_pr_not_needed }}" = 'true' ]; then
@@ -157,9 +157,10 @@ jobs:
               echo '::set-output release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}'
               echo '::set-output release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}'
           else if [ "${{ steps.reflect_on_pr_content.outputs.release }}" = 'true' ]; then
-              echo "Dev PR ro release"
+              echo "Dev PR so create release"
               echo '::set-output release_body::${{ github.event.pull_request.body }}'
               echo '::set-output release_tag::${{ steps.check_created_release_pr.outputs.PR_version }}'
+          fi
 
       - name: Check Values 2
         run: |
