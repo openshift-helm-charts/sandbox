@@ -147,6 +147,7 @@ def main():
     print(f"[INFO] arg pr_body : {args.pr_body}")
 
     if args.pr_branch and check_if_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url):
+        print('[INFO] Dev release pull request found')
         print(f'::set-output name=dev_release_branch::true')
     elif args.api_url and check_if_only_version_file_is_modified(args.api_url):
         ## should be on PR branch

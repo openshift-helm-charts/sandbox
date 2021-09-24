@@ -172,10 +172,13 @@ def main():
     message = f'{DEV_PR_BRANCH_BODY_PREFIX} {branch_name}'
     outcome = gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],gitutils.DEVELOPMENT_REPO,message)
     if outcome == gitutils.PR_CREATED:
+        print("Dev PR successfully created.")
         print(f'::set-output name=dev_pr_created::true')
     elif outcome == gitutils.PR_NOT_NEEDED:
+        print("Dev PR not needed.")
         print(f'::set-output name=dev_pr_not_needed::true')
     else:
+        print("Dev PR errored.")
         print(f'::set-output name=dev_pr_error::true')
 
     os.chdir(start_directory)
