@@ -153,12 +153,12 @@ jobs:
           fi
           if [ "${{ steps.sync_repositories.outputs.dev_pr_not_needed }}" = 'true' ]; then
               echo "No dev PR so create release"
-              echo '::set-output release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}'
-              echo '::set-output release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}'
+              echo '::set-output name=release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}'
+              echo '::set-output name=release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}'
           elif [ "${{ steps.reflect_on_pr_content.outputs.release }}" = 'true' ]; then
               echo "Dev PR so create release"
-              echo '::set-output release_body::${{ github.event.pull_request.body }}'
-              echo '::set-output release_tag::${{ steps.check_created_release_pr.outputs.PR_version }}'
+              echo '::set-output name=release_body::${{ github.event.pull_request.body }}'
+              echo '::set-output name=release_tag::${{ steps.check_created_release_pr.outputs.PR_version }}'
           fi
 
       - name: Check Values 2
