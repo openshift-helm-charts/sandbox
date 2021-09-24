@@ -169,7 +169,7 @@ def main():
     os.chdir(args.dev_dir)
     print(f"create development pull request")
     branch_name = f"{DEV_PR_BRANCH_NAME_PREFIX}{args.version}"
-    message = f'{DEV_PR_BRANCH_TITLE_PREFIX} {branch_name}'
+    message = f'{DEV_PR_BRANCH_BODY_PREFIX} {branch_name}'
     outcome = gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],gitutils.DEVELOPMENT_REPO,message)
     if outcome == gitutils.PR_CREATED:
         print(f'::set-output name=dev_pr_created::true')
