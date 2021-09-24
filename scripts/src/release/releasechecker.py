@@ -29,6 +29,7 @@ import argparse
 import json
 import requests
 import semver
+import sys
 from release import release_info
 from release import releasechecker
 
