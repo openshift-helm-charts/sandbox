@@ -134,7 +134,11 @@ jobs:
           PR_BODY: ${{ steps.check_version_in_PR.outputs.PR_release_body }}
         run: |
           # sync the repositories
-          ./ve1/bin/releaser --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }} --pr_dir="./pr-branch" --development_dir="./dev-repo" --charts_dir="./charts-repo"
+          ./ve1/bin/releaser --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}\
+                             --pr_dir="./pr-branch" \
+                             --development_dir="./dev-repo" \
+                             --charts_dir="./charts-repo" \
+                             --dev_pr_body = ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}
 
       - name: reflect on release creation progress
         id: reflect_progress
@@ -151,8 +155,12 @@ jobs:
           fi
           if [ "${{ steps.sync_repositories.outputs.dev_pr_not_needed }}" = 'true' ]; then
               echo "No dev PR so create release"
-              echo '::set-output name=release::true'
-          fi
+              echo '::set-output release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}'
+              echo '::set-output release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}'
+          else if [ "${{ steps.reflect_on_pr_content.outputs.release }}" = 'true' ]; then
+              echo "Dev PR ro release"
+              echo '::set-output release_body::${{ github.event.pull_request.body }}'
+              echo '::set-output release_tag::${{ steps.check_created_release_pr.outputs.PR_version }}'
 
       - name: Check Values 2
         run: |
@@ -163,10 +171,12 @@ jobs:
           echo "steps.reflect_progress.outputs.release:  ${{ steps.reflect_progress.outputs.release }}"
           echo "steps.reflect_on_pr_content.outputs.release:  ${{ steps.reflect_on_pr_content.outputs.release }}"
           echo "steps.check_only_version_in_PR_and_authorized.outputs.PR_version: ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}"
+          echo "steps.reflect_progress.outputs.releasetag: {{ steps.reflect_progress.outputs.releasetag }}"
+          echo "steps.reflect_progress.outputs.releasetag: {{ steps.reflect_progress.outputs.releasetag }}"
 
       - name: Approve PR
         id: approve_pr
-        if: ${{ steps.relflect_progress.outputs.merge == 'true'|| steps.reflect_on_pr_content.outputs.merge == 'true' }}
+        if: ${{ steps.relflect_progress.outputs.merge == 'true' || steps.reflect_on_pr_content.outputs.merge == 'true' }}
         uses: hmarr/auto-approve-action@v2
         with:
           github-token:  ${{ secrets.GITHUB_TOKEN }}
@@ -187,10 +197,10 @@ jobs:
 
       - name: Create the the release
         id: create_release
-        if: ${{ steps.reflect_progress.outputs.release == 'true' || steps.reflect_on_pr_content.outputs.release == 'true' }}
+        if: ${{ steps.reflect_progress.outputs.release_tag  != '' }}
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.check_version_in_PR.outputs.PR_version }}
-          body: ${{ steps.check_version_in_PR.outputs.PR_release_body }}
+          tag_name: ${{ steps.reflect_progress.outputs.release_tag }}
+          body: ${{ steps.reflect_progress.outputs.release_body }}
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}

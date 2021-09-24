@@ -136,6 +136,8 @@ def main():
                         help="Directory of charts code.")
     parser.add_argument("-p", "--pr_dir", dest="pr_dir", type=str, required=True,
                         help="Directory of pull request code.")
+    parser.add_argument("-b", "--dev_pr_body", dest="dev_pr_body", type=str, required=True,
+                        help="Body to use for the dev PR")
     args = parser.parse_args()
 
     start_directory = os.getcwd()
@@ -169,8 +171,7 @@ def main():
     os.chdir(args.dev_dir)
     print(f"create development pull request")
     branch_name = f"{DEV_PR_BRANCH_NAME_PREFIX}{args.version}"
-    message = f'{DEV_PR_BRANCH_BODY_PREFIX} {branch_name}'
-    outcome = gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],gitutils.DEVELOPMENT_REPO,message)
+    outcome = gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],gitutils.DEVELOPMENT_REPO,args.dev_pr_body)
     if outcome == gitutils.PR_CREATED:
         print("Dev PR successfully created.")
         print(f'::set-output name=dev_pr_created::true')

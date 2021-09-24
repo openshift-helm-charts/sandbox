@@ -102,7 +102,8 @@ def check_if_release_branch(sender,pr_branch,pr_body,api_url):
     if not pr_branch.startswith(releaser.DEV_PR_BRANCH_NAME_PREFIX):
         print(f"PR branch indicates PR is not part of a release: {pr_branch}")
         return False
-    if not pr_body.startswith(releaser.DEV_PR_BRANCH_BODY_PREFIX):
+    version = pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
+    if not pr_body.startswith(f"Charts workflow version {version}"):
         print(f"PR title indicates PR is not part of a release: {pr_body}")
         return False
 
@@ -149,6 +150,9 @@ def main():
     if args.pr_branch and check_if_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url):
         print('[INFO] Dev release pull request found')
         print(f'::set-output name=dev_release_branch::true')
+        version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
+        print(f'::set-output name=PR_version::{version}')
+        print(f"::set-output name=PR_release_body::{args.pr_body}")
     elif args.api_url and check_if_only_version_file_is_modified(args.api_url):
         ## should be on PR branch
         if checkuser.verify_user(args.sender):
