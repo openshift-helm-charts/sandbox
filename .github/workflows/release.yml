@@ -50,6 +50,8 @@ jobs:
         id: check_created_release_pr
         working-directory: ./pr-branch
         if: ${{ steps.check_version_in_PR.outputs.PR_includes_release_only != 'true' }}
+        env:
+          BOT_NAME: ${{ secrets.BOT_NAME }}
         run: |
           # check if PR was created as part of release processing
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
