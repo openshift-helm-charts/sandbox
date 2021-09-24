@@ -65,7 +65,7 @@ jobs:
              echo "PR created by release processing"
              echo "::set-output name=merge::true"
              echo "::set-output name=release::true"
-          elif [ "${{ steps.check_only_version_in_PR_and_authorized.outputs.dev_release_branch }}" = 'true' ]; then
+          elif [ "${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_includes_release_only }}" = 'true' ]; then
              echo "PR contains only release_info file"
              echo ":set-output name=create_pull_requests::true"
           elif [ "${{ steps.check_only_version_in_PR_and_authorized.outputs.sender_not_authorized }}" = 'true' ]; then
