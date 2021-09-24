@@ -102,7 +102,7 @@ def check_if_release_branch(sender,pr_branch,pr_title,api_url):
     if not pr_branch.startsWith(releaser.DEV_PR_BRANCH_NAME_PREFIX):
         print(f"PR branch indicates PR is not part of a release: {pr_branch}")
         return False
-    if not pr_title.startsWith(releaser.DEV_PR_BRANCH_TITLE_PREFIX):
+    if not pr_body.startsWith(releaser.DEV_PR_BRANCH_BODY_PREFIX):
         print(f"PR title indicates PR is not part of a release: {pr_title}")
         return False
 
@@ -135,7 +135,7 @@ def main():
                         help="sender of the PR")
     parser.add_argument("-b", "--pr_branch", dest="pr_branch", type=str, required=False,
                         help="PR branch name")
-    parser.add_argument("-t", "--pr_title", dest="pr_title", type=str, required=False,
+    parser.add_argument("-t", "--pr_body", dest="pr_body", type=str, required=False,
                         help="PR title")
 
     args = parser.parse_args()
@@ -144,9 +144,9 @@ def main():
     print(f"[INFO] arg version : {args.version}")
     print(f"[INFO] arg sender : {args.sender}")
     print(f"[INFO] arg pr_branch : {args.pr_branch}")
-    print(f"[INFO] arg pr_title : {args.pr_title}")
+    print(f"[INFO] arg pr_body : {args.pr_body}")
 
-    if args.pr_branch and check_if_release_branch(args.sender,args.pr_branch,args.pr_title,args.api_url):
+    if args.pr_branch and check_if_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url):
         print(f'::set-output name=dev_release_branch::true')
     elif args.api_url and check_if_only_version_file_is_modified(args.api_url):
         ## should be on PR branch

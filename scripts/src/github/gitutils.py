@@ -97,7 +97,7 @@ def create_pr(branch_name,skip_files,repository,message):
 
         print("make the pull request")
         data = {'head': branch_name, 'base': 'test',
-                'title': branch_name, 'body': f'{message} {branch_name}'}
+                'title': branch_name, 'body': f'{message}'}
 
         r = github_api(
             'post', f'repos/{repository}/pulls', bot_token, json=data)
