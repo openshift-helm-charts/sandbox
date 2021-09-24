@@ -48,6 +48,7 @@ jobs:
 
       - name: Check if PR created as part of release process
         id: check_created_release_pr
+        working-directory: ./pr-branch
         if: ${{ steps.check_version_in_PR.outputs.PR_includes_release_only != 'true' }}
         run: |
           # check if PR was created as part of release processing
