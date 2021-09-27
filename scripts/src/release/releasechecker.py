@@ -22,14 +22,50 @@ results:
         PR_release_image : The name of the image from the version file from main branch.
 """
 
+
 import re
+import os
 import argparse
 import json
 import requests
 import semver
+import sys
 from release import release_info
+from release import releaser
+
+sys.path.append('../')
+from owners import checkuser
 
 VERSION_FILE = "release/release_info.json"
+TYPE_MATCH_EXPRESSION = "(partners|redhat|community)"
+
+def check_if_only_charts_are_included(api_url):
+
+    files_api_url = f'{api_url}/files'
+    headers = {'Accept': 'application/vnd.github.v3+json'}
+    chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
+    page_number = 1
+    max_page_size,page_size = 100,100
+    file_count = 0
+
+    while page_size == max_page_size:
+
+        files_api_query = f'{files_api_url}?per_page={page_size}&page={page_number}'
+        print(f"Query files : {files_api_query}")
+        pr_files = requests.get(files_api_query,headers=headers)
+        files = pr_files.json()
+        page_size = len(files)
+        file_count += page_size
+        page_number += 1
+
+        for f in files:
+            file_path = f["filename"]
+            match = chart_pattern.match(file_path)
+            if not match:
+                return False
+
+    return True
+
 
 def check_if_only_version_file_is_modified(api_url):
     # api_url https://api.github.com/repos/<organization-name>/<repository-name>/pulls/<pr_number>
@@ -58,6 +94,29 @@ def check_if_only_version_file_is_modified(api_url):
 
     return version_file_found
 
+def check_if_release_branch(sender,pr_branch,pr_body,api_url):
+
+    if not sender==os.environ.get("BOT_NAME"):
+        print(f"Sender indicates PR is not part of a release: {sender}")
+        return False
+
+    if not pr_branch.startswith(releaser.DEV_PR_BRANCH_NAME_PREFIX):
+        print(f"PR branch indicates PR is not part of a release: {pr_branch}")
+        return False
+
+    version = pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
+    if not semver.VersionInfo.isvalid(version):
+        print(f"Release part ({version}) of branch name {pr_branch} is not a valid semantic version.")
+        return False
+    
+    if not pr_body.startswith(f"Charts workflow version {version}"):
+        print(f"PR title indicates PR is not part of a release: {pr_body}")
+        return False
+
+    return check_if_only_charts_are_included(api_url)
+
+
+
 def make_release_body(version, release_info):
     body = f"Charts workflow version {version} <br><br>"
     body += "This version includes:<br>"
@@ -79,28 +138,51 @@ def main():
                         help="API URL for the pull request")
     parser.add_argument("-v", "--version", dest="version", type=str, required=False,
                         help="Version to compare")
+    parser.add_argument("-s", "--sender", dest="sender", type=str, required=False,
+                        help="sender of the PR")
+    parser.add_argument("-b", "--pr_branch", dest="pr_branch", type=str, required=False,
+                        help="PR branch name")
+    parser.add_argument("-t", "--pr_body", dest="pr_body", type=str, required=False,
+                        help="PR title")
 
     args = parser.parse_args()
-    if args.api_url and check_if_only_version_file_is_modified(args.api_url):
-        ## should be on PR branch
-        version = release_info.get_version("./")
-        version_info = release_info.get_info("./")
-        print(f'[INFO] Release found in PR files : {version}.')
+
+    print(f"[INFO] arg api-url : {args.api_url}")
+    print(f"[INFO] arg version : {args.version}")
+    print(f"[INFO] arg sender : {args.sender}")
+    print(f"[INFO] arg pr_branch : {args.pr_branch}")
+    print(f"[INFO] arg pr_body : {args.pr_body}")
+
+    if args.pr_branch and check_if_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url):
+        print('[INFO] Dev release pull request found')
+        print(f'::set-output name=dev_release_branch::true')
+        version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
         print(f'::set-output name=PR_version::{version}')
-        print(f'::set-output name=PR_release_info::{version_info}')
-        print(f'::set-output name=PR_includes_release::true')
-        make_release_body(version,version_info)
+        print(f"::set-output name=PR_release_body::{args.pr_body}")
+    elif args.api_url:
+        ## should be on PR branch
+        version_only = check_if_only_version_file_is_modified(args.api_url)
+        user_authorized = checkuser.verify_user(args.sender)
+        if version_only and user_authorized:
+            version = release_info.get_version("./")
+            version_info = release_info.get_info("./")
+            print(f'[INFO] Release found in PR files : {version}.')
+            print(f'::set-output name=PR_version::{version}')
+            print(f'::set-output name=PR_release_info::{version_info}')
+            print(f'::set-output name=PR_includes_release_only::true')
+            make_release_body(version,version_info)
+        elif not user_authorized:
+            print(f'[ERROR] sender not authorized : {args.sender}.')
+            print(f'::set-output name=sender_not_authorized::true')
     else:
         version = release_info.get_version("./")
-        version_info = release_info.get_info("./")
         if args.version:
             # should be on main branch
             if semver.compare(args.version,version) > 0 :
                 print(f'[INFO] Release {args.version} found in PR files is newer than: {version}.')
-                print("::set-output name=updated::true")
+                print(f'::set-output name=release_updated::true')
             else:
-                print(f'[INFO] Release found in PR files is not new  : {version_info}.')
+                print(f'[ERROR] Release found in PR files is not new  : {args.version}.')
         else:
-            print(f'::set-output name=PR_version::{version}')
-            print(f'::set-output name=PR_release_image::{version_info}')
-            print("[INFO] PR contains non-release files.")
+            print(f'[ERROR] no valid parameter set to release checker.')
+

@@ -31,6 +31,8 @@ from github import gitutils
 
 SCHEDULE_YAML_FILE=".github/workflows/schedule.yml"
 BUILD_YAML_FILE=".github/workflows/build.yml"
+DEV_PR_BRANCH_NAME_PREFIX="Auto-Release-"
+DEV_PR_BRANCH_BODY_PREFIX="Workflow and script updates from development repository"
 
 SCHEDULE_INSERT = [
     '  # Daily trigger to check updates',
@@ -134,6 +136,8 @@ def main():
                         help="Directory of charts code.")
     parser.add_argument("-p", "--pr_dir", dest="pr_dir", type=str, required=True,
                         help="Directory of pull request code.")
+    parser.add_argument("-b", "--dev_pr_body", dest="dev_pr_body", type=str, required=True,
+                        help="Body to use for the dev PR")
     args = parser.parse_args()
 
     start_directory = os.getcwd()
@@ -147,7 +151,17 @@ def main():
     update_workflow()
 
     print(f"create charts pull request")
-    gitutils.create_charts_pr(args.version)
+    branch_name = f"Release-{args.version}"
+    message = f'Workflow and script updates from development repository {branch_name}'
+    outcome = gitutils.create_pr(branch_name,[],gitutils.CHARTS_REPO,message)
+    if outcome == gitutils.PR_CREATED:
+        print(f'::set-output name=charts_pr_created::true')
+    elif outcome == gitutils.PR_NOT_NEEDED:
+        print(f'::set-output name=charts_pr_not_needed::true')
+    else:
+        print(f'::set-output name=charts_pr_error::true')
+        os.chdir(start_directory)
+        return
 
     os.chdir(start_directory)
 
@@ -155,8 +169,18 @@ def main():
     make_required_changes(args.pr_dir,args.charts_dir,args.dev_dir)
 
     os.chdir(args.dev_dir)
-    print(f"commit development changes")
-    gitutils.commit_development_updates(args.version,release_info.RELEASE_INFO_FILE)
+    print(f"create development pull request")
+    branch_name = f"{DEV_PR_BRANCH_NAME_PREFIX}{args.version}"
+    outcome = gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],gitutils.DEVELOPMENT_REPO,args.dev_pr_body)
+    if outcome == gitutils.PR_CREATED:
+        print("Dev PR successfully created.")
+        print(f'::set-output name=dev_pr_created::true')
+    elif outcome == gitutils.PR_NOT_NEEDED:
+        print("Dev PR not needed.")
+        print(f'::set-output name=dev_pr_not_needed::true')
+    else:
+        print("Dev PR errored.")
+        print(f'::set-output name=dev_pr_error::true')
 
     os.chdir(start_directory)
 

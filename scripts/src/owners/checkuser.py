@@ -83,3 +83,5 @@ def main():
             sys.exit(1)
     else:
         print(f"[INFO] no restricted files found in the PR")
+
+
