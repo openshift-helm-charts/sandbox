@@ -9,7 +9,7 @@ jobs:
     name: Chart Workflow Release
     runs-on: ubuntu-20.04
     env:
-      REPOSITORY_ORGANIZATION: openshift-helm-charts
+      REPOSITORY_ORGANIZATION: mmulholla
     if: |
       github.event.pull_request.draft == false
     steps:
@@ -23,20 +23,6 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           token: ${{ secrets.BOT_TOKEN }}
           path: "pr-branch"
-
-      - name: Checkout charts repo
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ env.REPOSITORY_ORGANIZATION }}/charts
-          token: ${{ secrets.BOT_TOKEN }}
-          path: "charts-repo"
-
-      - name: Checkout development repo
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ env.REPOSITORY_ORGANIZATION }}/development
-          token: ${{ secrets.BOT_TOKEN }}
-          path: "dev-repo"
 
       - name: Set up Python 3.x Part 1
         uses: actions/setup-python@v2
@@ -52,15 +38,69 @@ jobs:
           cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
           cd scripts && ../ve1/bin/python3 setup.py install && cd ..
 
-      - name: Check if only release file in PR
-        id: check_version_in_PR
+      - name: Check if only release file in PR and if user is authorized
+        id: check_only_version_in_PR_and_authorized
         working-directory: ./pr-branch
         run: |
-          # check if release file only is included in PR
-          ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }}
+          # check if release file only is included in PR and if so that user is authorized.
+          ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
+                                  --sender=${{ github.event.sender.login }}
+
+      - name: Check if PR created as part of release process
+        id: check_created_release_pr
+        working-directory: ./pr-branch
+        if: ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_includes_release_only != 'true' }}
+        env:
+          BOT_NAME: ${{ secrets.BOT_NAME }}
+        run: |
+          # check if PR was created as part of release processing
+          ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
+                                  --sender='${{ github.event.sender.login }}' \
+                                  --pr_branch='${{ github.event.pull_request.head.ref }}' \
+                                  --pr_body='${{ github.event.pull_request.body }}'
+
+      - name: Reflect on PR Content
+        id: reflect_on_pr_content
+        env:
+          RELEASE_INFO_ONLY: ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_includes_release_only }}
+          NOT_AUTHORIZED: ${{ steps.check_only_version_in_PR_and_authorized.outputs.sender_not_authorized }}
+          DEV_PR_FOR_RELEASE: ${{ steps.check_created_release_pr.outputs.dev_release_branch }}
+        run: |
+          # Determine if and how processing should continue'
+          if [ ${NOT_AUTHORIZED} = 'true' ]; then
+              echo "Unauthorized Request"
+              exit 1
+          elif [ ${RELEASE_INFO_ONLY} == 'true' ]; then
+             echo "PR contains only release_info file"
+             echo '::set-output name=create_pull_requests::true'
+          elif [ ${DEV_PR_FOR_RELEASE} != 'true' ]; then
+             echo "No release work to do"
+             exit
+          fi
+
+      - name: Checkout charts repo
+        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.REPOSITORY_ORGANIZATION }}/charts
+          token: ${{ secrets.BOT_TOKEN }}
+          path: "charts-repo"
+
+      - name: Checkout development repo
+        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.REPOSITORY_ORGANIZATION }}/development
+          token: ${{ secrets.BOT_TOKEN }}
+          path: "dev-repo"
+
+      - name: Set up Python 3.x Part 1
+        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
 
       - name: Set up Python scripts on main branch
-        if: ${{ steps.check_version_in_PR.outputs.PR_includes_release == 'true' }}
         run: |
           # set up python scripts
           echo "set up python script in $PWD"
@@ -68,41 +108,70 @@ jobs:
           cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
           cd scripts && ../ve1/bin/python3 setup.py install && cd ..
 
-      - name: Check for restricted files and user permissiom
-        id: check_authorization
-        if: ${{ steps.check_version_in_PR.outputs.PR_includes_release == 'true' }}
-        run: |
-          # check for a restricted file and, if found, check user has permissiom
-          ve1/bin/check-user --api-url=${{ github.event.pull_request._links.self.href }} --user=${{ github.event.pull_request.user.login }}
-
       - name: Check if version updated
         id: check_version_updated
-        if: ${{ steps.check_version_in_PR.outputs.PR_includes_release == 'true' }}
+        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
         run: |
           # check if version file was changed
-          ve1/bin/release-checker --version=${{ steps.check_version_in_PR.outputs.PR_version }}
+          ./ve1/bin/release-checker --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}
 
       - name: Sync the repositories
         id: sync_repositories
-        if: ${{ steps.check_version_in_PR.outputs.PR_includes_release == 'true' }}
+        if: ${{ steps.check_version_updated.outputs.release_updated == 'true' }}
         env:
           BOT_NAME: ${{ secrets.BOT_NAME }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          PR_BODY: ${{ steps.check_version_in_PR.outputs.PR_release_body }}
         run: |
           # sync the repositories
-          ve1/bin/releaser --version=${{ steps.check_version_in_PR.outputs.PR_version }} --pr_dir="./pr-branch" --development_dir="./dev-repo" --charts_dir="./charts-repo"
+          ./ve1/bin/releaser --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}\
+                             --pr_dir="./pr-branch" \
+                             --development_dir="./dev-repo" \
+                             --charts_dir="./charts-repo" \
+                             --dev_pr_body="${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}"
+
+      - name: Determine if merge and release are needed
+        id: check_merge_and_release
+        env:
+          REPOSITORIES_SYNCED: ${{ steps.check_version_updated.outputs.release_updated }}
+          CHART_PR_ERROR: ${{ steps.sync_repositories.outputs.charts_pr_error }}
+          DEV_PR_ERROR: ${{ steps.sync_repositories.outputs.dev_pr_error }}
+          DEV_PR_NOT_NEEDED: ${{ steps.sync_repositories.outputs.dev_pr_not_needed }}
+          DEV_PR_FOR_RELEASE: ${{ steps.check_created_release_pr.outputs.dev_release_branch }}
+        run: |
+          # determine what should be done next
+          if [ ${REPOSITORIES_SYNCED} == 'true' ]; then
+              if [ ${CHART_PR_ERROR} == 'true' ]; then
+                  echo "Error creating charts pull request"
+                  exit 1
+              elif [ ${DEV_PR_ERROR} == 'true' ]; then
+                  echo "Error creating development pull request"
+                  exit 1
+              else
+                  echo "At least one PR was created - merge this one"
+                  echo '::set-output name=merge::true'
+              fi
+              if [ ${DEV_PR_NOT_NEEDED} = 'true' ]; then
+                  echo "No dev PR so create release"
+                  echo '::set-output name=release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}'
+                  echo '::set-output name=release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}'
+              fi
+          elif [ ${DEV_PR_FOR_RELEASE} = 'true' ]; then
+              echo "Dev PR so create release"
+              echo '::set-output name=merge::true'
+              echo '::set-output name=release_body::${{ github.event.pull_request.body }}'
+              echo '::set-output name=release_tag::${{ steps.check_created_release_pr.outputs.PR_version }}'
+          fi
 
       - name: Approve PR
         id: approve_pr
-        if: ${{ steps.check_version_updated.outputs.updated == 'true'}}
+        if: ${{ steps.check_merge_and_release.outputs.merge == 'true' }}
         uses: hmarr/auto-approve-action@v2
         with:
           github-token:  ${{ secrets.GITHUB_TOKEN }}
 
       - name: Merge PR
         id: merge_pr
-        if: ${{ steps.check_version_updated.outputs.updated == 'true'}}
+        if: ${{ steps.check_merge_and_release.outputs.merge == 'true' }}
         uses: pascalgn/automerge-action@v0.13.1
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
@@ -110,18 +179,16 @@ jobs:
           MERGE_LABELS: ""
 
       - name: Check for PR merge
-        if: ${{ steps.check_version_updated.outputs.updated == 'true'}}
+        if: ${{ steps.check_merge_and_release.outputs.merge == 'true' }}
         run: |
-          ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href }}
+          ./ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href }}
 
       - name: Create the the release
         id: create_release
-        if: ${{ steps.check_version_updated.outputs.updated == 'true'}}
+        if: ${{ steps.check_merge_and_release.outputs.release_tag  != '' }}
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.check_version_in_PR.outputs.PR_version }}
-          body: ${{ steps.check_version_in_PR.outputs.PR_release_body }}
+          tag_name: ${{ steps.check_merge_and_release.outputs.release_tag }}
+          body: ${{ steps.check_merge_and_release.outputs.release_body }}
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
-
-

@@ -22,6 +22,10 @@ GITHUB_BASE_URL = 'https://api.github.com'
 CHARTS_REPO = f"{os.environ.get('REPOSITORY_ORGANIZATION')}/charts"
 DEVELOPMENT_REPO = f"{os.environ.get('REPOSITORY_ORGANIZATION')}/development"
 
+PR_CREATED = "PR_CREATED"
+PR_NOT_NEEDED = "PR_NOT_NEEDED"
+PR_FAILED = "PR_FAILED"
+
 # GitHub actions bot email for git email
 GITHUB_ACTIONS_BOT_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com'
 
@@ -71,60 +75,45 @@ def get_bot_name_and_token():
     return bot_name, bot_token
 
 
-def create_charts_pr(version):
+def create_pr(branch_name,skip_files,repository,message):
 
     repo = Repo(os.getcwd())
 
     bot_name, bot_token = get_bot_name_and_token()
     set_git_username_email(repo,bot_name,GITHUB_ACTIONS_BOT_EMAIL)
 
-    branch_name = f"Release-{version}"
     repo.create_head(branch_name)
     print(f"checkout branch {branch_name}")
     repo.git.checkout(branch_name)
 
-    if add_changes(repo,[]):
+    if add_changes(repo,skip_files):
 
         print(f"commit changes with message: {branch_name}")
         repo.index.commit(branch_name)
 
-        print(f"push the branch to {CHARTS_REPO}")
-        repo.git.push(f'https://x-access-token:{bot_token}@github.com/{CHARTS_REPO}',
+        print(f"push the branch to {repo}")
+        repo.git.push(f'https://x-access-token:{bot_token}@github.com/{repository}',
                    f'HEAD:refs/heads/{branch_name}','-f')
 
         print("make the pull request")
-        data = {'head': branch_name, 'base': 'main',
-                'title': branch_name, 'body': f'Workflow and script updates from development repository {branch_name}'}
+        data = {'head': branch_name, 'base': 'test',
+                'title': branch_name, 'body': f'{message}'}
 
         r = github_api(
-            'post', f'repos/{CHARTS_REPO}/pulls', bot_token, json=data)
+            'post', f'repos/{repository}/pulls', bot_token, json=data)
 
         j = json.loads(r.text)
-        print(f"pull request info: {j['number']}")
+        if 'number' in j:
+            print(f"pull request info: {j['number']}")
+            return PR_CREATED
+        else:
+            print(f"Unexpected response from PR. status code: {r.status_code}, text: {j}")
+            return PR_FAILED
+
     else:
-        print(f"no changes required for {CHARTS_REPO}")
+        print(f"no changes required for {repository}")
+        return PR_NOT_NEEDED
 
-
-
-def commit_development_updates(version,skip_files):
-
-    repo = Repo(os.getcwd())
-
-    print("checkout main")
-    repo.git.checkout("main")
-
-    if add_changes(repo,skip_files):
-
-        print(f"commit changes with message: Version-{version} Update charts from chart repository")
-        repo.index.commit(f"Version-{version} Update charts from chart repository")
-
-        print(f"push the branch to {DEVELOPMENT_REPO}")
-        bot_name, bot_token = get_bot_name_and_token()
-
-        repo.git.push(f'https://x-access-token:{bot_token}@github.com/{DEVELOPMENT_REPO}',
-                  f'HEAD:refs/heads/main', '-f')
-    else:
-        print(f"no changes required for {DEVELOPMENT_REPO}")
 
 
 def add_changes(repo,skip_files):
