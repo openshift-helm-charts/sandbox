@@ -9,7 +9,7 @@ jobs:
     name: Chart Workflow Release
     runs-on: ubuntu-20.04
     env:
-      REPOSITORY_ORGANIZATION: mmulholla
+      REPOSITORY_ORGANIZATION: openshift-helm-charts
     if: |
       github.event.pull_request.draft == false
     steps:
