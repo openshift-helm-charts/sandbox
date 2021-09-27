@@ -30,6 +30,7 @@ import json
 import requests
 import semver
 import sys
+from semver.version import Version
 from release import release_info
 from release import releaser
 
@@ -99,10 +100,16 @@ def check_if_release_branch(sender,pr_branch,pr_body,api_url):
     if not sender==os.environ.get("BOT_NAME"):
         print(f"Sender indicates PR is not part of a release: {sender}")
         return False
+
     if not pr_branch.startswith(releaser.DEV_PR_BRANCH_NAME_PREFIX):
         print(f"PR branch indicates PR is not part of a release: {pr_branch}")
         return False
+
     version = pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
+    if not Version.isValid(version):
+        print(f"Release part ({version}) of branch name {pr_branch} is not a valid semantic version.")
+        return False
+    
     if not pr_body.startswith(f"Charts workflow version {version}"):
         print(f"PR title indicates PR is not part of a release: {pr_body}")
         return False
@@ -153,9 +160,11 @@ def main():
         version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
         print(f'::set-output name=PR_version::{version}')
         print(f"::set-output name=PR_release_body::{args.pr_body}")
-    elif args.api_url and check_if_only_version_file_is_modified(args.api_url):
+    elif args.api_url:
         ## should be on PR branch
-        if checkuser.verify_user(args.sender):
+        version_only = check_if_only_version_file_is_modified(args.api_url)
+        user_authorized = checkuser.verify_user(args.sender)
+        if version_only and user_authorized:
             version = release_info.get_version("./")
             version_info = release_info.get_info("./")
             print(f'[INFO] Release found in PR files : {version}.')

@@ -61,19 +61,19 @@ jobs:
 
       - name: Reflect on PR Content
         id: reflect_on_pr_content
+        ENV:
+          RELEASE_INFO_ONLY: ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_includes_release_only }}
+          NOT_AUTHORIZED: ${{ steps.check_only_version_in_PR_and_authorized.outputs.sender_not_authorized }}
+          DEV_PR_FOR_RELEASE: ${{ steps.check_created_release_pr.outputs.dev_release_branch }}
         run: |
-          # Determine if and how processing should continue
-          if [ "${{ steps.check_created_release_pr.outputs.dev_release_branch }}" = 'true' ]; then
-             echo "PR created by release processing"
-             echo '::set-output name=merge::true'
-             echo '::set-output name=release::true'
-          elif [ "${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_includes_release_only }}" = 'true' ]; then
+          # Determine if and how processing should continue'
+          if [ ${NOT_AUTHORIZED} = 'true' ]; then
+              echo "Unauthorized Request"
+              exit 1
+          elif [ ${RELEASE_INFO_ONLY}" == 'true' ]; then
              echo "PR contains only release_info file"
              echo '::set-output name=create_pull_requests::true'
-          elif [ "${{ steps.check_only_version_in_PR_and_authorized.outputs.sender_not_authorized }}" = 'true' ]; then
-             echo "Unauthorized Request"
-             exit 1
-          else
+          elif [ ${DEV_PR_FOR_RELEASE} != 'true' ]
              echo "No release work to do"
              exit
           fi
@@ -115,16 +115,6 @@ jobs:
           # check if version file was changed
           ./ve1/bin/release-checker --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}
 
-      - name: Check Values 1
-        run: |
-          echo "steps.relflect_progress.outputs.merge: ${{ steps.relflect_progress.outputs.merge }}"
-          echo "steps.reflect_on_pr_content.outputs.merge:  ${{ steps.reflect_on_pr_content.outputs.merge }}"
-          echo "steps.check_version_updated.outputs.release_updated: ${{ steps.check_version_updated.outputs.release_updated }}"
-          echo "steps.reflect_on_pr_content.outputs.create_pull_requests: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests }}"
-          echo "steps.reflect_progress.outputs.release:  ${{ steps.reflect_progress.outputs.release }}"
-          echo "steps.reflect_on_pr_content.outputs.release:  ${{ steps.reflect_on_pr_content.outputs.release }}"
-          echo "steps.check_only_version_in_PR_and_authorized.outputs.PR_version: ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}"
-
       - name: Sync the repositories
         id: sync_repositories
         if: ${{ steps.check_version_updated.outputs.release_updated == 'true' }}
@@ -139,50 +129,46 @@ jobs:
                              --charts_dir="./charts-repo" \
                              --dev_pr_body="${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}"
 
-      - name: reflect on release creation progress
-        id: reflect_progress
+      - name: Determine if merge and rerlrase are needed
+        id: check_merge_and_release
+        env:
+          REPOSITORIES_SYNCED: ${{ steps.check_version_updated.outputs.release_updated }}
+          CHART_PR_ERROR: ${{ steps.sync_repositories.outputs.charts_pr_error }}
+          DEV_PR_ERROR: ${{ steps.sync_repositories.outputs.dev_pr_error }}
+          DEV_PR_NO_NEEDED: ${{ steps.sync_repositories.outputs.dev_pr_not_needed }}
+          DEV_PR_FOR_RELEASE: ${{ steps.check_created_release_pr.outputs.dev_release_branch }}
         run: |
           # determine what should be done next
-          if [ "${{ steps.sync_repositories.outputs.charts_pr_error }}" = 'true' ] || [ "${{ steps.sync_repositories.outputs.dev_pr_error }}" = 'true' ]; then
-              echo "Errors creating pull requests"
-              exit 1
-          fi
-          if [ "${{ steps.sync_repositories.outputs.charts_pr_created }}" = 'true' ] || [ "${{ steps.sync_repositories.outputs.charts_pr_created }}" = 'true' ]; then
-              echo "At least one PR was created - merge this one"
-              echo '::set-output name=merge::true'
-          fi
-          if [ "${{ steps.sync_repositories.outputs.dev_pr_not_needed }}" = 'true' ]; then
-              echo "No dev PR so create release"
-              echo '::set-output name=release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}'
-              echo '::set-output name=release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}'
+          if [ ${REPOSITORIES_SYNCED} == 'true' ]; then
+              if [ ${CHART_PR_ERROR} == 'true' ] || [ ${DEV_PR_ERROR} == 'true' ]; then
+                  echo "Errors creating pull requests"
+                  exit 1
+               else
+                  echo "At least one PR was created - merge this one"
+                  echo '::set-output name=merge::true'
+              fi
+              if [ "${{ steps.sync_repositories.outputs.dev_pr_not_needed }}" = 'true' ]; then
+                  echo "No dev PR so create release"
+                  echo '::set-output name=release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}'
+                  echo '::set-output name=release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}'
+              fi
           elif [ "${{ steps.reflect_on_pr_content.outputs.release }}" = 'true' ]; then
               echo "Dev PR so create release"
+              echo '::set-output name=merge::true'
               echo '::set-output name=release_body::${{ github.event.pull_request.body }}'
               echo '::set-output name=release_tag::${{ steps.check_created_release_pr.outputs.PR_version }}'
           fi
 
-      - name: Check Values 2
-        run: |
-          echo "steps.reflect_progress.outputs.merge: ${{ steps.reflect_progress.outputs.merge }}"
-          echo "steps.reflect_on_pr_content.outputs.merge:  ${{ steps.reflect_on_pr_content.outputs.merge }}"
-          echo "steps.check_version_updated.outputs.release_updated: ${{ steps.check_version_updated.outputs.release_updated }}"
-          echo "steps.reflect_on_pr_content.outputs.create_pull_requests: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests }}"
-          echo "steps.reflect_progress.outputs.release:  ${{ steps.reflect_progress.outputs.release }}"
-          echo "steps.reflect_on_pr_content.outputs.release:  ${{ steps.reflect_on_pr_content.outputs.release }}"
-          echo "steps.check_only_version_in_PR_and_authorized.outputs.PR_version: ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}"
-          echo "steps.reflect_progress.outputs.releasetag: {{ steps.reflect_progress.outputs.releasetag }}"
-          echo "steps.reflect_progress.outputs.releasetag: {{ steps.reflect_progress.outputs.releasetag }}"
-
       - name: Approve PR
         id: approve_pr
-        if: ${{ steps.relflect_progress.outputs.merge == 'true' || steps.reflect_on_pr_content.outputs.merge == 'true' }}
+        if: ${{ steps.check_merge_and_release.outputs.merge == 'true' }}
         uses: hmarr/auto-approve-action@v2
         with:
           github-token:  ${{ secrets.GITHUB_TOKEN }}
 
       - name: Merge PR
         id: merge_pr
-        if: ${{ steps.reflect_progress.outputs.merge == 'true' || steps.reflect_on_pr_content.outputs.merge == 'true' }}
+        if: ${{ steps.check_merge_and_release.outputs.merge == 'true' }}
         uses: pascalgn/automerge-action@v0.13.1
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
@@ -190,16 +176,16 @@ jobs:
           MERGE_LABELS: ""
 
       - name: Check for PR merge
-        if: ${{ steps.reflect_progress.outputs.merge == 'true' || steps.reflect_on_pr_content.outputs.merge == 'true' }}
+        if: ${{ steps.check_merge_and_release.outputs.merge == 'true' }}
         run: |
           ./ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href }}
 
       - name: Create the the release
         id: create_release
-        if: ${{ steps.reflect_progress.outputs.release_tag  != '' }}
+        if: ${{ steps.check_merge_and_release.outputs.release_tag  != '' }}
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.reflect_progress.outputs.release_tag }}
-          body: ${{ steps.reflect_progress.outputs.release_body }}
+          tag_name: ${{ steps.check_merge_and_release.outputs.release_tag }}
+          body: ${{ steps.check_merge_and_release.outputs.release_body }}
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
