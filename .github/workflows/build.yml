@@ -36,12 +36,25 @@ jobs:
           echo "[INFO] check if PR contains only workflow changes and user is authorized"
           ve1/bin/check-pr-for-ci --verify-user=${{ github.event.pull_request.user.login }} --api-url=${{ github.event.pull_request._links.self.href }}
 
+      - name: Check if PR created as part of release process
+        id: check_created_release_pr
+        if: ${{ steps.check_ci_changes.outputs.run-tests != true }}
+        env:
+          BOT_NAME: ${{ secrets.BOT_NAME }}
+        run: |
+          # check if PR was created as part of release processing
+          ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
+                                    --sender='${{ github.event.sender.login }}' \
+                                    --pr_branch='${{ github.event.pull_request.head.ref }}' \
+                                    --pr_body='${{ github.event.pull_request.body }}'
+
       - name: Exit if build not required
         id: check_build_required
         env:
           RUN_TESTS: ${{ steps.check_ci_changes.outputs.run-tests }}
           NOT_CI_AUTHORIZED: ${{ steps.check_ci_changes.outputs.workflow-only-but-not-authorized }}
           NO_CODE_TO_BUILD: ${{ steps.check_ci_changes.outputs.do-not-build }}
+          DEV_PR_FOR_RELEASE: ${{ steps.check_created_release_pr.outputs.dev_release_branch }}
         run: |
           # exit if build not required
           if [ ${RUN_TESTS} == "true" ] || [ ${NOT_CI_AUTHORIZED} == "true" ]; then
@@ -50,6 +63,8 @@ jobs:
           elif [ ${NO_CODE_TO_BUILD} == "true" ]; then
              echo "The PR does not contain changes which need build or test."
              exit 0
+          elif [ ${DEV_PR_FOR_RELEASE} == "true" ]; then
+              echo "The PR is part of release processing for the devleopmnet branch - do not continue."
           else
             echo "::set-output name=run-build::true"
           fi

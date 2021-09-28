@@ -16,13 +16,15 @@ To start the proecess:
      - ignores : a directory or files which is part of the merge or replace but should be excluded. This also covers deleted files.
    - For example, release/release_info.json for the charts repository specifies a merge of the charts directory. This means the charts of the charts repository will be merged into the same directory in the development repository. This effectively updates the development repository with the charts which were added since that last release.
    - For example, release/release_info.json for the development repository specifies a replace of the scripts directory. This means the scripts directory will be deleted from the charts repository and replaced with the scripts directory and its contents from the development repository.
-   - For example, release/release_info.json for the development repository specifies an ignore of the scripts/src/release directory. This means after copying the entire content of the scripts to the charts repository the specific directory will then be removed. 
-1. Create a Pull Request against the development repository contaning only the release/release_info.json. The relase workflow then:
+   - For example, release/release_info.json for the development repository specifies an ignore of the .github/workflows/release.yml file. This means after copying the entire content of the .github directory to the charts repository the specific file will then be removed. 
+1. Create a Pull Request against the development repository containing only the release/release_info.json. The release workflow then:
     1. Clones the development and charts repositories.
-    1. Updates each the repositories based on the content of the release/release_info.json.
+    1. Updates each of the repositories based on the content of the release/release_info.json.
     1. Creates a pull request against the chart repository containing workflow updates from the development repository.
         - This PR will need to be manually merged once all tests are finished and clean.
-    1. Creates and pushes a commit to the main branch of the development repository. The branch contains chart updates from the chart repository.
-        - It is expected that the time between cloning the repository and pushing the commit to main will be short enough to prevent overwriting other merged changes.
-    1. Assuming all is good, auto-merges the release/release_info.json pull request, and then creates a release and tag for the release in the development repository.
+    1. Creates a pull request against the development repository containing chart updates from the chart repository.
+        - This PR will be auto-merged in subsequent steps.
+    1. Assuming all is good, auto-merges the release/release_info.json pull request.
+        - Also creates a release if the development repository pull request is not required.
+    1. Detects the incoming pull request against the development repository, merges it and creates a release. 
 
