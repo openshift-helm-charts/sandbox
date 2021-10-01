@@ -104,3 +104,4 @@ jobs:
           echo "[INFO] Software Name '${{ env.SOFTWARE_NAME }}'"
           echo "[INFO] Software Version '${{ env.SOFTWARE_VERSION }}'"
           ve1/bin/pytest tests/functional/test_submitted_charts.py --log-cli-level=WARNING --tb=short
+
