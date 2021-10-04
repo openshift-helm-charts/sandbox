@@ -1,5 +1,5 @@
-Feature: Chart submitted by unauthorized user
-    Partners or redhat associates can not submit charts if they are not in the OWNERS file
+Feature: Chart submitted by an unauthorized user
+    Partners or redhat associates can not submit charts if they are not in the OWNERS file of the chart
 
     Scenario: A unauthorized user submits a chart with report 
         Given user is not present in the OWNERS file of the chart
