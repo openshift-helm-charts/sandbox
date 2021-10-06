@@ -114,7 +114,7 @@ vendor:
         logger.info(f"Local '{secrets.base_branch}' does not exist")
 
 
-@scenario('features/chart_submitted_by_an_unauthorized_user.feature', "An unauthorized partner user submits a chart with report")
+@scenario('features/chart_submitted_by_unauthorized_user.feature', "An unauthorized partner user submits a chart with report")
 def test_partner_chart_submission_by_unauthorized_user():
     """An unauthorized partner user submits a chart with report"""
 
