@@ -211,8 +211,9 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(secrets):
 @when("the user sends a pull request with chart and report")
 def the_user_sends_a_pull_request_with_chart_and_report(secrets):
     """The user sends the pull request with the chart tar files."""
+    pr_body = str(os.environ.get('PR_BODY')) + ' unauthorized user'
     data = {'head': secrets.pr_branch, 'base': secrets.base_branch,
-            'title': secrets.pr_branch, 'body': os.environ.get('PR_BODY')}
+            'title': secrets.pr_branch, 'body': pr_body}
 
     logger.info(
         f"Create PR with chart tar files from '{secrets.test_repo}:{secrets.pr_branch}'")
