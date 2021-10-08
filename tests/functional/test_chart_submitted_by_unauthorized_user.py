@@ -20,6 +20,7 @@ from pytest_bdd import (
     scenario,
     then,
     when,
+    parsers
 )
 
 from functional.utils import *
@@ -35,9 +36,9 @@ def secrets():
         test_repo: str
         bot_name: str
         bot_token: str
-        base_branch: str
-        pr_branch: str
-
+        
+        base_branch: str = ''
+        pr_branch: str = ''
         pr_number: int = -1
         vendor_type: str = ''
         vendor: str = ''
@@ -81,10 +82,7 @@ vendor:
     repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
                   f'HEAD:refs/heads/{current_branch}', '-f')
 
-    base_branch = f'chart-tar-with-report-{current_branch}'
-    pr_branch = base_branch + '-pr'
-
-    secrets = Secret(test_repo, bot_name, bot_token, base_branch, pr_branch)
+    secrets = Secret(test_repo, bot_name, bot_token)
     yield secrets
 
     # Teardown step to cleanup branches
@@ -95,37 +93,29 @@ vendor:
         github_api(
             'delete', f'repos/{secrets.test_repo}/git/refs/heads/{head_sha}', secrets.bot_token)
 
-    logger.info(f"Delete '{secrets.test_repo}:{secrets.base_branch}'")
-    github_api(
-        'delete', f'repos/{secrets.test_repo}/git/refs/heads/{secrets.base_branch}', secrets.bot_token)
-
-    logger.info(f"Delete '{secrets.test_repo}:{secrets.base_branch}-gh-pages'")
-    github_api(
-        'delete', f'repos/{secrets.test_repo}/git/refs/heads/{secrets.base_branch}-gh-pages', secrets.bot_token)
-
-    logger.info(f"Delete '{secrets.test_repo}:{secrets.pr_branch}'")
-    github_api(
-        'delete', f'repos/{secrets.test_repo}/git/refs/heads/{secrets.pr_branch}', secrets.bot_token)
-
-    logger.info(f"Delete local '{secrets.base_branch}'")
-    try:
-        repo.git.branch('-D', secrets.base_branch)
-    except git.exc.GitCommandError:
-        logger.info(f"Local '{secrets.base_branch}' does not exist")
+    cleanup_branches(secrets, repo, logger)
 
 
-@scenario('features/chart_submitted_by_unauthorized_user.feature', "An unauthorized partner user submits a chart with report")
-def test_partner_chart_submission_by_unauthorized_user():
-    """An unauthorized partner user submits a chart with report"""
+@scenario('features/chart_submitted_by_unauthorized_user.feature', "An unauthorized user submits a chart with report")
+def test_chart_submission_by_unauthorized_user():
+    """An unauthorized user submits a chart with report"""
 
-@given("partner user is not present in the OWNERS file of the chart")
-def partner_user_not_present_in_the_chart_owners_file(secrets):
+@given(parsers.parse("<vendor> of <vendor_type> user is not present in the OWNERS file of the chart"))
+def user_is_not_present_in_the_chart_owners_file(secrets, vendor, vendor_type):
     """partner user is not present in the OWNERS file of the chart"""
-    secrets.vendor_type = 'partners'
-    secrets.vendor = get_unique_vendor('hashicorp')
+    
+    logger.info(f"Vendor is: {vendor} Vendor Type is: {vendor_type}")
+
+    secrets.vendor_type = vendor_type
+    secrets.vendor = get_unique_vendor(vendor)
+
+    #Substitude the values in owners file content
+    values = {'vendor': secrets.vendor, 'chart_name': secrets.chart_name}
+    secrets.owners_file_content = Template(secrets.owners_file_content).substitute(values)
+
 
 @given("the user creates a branch to add a new chart version")
-def the_user_has_created_a_error_free_chart_tar_with_report(secrets):
+def the_user_creates_a_branch_to_add_a_new_chart_version(secrets):
     """the user creates a branch to add a new chart version."""
 
     with TemporaryDirectory(prefix='tci-') as temp_dir:
@@ -138,19 +128,6 @@ def the_user_has_created_a_error_free_chart_tar_with_report(secrets):
             logger.info("Wokflow development enabled")
             repo.git.add(A=True)
             repo.git.commit('-m', 'Checkpoint')
-
-        # Get SHA from 'dev-gh-pages' branch
-        logger.info(
-            f"Create '{secrets.test_repo}:{secrets.base_branch}-gh-pages' from '{secrets.test_repo}:dev-gh-pages'")
-        r = github_api(
-            'get', f'repos/{secrets.test_repo}/git/ref/heads/dev-gh-pages', secrets.bot_token)
-        j = json.loads(r.text)
-        sha = j['object']['sha']
-
-        # Create a new gh-pages branch for testing
-        data = {'ref': f'refs/heads/{secrets.base_branch}-gh-pages', 'sha': sha}
-        r = github_api(
-            'post', f'repos/{secrets.test_repo}/git/refs', secrets.bot_token, json=data)
 
         # Make PR's from a temporary directory
         old_cwd = os.getcwd()
@@ -191,13 +168,10 @@ def the_user_has_created_a_error_free_chart_tar_with_report(secrets):
             logger.info(
                 f"{chart_dir}/OWNERS not exist on {secrets.test_repo}:{secrets.base_branch}")
 
-        # Create the OWNERS file from the string template
-        values = {'bot_name': secrets.bot_name,
-                  'vendor': secrets.vendor, 'chart_name': secrets.chart_name}
-        content = Template(secrets.owners_file_content).substitute(values)
+        # Create the OWNERS file
         with open(f'{chart_dir}/OWNERS', 'w') as fd:
-            fd.write(content)
-
+            fd.write(secrets.owners_file_content)
+        
         # Push OWNERS file to the test_repo
         logger.info(
             f"Push OWNERS file to '{secrets.test_repo}:{secrets.base_branch}'")
@@ -235,7 +209,7 @@ def the_user_has_created_a_error_free_chart_tar_with_report(secrets):
 
 
 @when("the user sends a pull request with chart and report")
-def the_user_sends_the_pull_request(secrets):
+def the_user_sends_a_pull_request_with_chart_and_report(secrets):
     """The user sends the pull request with the chart tar files."""
     data = {'head': secrets.pr_branch, 'base': secrets.base_branch,
             'title': secrets.pr_branch, 'body': os.environ.get('PR_BODY')}
@@ -269,25 +243,24 @@ def the_pull_request_is_not_getting_merged(secrets):
     else:
         pytest.fail("PR merged, which is unexpected")
 
-@then("user gets the message with steps to follow for resolving the issue in the pull request")
-def user_gets_the_message_with_steps_to_follow_in_the_pull_request(secrets):
+@then(parsers.parse("user gets the <message> with steps to follow for resolving the issue in the pull request"))
+def user_gets_the_message_with_steps_to_follow_for_resolving_the_issue_in_the_pull_request(secrets, message):
     """user gets the message with steps to follow for resolving the issue in the pull request"""
     
     #https://docs.github.com/en/rest/guides/working-with-comments
     #curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/openshift-helm-charts/sandbox/issues/{pr_number}/comments
-    #[ERROR]  tisutisu is not allowed to submit the chart on behalf of hashicorp-1633505743
 
     r = github_api(
         'get', f'repos/{secrets.test_repo}/issues/{secrets.pr_number}/comments', secrets.bot_token)
+    logger.info(f'STATUS_CODE: {r.status_code}')
+    
     response = json.loads(r.text)
-
     complete_comment = response[0]['body']
-    expected_string = f"{secrets.bot_name} is not allowed to submit the chart on behalf of {secrets.vendor}"
 
-    if expected_string in complete_comment:
+    if message in complete_comment:
         logger.info("Found the expected comment in the PR")
     else:
-        pytest.fail("Expected comment not found in the PR")
+        pytest.fail("Was expecting '{expected_string}' in the comment {complete_comment}")
 
     
     

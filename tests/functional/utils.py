@@ -6,7 +6,7 @@ import shutil
 import tarfile
 import time
 import json
-
+import git
 import pytest
 import requests
 import yaml
@@ -278,3 +278,39 @@ def get_unique_vendor(vendor):
     if "PR_NUMBER" in os.environ:
         suffix = os.environ["PR_NUMBER"]
     return f"{vendor}-{suffix}"
+
+def setup_gh_pages_branch(secrets, logger):
+    # Get SHA from 'dev-gh-pages' branch
+    logger.info(
+        f"Create '{secrets.test_repo}:{secrets.base_branch}-gh-pages' from '{secrets.test_repo}:dev-gh-pages'")
+    r = github_api(
+        'get', f'repos/{secrets.test_repo}/git/ref/heads/dev-gh-pages', secrets.bot_token)
+    j = json.loads(r.text)
+    sha = j['object']['sha']
+
+    # Create a new gh-pages branch for testing
+    data = {'ref': f'refs/heads/{secrets.base_branch}-gh-pages', 'sha': sha}
+    r = github_api(
+        'post', f'repos/{secrets.test_repo}/git/refs', secrets.bot_token, json=data)
+    
+    return r
+
+def cleanup_branches(secrets, repo, logger):
+
+    logger.info(f"Delete '{secrets.test_repo}:{secrets.base_branch}'")
+    github_api(
+        'delete', f'repos/{secrets.test_repo}/git/refs/heads/{secrets.base_branch}', secrets.bot_token)
+
+    logger.info(f"Delete '{secrets.test_repo}:{secrets.base_branch}-gh-pages'")
+    github_api(
+        'delete', f'repos/{secrets.test_repo}/git/refs/heads/{secrets.base_branch}-gh-pages', secrets.bot_token)
+
+    logger.info(f"Delete '{secrets.test_repo}:{secrets.pr_branch}'")
+    github_api(
+        'delete', f'repos/{secrets.test_repo}/git/refs/heads/{secrets.pr_branch}', secrets.bot_token)
+
+    logger.info(f"Delete local '{secrets.base_branch}'")
+    try:
+        repo.git.branch('-D', secrets.base_branch)
+    except git.exc.GitCommandError:
+        logger.info(f"Local '{secrets.base_branch}' does not exist")
