@@ -74,7 +74,7 @@ jobs:
 
       - name: (PR) Test CI Workflow
         if: |
-          github.event_name == 'pull_request_target' && steps.check_request.outputs.run-tests != 'true'
+          github.event_name == 'pull_request_no' && steps.check_request.outputs.run-tests != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BOT_NAME: ${{ secrets.BOT_NAME }}
@@ -114,4 +114,7 @@ jobs:
                                 --sender='${{ github.event.sender.login }}' \
                                 --pr_branch='${{ github.event.pull_request.head.ref }}' \
                                 --pr_body='${{ github.event.pull_request.body }}' \
-                                --pr='${{ github.event.pull_request }}'
+                                --pr='${{ github.event.pull_request }}' \
+                                --pr_base_repo='${{ github.event.pull_requst.base.repo.name }}' \
+                                --pr_head_repo='${{ github.event.pull_requst.head.repo.name }}'
+
