@@ -146,7 +146,7 @@ def main():
                         help="PR title")
     parser.add_argument("-r", "--pr_base_repo", dest="pr_base_repo", type=str, required=False,
                         help="PR target repo")
-    parser.add_argument("-h", "--pr_head_repo", dest="pr_head_repo", type=str, required=False,
+    parser.add_argument("-z", "--pr_head_repo", dest="pr_head_repo", type=str, required=False,
                         help="PR source repo")
 
 
