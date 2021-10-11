@@ -54,6 +54,14 @@ jobs:
           BOT_NAME: ${{ secrets.BOT_NAME }}
         run: |
           # check if PR was created as part of release processing
+          echo "head repo name:  ${{ github.event.pull_requst.head.repo.name }}"
+          echo "head repo url:  ${{ github.event.pull_requst.head.repo.url }}"
+          echo "base repo name:  ${{ github.event.pull_requst.base.repo.name }}"
+          echo "base repo url:  ${{ github.event.pull_requst.base.repo.url }}"
+          echo "pr url: ${{ github.event.pull_requst.url }}"
+          echo "pr repository name: ${{ github.event.pull_requst.repository.name }}"
+          echo "pr repository url: ${{ github.event.pull_requst.repository.url }}"
+          echo "pr links html: ${{ github.event.pull_requst._links.html.href }}"
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
                                   --sender='${{ github.event.sender.login }}' \
                                   --pr_branch='${{ github.event.pull_request.head.ref }}' \
