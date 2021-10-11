@@ -144,6 +144,8 @@ def main():
                         help="PR branch name")
     parser.add_argument("-t", "--pr_body", dest="pr_body", type=str, required=False,
                         help="PR title")
+    parser.add_argument("-p", "--pr", dest="pr", type=str, required=False,
+                        help="PR title")
 
     args = parser.parse_args()
 
@@ -152,6 +154,8 @@ def main():
     print(f"[INFO] arg sender : {args.sender}")
     print(f"[INFO] arg pr_branch : {args.pr_branch}")
     print(f"[INFO] arg pr_body : {args.pr_body}")
+    print(f"[INFO] arg pr base repo :  {args.pr.base.repo.name}")
+    print(f"[INFO] arg pr head repo :  {args.pr.head.repo.name}")
 
     if args.pr_branch and check_if_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url):
         print('[INFO] Dev release pull request found')

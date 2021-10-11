@@ -104,3 +104,14 @@ jobs:
           echo "[INFO] Software Name '${{ env.SOFTWARE_NAME }}'"
           echo "[INFO] Software Version '${{ env.SOFTWARE_VERSION }}'"
           ve1/bin/pytest tests/functional/test_submitted_charts.py --log-cli-level=WARNING --tb=short
+
+      - name: (PR) check for relase flow
+        if: |
+          github.event_name == 'pull_request_target' && steps.check_request.outputs.run-tests == 'true'
+        run: |
+          # check if PR was created as part of release processing
+          ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
+                                --sender='${{ github.event.sender.login }}' \
+                                --pr_branch='${{ github.event.pull_request.head.ref }}' \
+                                --pr_body='${{ github.event.pull_request.body }}' \
+                                --pr='${{ github.event.pull_request }}'
