@@ -150,7 +150,7 @@ def main():
                         help="PR source repo")
 
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
     print(f"[INFO] arg api-url : {args.api_url}")
     print(f"[INFO] arg version : {args.version}")
