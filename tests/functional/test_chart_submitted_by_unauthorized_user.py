@@ -37,7 +37,7 @@ def secrets():
         bot_name: str
         bot_token: str
         
-        base_branch: str = ''
+        base_branch: str
         pr_branch: str = ''
         pr_number: int = -1
         vendor_type: str = ''
@@ -72,17 +72,16 @@ vendor:
             repo.git.checkout('-b', f'{head_sha}')
 
     current_branch = repo.active_branch.name
-    r = github_api(
-        'get', f'repos/{test_repo}/branches', bot_token)
-    branches = json.loads(r.text)
-    branch_names = [branch['name'] for branch in branches]
+    branch_names = get_branch_names_from_remote_repo(test_repo, bot_token)
     if current_branch not in branch_names:
         logger.info(
             f"{test_repo}:{current_branch} does not exists, creating with local branch")
     repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
                   f'HEAD:refs/heads/{current_branch}', '-f')
 
-    secrets = Secret(test_repo, bot_name, bot_token)
+    base_branch = f'unauthorized-user-{current_branch}'
+
+    secrets = Secret(test_repo, bot_name, bot_token, base_branch)
     yield secrets
 
     # Teardown step to cleanup branches
@@ -126,8 +125,7 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(secrets):
         set_git_username_email(repo, secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
         if os.environ.get('WORKFLOW_DEVELOPMENT'):
             logger.info("Wokflow development enabled")
-            repo.git.add(A=True)
-            repo.git.commit('-m', 'Checkpoint')
+            commit_current_changes(repo, commit_message='Checkpoint')
 
         # Make PR's from a temporary directory
         old_cwd = os.getcwd()
@@ -138,57 +136,30 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(secrets):
         repo = git.Repo(temp_dir)
         set_git_username_email(repo, secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
         repo.git.checkout('-b', secrets.base_branch)
+        
         chart_dir = f'charts/{secrets.vendor_type}/{secrets.vendor}/{secrets.chart_name}'
         pathlib.Path(
             f'{chart_dir}/{secrets.chart_version}').mkdir(parents=True, exist_ok=True)
 
         # Remove chart files from base branch
-        logger.info(
-            f"Remove {chart_dir}/{secrets.chart_version} from {secrets.test_repo}:{secrets.base_branch}")
-        try:
-            repo.git.rm('-rf', '--cached', f'{chart_dir}/{secrets.chart_version}')
-            repo.git.commit(
-                '-m', f'Remove {chart_dir}/{secrets.chart_version}')
-            repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
-                            f'HEAD:refs/heads/{secrets.base_branch}')
-        except git.exc.GitCommandError:
-            logger.info(
-                f"{chart_dir}/{secrets.chart_version} not exist on {secrets.test_repo}:{secrets.base_branch}")
+        remove_chart_dir_from_base_branch(secrets, chart_dir, repo, logger)
 
         # Remove the OWNERS file from base branch
-        logger.info(
-            f"Remove {chart_dir}/OWNERS from {secrets.test_repo}:{secrets.base_branch}")
-        try:
-            repo.git.rm('-rf', '--cached', f'{chart_dir}/OWNERS')
-            repo.git.commit(
-                '-m', f'Remove {chart_dir}/OWNERS')
-            repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
-                            f'HEAD:refs/heads/{secrets.base_branch}')
-        except git.exc.GitCommandError:
-            logger.info(
-                f"{chart_dir}/OWNERS not exist on {secrets.test_repo}:{secrets.base_branch}")
+        remove_owners_file_from_base_branch(secrets, chart_dir, repo, logger)
 
         # Create the OWNERS file
         with open(f'{chart_dir}/OWNERS', 'w') as fd:
             fd.write(secrets.owners_file_content)
         
         # Push OWNERS file to the test_repo
-        logger.info(
-            f"Push OWNERS file to '{secrets.test_repo}:{secrets.base_branch}'")
-        repo.git.add(f'{chart_dir}/OWNERS')
-        repo.git.commit(
-            '-m', f"Add {secrets.vendor} {secrets.chart_name} OWNERS file")
-        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
-                      f'HEAD:refs/heads/{secrets.base_branch}', '-f')
+        push_owners_file_to_base_branch(secrets, chart_dir, repo, logger)
 
         # Copy the chart tar into temporary directory for PR submission
-        logger.info(
-            f"Push report and chart tar to '{secrets.test_repo}:{secrets.pr_branch}'")
         chart_tar = secrets.test_chart.split('/')[-1]
         shutil.copyfile(f'{old_cwd}/{secrets.test_chart}',
                         f'{chart_dir}/{secrets.chart_version}/{chart_tar}')
 
-        # Copy report to temporary location and push to test_repo:pr_branch
+        # Copy report to temporary location
         tmpl = open(secrets.test_report).read()
         values = {'repository': secrets.test_repo,
                   'branch': secrets.base_branch}
@@ -197,13 +168,7 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(secrets):
             fd.write(content)
 
         # Push chart src files to test_repo:pr_branch
-        repo.git.add(f'{chart_dir}/{secrets.chart_version}/report.yaml')
-        repo.git.add(f'{chart_dir}/{secrets.chart_version}/{chart_tar}')
-        repo.git.commit(
-            '-m', f"Add {secrets.vendor} {secrets.chart_name} {secrets.chart_version} chart tar files and report")
-
-        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
-                      f'HEAD:refs/heads/{secrets.pr_branch}', '-f')
+        push_chart_files_to_pr_branch(secrets, chart_dir, chart_tar, repo, logger)
 
         os.chdir(old_cwd)
 
@@ -211,9 +176,8 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(secrets):
 @when("the user sends a pull request with chart and report")
 def the_user_sends_a_pull_request_with_chart_and_report(secrets):
     """The user sends the pull request with the chart tar files."""
-    pr_body = str(os.environ.get('PR_BODY')) + ' unauthorized user'
     data = {'head': secrets.pr_branch, 'base': secrets.base_branch,
-            'title': secrets.pr_branch, 'body': pr_body}
+            'title': secrets.pr_branch, 'body': os.environ.get('PR_BODY')}
 
     logger.info(
         f"Create PR with chart tar files from '{secrets.test_repo}:{secrets.pr_branch}'")
