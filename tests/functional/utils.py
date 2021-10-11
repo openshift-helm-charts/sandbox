@@ -314,3 +314,68 @@ def cleanup_branches(secrets, repo, logger):
         repo.git.branch('-D', secrets.base_branch)
     except git.exc.GitCommandError:
         logger.info(f"Local '{secrets.base_branch}' does not exist")
+
+def get_branch_names_from_remote_repo(repo_name, bot_token):
+    r = github_api(
+        'get', f'repos/{repo_name}/branches', bot_token)
+    branches = json.loads(r.text)
+    branch_names = [branch['name'] for branch in branches]
+    return branch_names
+
+def commit_current_changes(repo, commit_message='Auto Commit'):
+    try:
+        repo.git.add(A=True)
+        repo.git.commit('-m', commit_message)
+    except git.exc.GitCommandError:
+        pytest.fail("Failed to commit current changes")
+
+def remove_chart_dir_from_base_branch(secrets, chart_dir, repo, logger):
+    logger.info(
+            f"Remove {chart_dir}/{secrets.chart_version} from {secrets.test_repo}:{secrets.base_branch}")
+    try:
+        repo.git.rm('-rf', '--cached', f'{chart_dir}/{secrets.chart_version}')
+        repo.git.commit(
+            '-m', f'Remove {chart_dir}/{secrets.chart_version}')
+        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
+                f'HEAD:refs/heads/{secrets.base_branch}')
+    except git.exc.GitCommandError:
+        logger.info(
+            f"{chart_dir}/{secrets.chart_version} not exist on {secrets.test_repo}:{secrets.base_branch}")
+
+def remove_owners_file_from_base_branch(secrets, chart_dir, repo, logger):
+    logger.info(
+        f"Remove {chart_dir}/OWNERS from {secrets.test_repo}:{secrets.base_branch}")
+    try:
+        repo.git.rm('-rf', '--cached', f'{chart_dir}/OWNERS')
+        repo.git.commit(
+            '-m', f'Remove {chart_dir}/OWNERS')
+        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
+                        f'HEAD:refs/heads/{secrets.base_branch}')
+    except git.exc.GitCommandError:
+        logger.info(
+            f"{chart_dir}/OWNERS not exist on {secrets.test_repo}:{secrets.base_branch}")
+
+def push_owners_file_to_base_branch(secrets, chart_dir, repo, logger):
+    logger.info(
+        f"Push OWNERS file to '{secrets.test_repo}:{secrets.base_branch}'")
+    try:
+        repo.git.add(f'{chart_dir}/OWNERS')
+        repo.git.commit(
+            '-m', f"Add {secrets.vendor} {secrets.chart_name} OWNERS file")
+        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
+                    f'HEAD:refs/heads/{secrets.base_branch}', '-f')
+    except git.exc.GitCommandError:
+        pytest.fail("Failed to push OWNERS file to base branch")
+
+def push_chart_files_to_pr_branch(secrets, chart_dir, chart_tar, repo, logger):
+    logger.info(
+        f"Push report and chart tar to '{secrets.test_repo}:{secrets.pr_branch}'")
+    try:
+        repo.git.add(f'{chart_dir}/{secrets.chart_version}/report.yaml')
+        repo.git.add(f'{chart_dir}/{secrets.chart_version}/{chart_tar}')
+        repo.git.commit(
+            '-m', f"Add {secrets.vendor} {secrets.chart_name} {secrets.chart_version} chart tar files and report")
+        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
+                f'HEAD:refs/heads/{secrets.pr_branch}', '-f')
+    except git.exc.GitCommandError:
+        pytest.fail("Failed to push chart files to pr branch")
