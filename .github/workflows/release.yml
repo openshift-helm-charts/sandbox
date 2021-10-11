@@ -55,8 +55,10 @@ jobs:
         run: |
           # check if PR was created as part of release processing
           echo "head repo name:  ${{ github.event.pull_request.head.repo.name }}"
+          echo "head repo full name:  ${{ github.event.pull_request.head.repo.full_name }}"
           echo "head repo url:  ${{ github.event.pull_request.head.repo.url }}"
           echo "base repo name:  ${{ github.event.pull_request.base.repo.name }}"
+          echo "base repo full name:  ${{ github.event.pull_request.base.repo.full_name }}"
           echo "base repo url:  ${{ github.event.pull_request.base.repo.url }}"
           echo "pr url: ${{ github.event.pull_request.url }}"
           echo "pr repository name: ${{ github.event.pull_request.repository.name }}"
