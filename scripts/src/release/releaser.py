@@ -31,8 +31,10 @@ from github import gitutils
 
 SCHEDULE_YAML_FILE=".github/workflows/schedule.yml"
 BUILD_YAML_FILE=".github/workflows/build.yml"
+DEV_PR_BRANCH_BODY_PREFIX="Charts workflow version"
 DEV_PR_BRANCH_NAME_PREFIX="Auto-Release-"
-DEV_PR_BRANCH_BODY_PREFIX="Workflow and script updates from development repository"
+CHARTS_PR_BRANCH_BODY_PREFIX="Workflow and script updates from development repository"
+CHARTS_PR_BRANCH_NAME_PREFIX="Auto-Release-"
 
 SCHEDULE_INSERT = [
     '  # Daily trigger to check updates',
@@ -151,8 +153,8 @@ def main():
     update_workflow()
 
     print(f"create charts pull request")
-    branch_name = f"Release-{args.version}"
-    message = f'Workflow and script updates from development repository {branch_name}'
+    branch_name = f"{CHARTS_PR_BRANCH_NAME_PREFIX}{args.version}"
+    message = f'{CHARTS_PR_BRANCH_BODY_PREFIX} {branch_name}'
     outcome = gitutils.create_pr(branch_name,[],gitutils.CHARTS_REPO,message)
     if outcome == gitutils.PR_CREATED:
         print(f'::set-output name=charts_pr_created::true')
