@@ -38,6 +38,12 @@ from owners import checkuser
 
 VERSION_FILE = "release/release_info.json"
 TYPE_MATCH_EXPRESSION = "(partners|redhat|community)"
+CHARTS_PR_BASE_REPO = "mmulholla/charts"
+CHARTS_PR_HEAD_REPO = "mmulholla/development"
+DEV_PR_BASE_REPO = "mmulholla/development"
+DEV_PR_HEAD_REPO = "mmulholla/development"
+
+
 
 def check_if_only_charts_are_included(api_url):
 
@@ -66,6 +72,32 @@ def check_if_only_charts_are_included(api_url):
 
     return True
 
+def check_if_no_charts_are_included(api_url):
+
+    files_api_url = f'{api_url}/files'
+    headers = {'Accept': 'application/vnd.github.v3+json'}
+    chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
+    page_number = 1
+    max_page_size,page_size = 100,100
+    file_count = 0
+
+    while page_size == max_page_size:
+
+        files_api_query = f'{files_api_url}?per_page={page_size}&page={page_number}'
+        print(f"Query files : {files_api_query}")
+        pr_files = requests.get(files_api_query,headers=headers)
+        files = pr_files.json()
+        page_size = len(files)
+        file_count += page_size
+        page_number += 1
+
+        for f in files:
+            file_path = f["filename"]
+            match = chart_pattern.match(file_path)
+            if match:
+                return False
+
+    return True
 
 def check_if_only_version_file_is_modified(api_url):
     # api_url https://api.github.com/repos/<organization-name>/<repository-name>/pulls/<pr_number>
@@ -94,7 +126,7 @@ def check_if_only_version_file_is_modified(api_url):
 
     return version_file_found
 
-def check_if_release_branch(sender,pr_branch,pr_body,api_url):
+def check_if_dev_release_branch(sender,pr_branch,pr_body,api_url,pr_base_repo,pr_head_repo):
 
     if not sender==os.environ.get("BOT_NAME"):
         print(f"Sender indicates PR is not part of a release: {sender}")
@@ -108,13 +140,41 @@ def check_if_release_branch(sender,pr_branch,pr_body,api_url):
     if not semver.VersionInfo.isvalid(version):
         print(f"Release part ({version}) of branch name {pr_branch} is not a valid semantic version.")
         return False
-    
-    if not pr_body.startswith(f"Charts workflow version {version}"):
+
+    if pr_head_repo != DEV_PR_HEAD_REPO:
+        print(f"PR does not have the expected origin. Got: {pr_head_repo}, expected: {DEV_PR_HEAD_REPO}")
+        return False
+
+    if not pr_body.startswith(releaser.DEV_PR_BRANCH_NAME_PREFIX):
         print(f"PR title indicates PR is not part of a release: {pr_body}")
         return False
 
     return check_if_only_charts_are_included(api_url)
 
+def check_if_chart_release_branch(sender,pr_branch,pr_body,api_url,pr_base_repo,pr_head_repo):
+
+    if not sender==os.environ.get("BOT_NAME"):
+        print(f"Sender indicates PR is not part of a release: {sender}")
+        return False
+
+    if not pr_branch.startswith(releaser.CHARTS_PR_BRANCH_NAME_PREFIX):
+        print(f"PR branch indicates PR is not part of a release: {pr_branch}")
+        return False
+
+    version = pr_branch.removeprefix(releaser.CHARTS_PR_BRANCH_NAME_PREFIX)
+    if not semver.VersionInfo.isvalid(version):
+        print(f"Release part ({version}) of branch name {pr_branch} is not a valid semantic version.")
+        return False
+
+    if pr_head_repo != CHARTS_PR_HEAD_REPO:
+        print(f"PR does not have the expected origin. Got: {pr_head_repo}, expected: {CHARTS_PR_HEAD_REPO}")
+        return False
+
+    if not pr_body.startswith(f"Charts workflow version {version}"):
+        print(f"PR title indicates PR is not part of a release: {pr_body}")
+        return False
+
+    return check_if_no_charts_are_included(api_url)
 
 
 def make_release_body(version, release_info):
@@ -149,7 +209,6 @@ def main():
     parser.add_argument("-z", "--pr_head_repo", dest="pr_head_repo", type=str, required=False,
                         help="PR source repo")
 
-
     args = parser.parse_args()
 
     print(f"[INFO] arg api-url : {args.api_url}")
@@ -160,12 +219,16 @@ def main():
     print(f"[INFO] arg pr base repo :  {args.pr_base_repo}")
     print(f"[INFO] arg pr head repo :  {args.pr_head_repo}")
 
-    if args.pr_branch and check_if_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url):
+    if args.pr_branch and args.pr_base_repo == DEV_PR_BASE_REPO and check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_base_repo,args.pr_head_repo):
         print('[INFO] Dev release pull request found')
         print(f'::set-output name=dev_release_branch::true')
         version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
         print(f'::set-output name=PR_version::{version}')
         print(f"::set-output name=PR_release_body::{args.pr_body}")
+    elif args.pr_branch and args.pr_base_repo == CHARTS_PR_BASE_REPO:
+        if check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_base_repo,args.pr_head_repo):
+            print('[INFO] Dev release pull request found')
+            print(f'::set-output name=charts_release_branch::true')
     elif args.api_url:
         ## should be on PR branch
         version_only = check_if_only_version_file_is_modified(args.api_url)

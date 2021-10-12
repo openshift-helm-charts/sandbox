@@ -106,6 +106,7 @@ jobs:
           ve1/bin/pytest tests/functional/test_submitted_charts.py --log-cli-level=WARNING --tb=short
 
       - name: (PR) check for relase flow
+        id: check_if_release_pr
         if: |
           github.event_name == 'pull_request_target' && steps.check_request.outputs.run-tests == 'true'
         run: |
@@ -116,4 +117,21 @@ jobs:
                                 --pr_body='${{ github.event.pull_request.body }}' \
                                 --pr_base_repo='${{ github.event.pull_requst.repository.full_name }}' \
                                 --pr_head_repo='${{ github.event.pull_requst.sender.repos_url }}'
+
+      - name: Approve PR
+        id: approve_pr
+        if: ${{ steps.check_if_release_pr.outputs.charts_release_branch == 'true' }}
+        uses: hmarr/auto-approve-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge PR
+        id: merge_pr
+        if: ${{ steps.check_if_release_pr.outputs.charts_release_branch == 'true' }}
+        uses: pascalgn/automerge-action@v0.13.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_METHOD: squash
+          MERGE_LABELS: ""
+
 
