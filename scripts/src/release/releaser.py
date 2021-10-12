@@ -140,6 +140,9 @@ def main():
                         help="Directory of pull request code.")
     parser.add_argument("-b", "--dev_pr_body", dest="dev_pr_body", type=str, required=True,
                         help="Body to use for the dev PR")
+    parser.add_argument("-b", "--target_branch", dest="target_branch", type=str, required=True,
+                        help="Target branch of the Pull Request" )
+
     args = parser.parse_args()
 
     start_directory = os.getcwd()
@@ -155,7 +158,7 @@ def main():
     print(f"create charts pull request")
     branch_name = f"{CHARTS_PR_BRANCH_NAME_PREFIX}{args.version}"
     message = f'{CHARTS_PR_BRANCH_BODY_PREFIX} {branch_name}'
-    outcome = gitutils.create_pr(branch_name,[],gitutils.CHARTS_REPO,message)
+    outcome = gitutils.create_pr(branch_name,[],gitutils.CHARTS_REPO,message,args.target_branch)
     if outcome == gitutils.PR_CREATED:
         print(f'::set-output name=charts_pr_created::true')
     elif outcome == gitutils.PR_NOT_NEEDED:
@@ -173,7 +176,7 @@ def main():
     os.chdir(args.dev_dir)
     print(f"create development pull request")
     branch_name = f"{DEV_PR_BRANCH_NAME_PREFIX}{args.version}"
-    outcome = gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],gitutils.DEVELOPMENT_REPO,args.dev_pr_body)
+    outcome = gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],gitutils.DEVELOPMENT_REPO,args.dev_pr_body,args.target_branch)
     if outcome == gitutils.PR_CREATED:
         print("Dev PR successfully created.")
         print(f'::set-output name=dev_pr_created::true')

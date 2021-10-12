@@ -75,7 +75,7 @@ def get_bot_name_and_token():
     return bot_name, bot_token
 
 
-def create_pr(branch_name,skip_files,repository,message):
+def create_pr(branch_name,skip_files,repository,message,target_branch):
 
     repo = Repo(os.getcwd())
 
@@ -95,8 +95,8 @@ def create_pr(branch_name,skip_files,repository,message):
         repo.git.push(f'https://x-access-token:{bot_token}@github.com/{repository}',
                    f'HEAD:refs/heads/{branch_name}','-f')
 
-        print("make the pull request")
-        data = {'head': branch_name, 'base': 'release-test',
+        print(f"make the pull request to {target_branch}")
+        data = {'head': branch_name, 'base': {target_branch},
                 'title': branch_name, 'body': f'{message}'}
 
         r = github_api(
