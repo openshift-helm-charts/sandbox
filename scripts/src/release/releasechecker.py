@@ -220,6 +220,8 @@ def main():
 
     args = parser.parse_args()
 
+
+    print("[INFO] release checker inputs:")
     print(f"[INFO] arg api-url : {args.api_url}")
     print(f"[INFO] arg version : {args.version}")
     print(f"[INFO] arg sender : {args.sender}")
