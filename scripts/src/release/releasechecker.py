@@ -51,7 +51,7 @@ def check_if_only_charts_are_included(api_url):
     print("[INFO] check if PR includes only chart files")
     files_api_url = f'{api_url}/files'
     headers = {'Accept': 'application/vnd.github.v3+json'}
-    chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
+    chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/.*")
     page_number = 1
     max_page_size,page_size = 100,100
     file_count = 0
@@ -80,7 +80,7 @@ def check_if_no_charts_are_included(api_url):
     print("[INFO] check if PR contains any chart files")
     files_api_url = f'{api_url}/files'
     headers = {'Accept': 'application/vnd.github.v3+json'}
-    chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
+    chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/.*")
     page_number = 1
     max_page_size,page_size = 100,100
     file_count = 0
