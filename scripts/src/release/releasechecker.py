@@ -48,6 +48,7 @@ DEV_PR_HEAD_REPO = gitutils.DEVELOPMENT_REPO
 
 def check_if_only_charts_are_included(api_url):
 
+    print("[INFO] check if PR includes only chart files")
     files_api_url = f'{api_url}/files'
     headers = {'Accept': 'application/vnd.github.v3+json'}
     chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
@@ -69,12 +70,14 @@ def check_if_only_charts_are_included(api_url):
             file_path = f["filename"]
             match = chart_pattern.match(file_path)
             if not match:
+                print(f"[INFO non chart file found: {file_path}")
                 return False
 
     return True
 
 def check_if_no_charts_are_included(api_url):
 
+    print("[INFO] check if PR contains any chart files")
     files_api_url = f'{api_url}/files'
     headers = {'Accept': 'application/vnd.github.v3+json'}
     chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
@@ -96,6 +99,7 @@ def check_if_no_charts_are_included(api_url):
             file_path = f["filename"]
             match = chart_pattern.match(file_path)
             if match:
+                print(f"[INFO chart file found: {file_path}")
                 return False
 
     return True
@@ -154,7 +158,7 @@ def check_if_dev_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo):
 
     return check_if_only_charts_are_included(api_url)
 
-def check_if_chart_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo):
+def check_if_charts_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo):
 
     print("[INFO] check if PR is release branch on charts")
 
@@ -225,14 +229,15 @@ def main():
     print(f"[INFO] arg pr head repo :  {args.pr_head_repo}")
 
     if args.pr_branch:
-        if args.pr_base_repo == DEV_PR_BASE_REPO and check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_head_repo):
-            print('[INFO] Dev release pull request found')
-            print(f'::set-output name=dev_release_branch::true')
-            version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
-            print(f'::set-output name=PR_version::{version}')
-            print(f"::set-output name=PR_release_body::{args.pr_body}")
-        elif args.pr_base_repo == CHARTS_PR_BASE_REPO:
+        if args.pr_base_repo == DEV_PR_BASE_REPO:
             if check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_head_repo):
+                print('[INFO] Dev release pull request found')
+                print(f'::set-output name=dev_release_branch::true')
+                version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
+                print(f'::set-output name=PR_version::{version}')
+                print(f"::set-output name=PR_release_body::{args.pr_body}")
+        elif args.pr_base_repo == CHARTS_PR_BASE_REPO:
+            if check_if_charts_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_head_repo):
                 print('[INFO] Dev release pull request found')
                 print(f'::set-output name=charts_release_branch::true')
     elif args.api_url:
