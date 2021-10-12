@@ -127,7 +127,9 @@ def check_if_only_version_file_is_modified(api_url):
 
     return version_file_found
 
-def check_if_dev_release_branch(sender,pr_branch,pr_body,api_url,pr_base_repo,pr_head_repo):
+def check_if_dev_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo):
+
+    print("[INFO] check if PR is release branch on dev")
 
     if not sender==os.environ.get("BOT_NAME"):
         print(f"Sender indicates PR is not part of a release: {sender}")
@@ -146,13 +148,15 @@ def check_if_dev_release_branch(sender,pr_branch,pr_body,api_url,pr_base_repo,pr
         print(f"PR does not have the expected origin. Got: {pr_head_repo}, expected: {DEV_PR_HEAD_REPO}")
         return False
 
-    if not pr_body.startswith(releaser.DEV_PR_BRANCH_NAME_PREFIX):
+    if not pr_body.startswith(releaser.DEV_PR_BRANCH_BODY_PREFIX):
         print(f"PR title indicates PR is not part of a release: {pr_body}")
         return False
 
     return check_if_only_charts_are_included(api_url)
 
-def check_if_chart_release_branch(sender,pr_branch,pr_body,api_url,pr_base_repo,pr_head_repo):
+def check_if_chart_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo):
+
+    print("[INFO] check if PR is release branch on charts")
 
     if not sender==os.environ.get("BOT_NAME"):
         print(f"Sender indicates PR is not part of a release: {sender}")
@@ -171,7 +175,7 @@ def check_if_chart_release_branch(sender,pr_branch,pr_body,api_url,pr_base_repo,
         print(f"PR does not have the expected origin. Got: {pr_head_repo}, expected: {CHARTS_PR_HEAD_REPO}")
         return False
 
-    if not pr_body.startswith(f"Charts workflow version {version}"):
+    if not pr_body.startswith(releaser.CHARTS_PR_BRANCH_BODY_PREFIX):
         print(f"PR title indicates PR is not part of a release: {pr_body}")
         return False
 
@@ -221,14 +225,14 @@ def main():
     print(f"[INFO] arg pr head repo :  {args.pr_head_repo}")
 
     if args.pr_branch:
-        if args.pr_base_repo == DEV_PR_BASE_REPO and check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_base_repo,args.pr_head_repo):
+        if args.pr_base_repo == DEV_PR_BASE_REPO and check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_head_repo):
             print('[INFO] Dev release pull request found')
             print(f'::set-output name=dev_release_branch::true')
             version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
             print(f'::set-output name=PR_version::{version}')
             print(f"::set-output name=PR_release_body::{args.pr_body}")
         elif args.pr_base_repo == CHARTS_PR_BASE_REPO:
-            if check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_base_repo,args.pr_head_repo):
+            if check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_head_repo):
                 print('[INFO] Dev release pull request found')
                 print(f'::set-output name=charts_release_branch::true')
     elif args.api_url:
