@@ -47,8 +47,8 @@ jobs:
                                     --sender='${{ github.event.sender.login }}' \
                                     --pr_branch='${{ github.event.pull_request.head.ref }}' \
                                     --pr_body='${{ github.event.pull_request.body }}' \
-                                    --pr_base_repo='${{ github.event.pull_requst.repository.full_name }}' \
-                                    --pr_head_repo='${{ github.event.pull_requst.sender.repos_url }}'
+                                    --pr_base_repo='${{ github.event.pull_request.base.repo.full_name }}' \
+                                    --pr_head_repo='${{ github.event.pull_request.head.repo.full_name }}'
 
       - name: Exit if build not required
         id: check_build_required
