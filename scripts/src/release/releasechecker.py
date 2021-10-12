@@ -219,16 +219,17 @@ def main():
     print(f"[INFO] arg pr base repo :  {args.pr_base_repo}")
     print(f"[INFO] arg pr head repo :  {args.pr_head_repo}")
 
-    if args.pr_branch and args.pr_base_repo == DEV_PR_BASE_REPO and check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_base_repo,args.pr_head_repo):
-        print('[INFO] Dev release pull request found')
-        print(f'::set-output name=dev_release_branch::true')
-        version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
-        print(f'::set-output name=PR_version::{version}')
-        print(f"::set-output name=PR_release_body::{args.pr_body}")
-    elif args.pr_branch and args.pr_base_repo == CHARTS_PR_BASE_REPO:
-        if check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_base_repo,args.pr_head_repo):
+    if args.pr_branch:
+        if args.pr_base_repo == DEV_PR_BASE_REPO and check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_base_repo,args.pr_head_repo):
             print('[INFO] Dev release pull request found')
-            print(f'::set-output name=charts_release_branch::true')
+            print(f'::set-output name=dev_release_branch::true')
+            version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
+            print(f'::set-output name=PR_version::{version}')
+            print(f"::set-output name=PR_release_body::{args.pr_body}")
+        elif args.pr_base_repo == CHARTS_PR_BASE_REPO:
+            if check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_base_repo,args.pr_head_repo):
+                print('[INFO] Dev release pull request found')
+                print(f'::set-output name=charts_release_branch::true')
     elif args.api_url:
         ## should be on PR branch
         version_only = check_if_only_version_file_is_modified(args.api_url)
