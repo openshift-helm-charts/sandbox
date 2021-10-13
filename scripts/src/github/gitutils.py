@@ -19,8 +19,8 @@ from git import Repo
 from git.exc import GitCommandError
 
 GITHUB_BASE_URL = 'https://api.github.com'
-CHARTS_REPO = f"{os.environ.get('REPOSITORY_ORGANIZATION')}/charts"
-DEVELOPMENT_REPO = f"{os.environ.get('REPOSITORY_ORGANIZATION')}/development"
+CHARTS_REPO = "/charts"
+DEVELOPMENT_REPO = f"/development"
 
 PR_CREATED = "PR_CREATED"
 PR_NOT_NEEDED = "PR_NOT_NEEDED"
@@ -96,7 +96,7 @@ def create_pr(branch_name,skip_files,repository,message,target_branch):
                    f'HEAD:refs/heads/{branch_name}','-f')
 
         print(f"make the pull request to {target_branch}")
-        data = {'head': branch_name, 'base': {target_branch},
+        data = {'head': branch_name, 'base': f'{target_branch}',
                 'title': branch_name, 'body': f'{message}'}
 
         r = github_api(

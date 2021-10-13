@@ -8,8 +8,6 @@ jobs:
   chart-workflow-release:
     name: Chart Workflow Release
     runs-on: ubuntu-20.04
-    env:
-      REPOSITORY_ORGANIZATION:  openshift-helm-charts
     if: |
       github.event.pull_request.draft == false
     steps:
@@ -38,13 +36,14 @@ jobs:
           cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
           cd scripts && ../ve1/bin/python3 setup.py install && cd ..
 
-      - name: Check if only release file in PR and if user is authorized
+      - name: Check if dev repo is targetted, only release file is in PR and user is authorized
         id: check_only_version_in_PR_and_authorized
         working-directory: ./pr-branch
         run: |
-          # check if release file only is included in PR and if so that user is authorized.
+          # if dev repo is targetted check if release file only is included in PR and if so that user is authorized.
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
-                                  --sender=${{ github.event.sender.login }}
+                                  --sender=${{ github.event.sender.login }} \
+                                  --pr_base_repo='${{ github.event.pull_request.base.repo.full_name }}'
 
       - name: Check if PR created as part of release process
         id: check_created_release_pr
