@@ -248,7 +248,7 @@ def main():
             user_authorized = checkuser.verify_user(args.sender)
             if version_only and user_authorized:
                 organization = args.pr_base_repo.removesuffix(DEV_PR_BASE_REPO)
-                print(f'::set-output name=charts_repo::f"{organization}{CHARTS_PR_BASE_REPO}')
+                print(f'::set-output name=charts_repo::{organization}{CHARTS_PR_BASE_REPO}')
                 version = release_info.get_version("./")
                 version_info = release_info.get_info("./")
                 print(f'[INFO] Release found in PR files : {version}.')
