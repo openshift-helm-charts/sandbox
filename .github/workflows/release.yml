@@ -84,7 +84,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.base.ref }}
-          repository: ${{ steps.check_only_version_in_PR_and_authorized.charts_repo }}
+          repository: ${{ steps.check_only_version_in_PR_and_authorized.outputs.charts_repo }}
           token: ${{ secrets.BOT_TOKEN }}
           path: "charts-repo"
 
