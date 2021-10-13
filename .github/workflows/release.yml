@@ -130,8 +130,9 @@ jobs:
                              --pr_dir="./pr-branch" \
                              --development_dir="./dev-repo" \
                              --charts_dir="./charts-repo" \
-                             --target_branch="${{ github.event.pull_request.base.ref }}"
-                             --dev_pr_body="${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}"
+                             --dev_pr_body="${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}" \
+                             --target_branch="${{ github.event.pull_request.base.ref }}" \
+                             --target_repository="${{ github.event.pull_request.base.repo.full_name }}"
 
       - name: Determine if merge and release are needed
         id: check_merge_and_release
