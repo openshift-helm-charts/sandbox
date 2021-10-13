@@ -230,7 +230,7 @@ def main():
     print(f"[INFO] arg pr head repo :  {args.pr_head_repo}")
 
     if args.pr_branch:
-        if args.pr_base_repo == DEV_PR_BASE_REPO:
+        if args.pr_base_repo.endswith(DEV_PR_BASE_REPO):
             if check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_head_repo):
                 print('[INFO] Dev release pull request found')
                 print(f'::set-output name=dev_release_branch::true')

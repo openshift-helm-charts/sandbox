@@ -68,7 +68,7 @@ jobs:
           DEV_PR_FOR_RELEASE: ${{ steps.check_created_release_pr.outputs.dev_release_branch }}
         run: |
           # Determine if and how processing should continue'
-          if [ ${NOT_AUTHORIZED} = 'true' ]; then
+          if [ ${NOT_AUTHORIZED} == 'true' ]; then
               echo "Unauthorized Request"
               exit 1
           elif [ ${RELEASE_INFO_ONLY} == 'true' ]; then
@@ -155,12 +155,12 @@ jobs:
                   echo "At least one PR was created - merge this one"
                   echo '::set-output name=merge::true'
               fi
-              if [ ${DEV_PR_NOT_NEEDED} = 'true' ]; then
+              if [ ${DEV_PR_NOT_NEEDED} == 'true' ]; then
                   echo "No dev PR so create release"
                   echo '::set-output name=release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}'
                   echo '::set-output name=release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}'
               fi
-          elif [ ${DEV_PR_FOR_RELEASE} = 'true' ]; then
+          elif [ ${DEV_PR_FOR_RELEASE} == 'true' ]; then
               echo "Dev PR so create release"
               echo '::set-output name=merge::true'
               echo '::set-output name=release_body::${{ github.event.pull_request.body }}'
