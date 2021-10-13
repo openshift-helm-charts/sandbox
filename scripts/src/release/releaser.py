@@ -34,7 +34,7 @@ BUILD_YAML_FILE=".github/workflows/build.yml"
 DEV_PR_BRANCH_BODY_PREFIX="Charts workflow version"
 DEV_PR_BRANCH_NAME_PREFIX="Auto-Release-"
 CHARTS_PR_BRANCH_BODY_PREFIX="Workflow and script updates from development repository"
-CHARTS_PR_BRANCH_NAME_PREFIX="Auto-Release-"
+CHARTS_PR_BRANCH_NAME_PREFIX="Release-"
 
 SCHEDULE_INSERT = [
     '  # Daily trigger to check updates',
@@ -178,6 +178,7 @@ def main():
     elif outcome == gitutils.PR_NOT_NEEDED:
         print(f'::set-output name=charts_pr_not_needed::true')
     else:
+        printf("[ERROR] error creating charts PR")
         print(f'::set-output name=charts_pr_error::true')
         os.chdir(start_directory)
         return
@@ -185,6 +186,8 @@ def main():
     os.chdir(start_directory)
 
     print(f"make changes to development from charts")
+    make_required_changes(args.pr_dir,args.charts_dir,args.dev_dir)
+
     os.chdir(args.dev_dir)
     print(f"create development pull request")
     branch_name = f"{DEV_PR_BRANCH_NAME_PREFIX}{args.version}"
@@ -196,7 +199,7 @@ def main():
         print("Dev PR not needed.")
         print(f'::set-output name=dev_pr_not_needed::true')
     else:
-        print("Dev PR errored.")
+        print("[ERROR] error creating development PR.")
         print(f'::set-output name=dev_pr_error::true')
 
     os.chdir(start_directory)

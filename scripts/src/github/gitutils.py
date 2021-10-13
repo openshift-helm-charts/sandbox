@@ -119,6 +119,11 @@ def create_pr(branch_name,skip_files,repository,message,target_branch):
 def add_changes(repo,skip_files):
 
     if len(skip_files) == 0:
+        changed = [ item.a_path for item in repo.index.diff(None) ]
+        for change in changed:
+            print(f"Changed file: {change}")
+        for add in repo.untracked_files:
+            print(f"Added file: {add}")
         print(f"Add all changes")
         repo.git.add(all=True)
     else:
