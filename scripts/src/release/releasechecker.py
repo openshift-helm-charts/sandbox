@@ -237,7 +237,7 @@ def main():
                 version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
                 print(f'::set-output name=PR_version::{version}')
                 print(f"::set-output name=PR_release_body::{args.pr_body}")
-        elif args.pr_base_repo == CHARTS_PR_BASE_REPO:
+        elif args.pr_base_repo.endswith(CHARTS_PR_BASE_REPO):
             if check_if_charts_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_head_repo):
                 print('[INFO] Dev release pull request found')
                 print(f'::set-output name=charts_release_branch::true')
