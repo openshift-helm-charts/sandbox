@@ -147,6 +147,16 @@ def main():
 
     args = parser.parse_args()
 
+    print("[INFO] releaser inputs:")
+    print(f"[INFO] arg version : {args.version}")
+    print(f"[INFO] arg dev_dir : {args.dev_dir}")
+    print(f"[INFO] arg charts_dir : {args.charts_dir}")
+    print(f"[INFO] arg pr_dir : {args.pr_dir}")
+    print(f"[INFO] arg dev_pr_body : {args.dev_pr_body}")
+    print(f"[INFO] arg target_branch :  {args.target_branch}")
+    print(f"[INFO] arg target_repository :  {args.target_repository}")
+
+
     start_directory = os.getcwd()
     print(f"working directory: {start_directory}")
 
