@@ -175,7 +175,7 @@ def check_if_charts_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo
         print(f"Release part ({version}) of branch name {pr_branch} is not a valid semantic version.")
         return False
 
-    if not pr_head_repo.endsWith(CHARTS_PR_HEAD_REPO):
+    if not pr_head_repo.endswith(CHARTS_PR_HEAD_REPO):
         print(f"PR does not have the expected origin. Got: {pr_head_repo}, expected: {CHARTS_PR_HEAD_REPO}")
         return False
 
@@ -230,7 +230,7 @@ def main():
     print(f"[INFO] arg pr head repo :  {args.pr_head_repo}")
 
     if args.pr_branch:
-        if args.pr_base_repo == DEV_PR_BASE_REPO:
+        if args.pr_base_repo.endswith(DEV_PR_BASE_REPO):
             if check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_head_repo):
                 print('[INFO] Dev release pull request found')
                 print(f'::set-output name=dev_release_branch::true')
@@ -247,6 +247,8 @@ def main():
             version_only = check_if_only_version_file_is_modified(args.api_url)
             user_authorized = checkuser.verify_user(args.sender)
             if version_only and user_authorized:
+                organization = args.pr_base_repo.removesuffix(DEV_PR_BASE_REPO)
+                print(f'::set-output name=charts_repo::{organization}{CHARTS_PR_BASE_REPO}')
                 version = release_info.get_version("./")
                 version_info = release_info.get_info("./")
                 print(f'[INFO] Release found in PR files : {version}.')
