@@ -148,7 +148,7 @@ def check_if_dev_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo):
         print(f"Release part ({version}) of branch name {pr_branch} is not a valid semantic version.")
         return False
 
-    if pr_head_repo != DEV_PR_HEAD_REPO:
+    if not pr_head_repo.endswith(DEV_PR_HEAD_REPO):
         print(f"PR does not have the expected origin. Got: {pr_head_repo}, expected: {DEV_PR_HEAD_REPO}")
         return False
 
@@ -175,7 +175,7 @@ def check_if_charts_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo
         print(f"Release part ({version}) of branch name {pr_branch} is not a valid semantic version.")
         return False
 
-    if pr_head_repo != CHARTS_PR_HEAD_REPO:
+    if not pr_head_repo.endsWith(CHARTS_PR_HEAD_REPO):
         print(f"PR does not have the expected origin. Got: {pr_head_repo}, expected: {CHARTS_PR_HEAD_REPO}")
         return False
 
@@ -220,6 +220,7 @@ def main():
 
     args = parser.parse_args()
 
+    print("[INFO] release checker inputs:")
     print(f"[INFO] arg api-url : {args.api_url}")
     print(f"[INFO] arg version : {args.version}")
     print(f"[INFO] arg sender : {args.sender}")
@@ -242,19 +243,24 @@ def main():
                 print(f'::set-output name=charts_release_branch::true')
     elif args.api_url:
         ## should be on PR branch
-        version_only = check_if_only_version_file_is_modified(args.api_url)
-        user_authorized = checkuser.verify_user(args.sender)
-        if version_only and user_authorized:
-            version = release_info.get_version("./")
-            version_info = release_info.get_info("./")
-            print(f'[INFO] Release found in PR files : {version}.')
-            print(f'::set-output name=PR_version::{version}')
-            print(f'::set-output name=PR_release_info::{version_info}')
-            print(f'::set-output name=PR_includes_release_only::true')
-            make_release_body(version,version_info)
-        elif not user_authorized:
-            print(f'[ERROR] sender not authorized : {args.sender}.')
-            print(f'::set-output name=sender_not_authorized::true')
+        if args.pr_base_repo.endswith(DEV_PR_BASE_REPO):
+            version_only = check_if_only_version_file_is_modified(args.api_url)
+            user_authorized = checkuser.verify_user(args.sender)
+            if version_only and user_authorized:
+                version = release_info.get_version("./")
+                version_info = release_info.get_info("./")
+                print(f'[INFO] Release found in PR files : {version}.')
+                print(f'::set-output name=PR_version::{version}')
+                print(f'::set-output name=PR_release_info::{version_info}')
+                print(f'::set-output name=PR_includes_release_only::true')
+                make_release_body(version,version_info)
+            elif version_only and not user_authorized:
+                print(f'[ERROR] sender not authorized : {args.sender}.')
+                print(f'::set-output name=sender_not_authorized::true')
+            else:
+                print('[INFO] Not a release PR')
+        else:
+            print(f'[INFO] Not a release PR, target is not : {DEV_PR_BASE_REPO}.')
     else:
         version = release_info.get_version("./")
         if args.version:

@@ -140,6 +140,11 @@ def main():
                         help="Directory of pull request code.")
     parser.add_argument("-b", "--dev_pr_body", dest="dev_pr_body", type=str, required=True,
                         help="Body to use for the dev PR")
+    parser.add_argument("-t", "--target_branch", dest="target_branch", type=str, required=True,
+                        help="Target branch of the Pull Request" )
+    parser.add_argument("-r", "--target_repository", dest="target_repository", type=str, required=True,
+                        help="Repository which is the target of the pull request" )
+
     args = parser.parse_args()
 
     start_directory = os.getcwd()
@@ -152,10 +157,12 @@ def main():
     os.chdir(args.charts_dir)
     update_workflow()
 
+    organization = args.target_repository.split("/")[0]
+    charts_repository=f"{organization}{gitutils.CHARTS_REPO}"
     print(f"create charts pull request")
     branch_name = f"{CHARTS_PR_BRANCH_NAME_PREFIX}{args.version}"
     message = f'{CHARTS_PR_BRANCH_BODY_PREFIX} {branch_name}'
-    outcome = gitutils.create_pr(branch_name,[],gitutils.CHARTS_REPO,message)
+    outcome = gitutils.create_pr(branch_name,[],charts_repository,message,args.target_branch)
     if outcome == gitutils.PR_CREATED:
         print(f'::set-output name=charts_pr_created::true')
     elif outcome == gitutils.PR_NOT_NEEDED:
@@ -168,12 +175,10 @@ def main():
     os.chdir(start_directory)
 
     print(f"make changes to development from charts")
-    make_required_changes(args.pr_dir,args.charts_dir,args.dev_dir)
-
     os.chdir(args.dev_dir)
     print(f"create development pull request")
     branch_name = f"{DEV_PR_BRANCH_NAME_PREFIX}{args.version}"
-    outcome = gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],gitutils.DEVELOPMENT_REPO,args.dev_pr_body)
+    outcome = gitutils.create_pr(branch_name,[release_info.RELEASE_INFO_FILE],args.target_repository,args.dev_pr_body,args.target_branch)
     if outcome == gitutils.PR_CREATED:
         print("Dev PR successfully created.")
         print(f'::set-output name=dev_pr_created::true')
