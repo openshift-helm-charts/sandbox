@@ -8,8 +8,6 @@ jobs:
   chart-workflow-release:
     name: Chart Workflow Release
     runs-on: ubuntu-20.04
-    env:
-      REPOSITORY_ORGANIZATION: openshift-helm-charts
     if: |
       github.event.pull_request.draft == false
     steps:
@@ -38,13 +36,14 @@ jobs:
           cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
           cd scripts && ../ve1/bin/python3 setup.py install && cd ..
 
-      - name: Check if only release file in PR and if user is authorized
+      - name: Check if dev repo is targetted, only release file is in PR and user is authorized
         id: check_only_version_in_PR_and_authorized
         working-directory: ./pr-branch
         run: |
-          # check if release file only is included in PR and if so that user is authorized.
+          # if dev repo is targetted check if release file only is included in PR and if so that user is authorized.
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
-                                  --sender=${{ github.event.sender.login }}
+                                  --sender=${{ github.event.sender.login }} \
+                                  --pr_base_repo='${{ github.event.pull_request.base.repo.full_name }}'
 
       - name: Check if PR created as part of release process
         id: check_created_release_pr
@@ -57,7 +56,9 @@ jobs:
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
                                   --sender='${{ github.event.sender.login }}' \
                                   --pr_branch='${{ github.event.pull_request.head.ref }}' \
-                                  --pr_body='${{ github.event.pull_request.body }}'
+                                  --pr_body='${{ github.event.pull_request.body }}' \
+                                  --pr_base_repo='${{ github.event.pull_request.base.repo.full_name }}' \
+                                  --pr_head_repo='${{ github.event.pull_request.head.repo.full_name }}'
 
       - name: Reflect on PR Content
         id: reflect_on_pr_content
@@ -67,7 +68,7 @@ jobs:
           DEV_PR_FOR_RELEASE: ${{ steps.check_created_release_pr.outputs.dev_release_branch }}
         run: |
           # Determine if and how processing should continue'
-          if [ ${NOT_AUTHORIZED} = 'true' ]; then
+          if [ ${NOT_AUTHORIZED} == 'true' ]; then
               echo "Unauthorized Request"
               exit 1
           elif [ ${RELEASE_INFO_ONLY} == 'true' ]; then
@@ -82,7 +83,8 @@ jobs:
         if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
         uses: actions/checkout@v2
         with:
-          repository: ${{ env.REPOSITORY_ORGANIZATION }}/charts
+          ref: ${{ github.event.pull_request.base.ref }}
+          repository: ${{ steps.check_only_version_in_PR_and_authorized.outputs.charts_repo }}
           token: ${{ secrets.BOT_TOKEN }}
           path: "charts-repo"
 
@@ -90,7 +92,8 @@ jobs:
         if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
         uses: actions/checkout@v2
         with:
-          repository: ${{ env.REPOSITORY_ORGANIZATION }}/development
+          ref: ${{ github.event.pull_request.base.ref }}
+          repository: ${{ github.event.pull_request.base.repo.full_name }}
           token: ${{ secrets.BOT_TOKEN }}
           path: "dev-repo"
 
@@ -100,7 +103,7 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Set up Python scripts on main branch
+      - name: Set up Python scripts on dev branch
         run: |
           # set up python scripts
           echo "set up python script in $PWD"
@@ -127,7 +130,9 @@ jobs:
                              --pr_dir="./pr-branch" \
                              --development_dir="./dev-repo" \
                              --charts_dir="./charts-repo" \
-                             --dev_pr_body="${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}"
+                             --dev_pr_body="${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}" \
+                             --target_branch="${{ github.event.pull_request.base.ref }}" \
+                             --target_repository="${{ github.event.pull_request.base.repo.full_name }}"
 
       - name: Determine if merge and release are needed
         id: check_merge_and_release
@@ -150,12 +155,12 @@ jobs:
                   echo "At least one PR was created - merge this one"
                   echo '::set-output name=merge::true'
               fi
-              if [ ${DEV_PR_NOT_NEEDED} = 'true' ]; then
+              if [ ${DEV_PR_NOT_NEEDED} == 'true' ]; then
                   echo "No dev PR so create release"
                   echo '::set-output name=release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}'
                   echo '::set-output name=release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}'
               fi
-          elif [ ${DEV_PR_FOR_RELEASE} = 'true' ]; then
+          elif [ ${DEV_PR_FOR_RELEASE} == 'true' ]; then
               echo "Dev PR so create release"
               echo '::set-output name=merge::true'
               echo '::set-output name=release_body::${{ github.event.pull_request.body }}'
