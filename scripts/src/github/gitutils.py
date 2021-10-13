@@ -91,7 +91,7 @@ def create_pr(branch_name,skip_files,repository,message,target_branch):
         print(f"commit changes with message: {branch_name}")
         repo.index.commit(branch_name)
 
-        print(f"push the branch to {repo}")
+        print(f"push the branch {branch_name} to {repository}")
         repo.git.push(f'https://x-access-token:{bot_token}@github.com/{repository}',
                    f'HEAD:refs/heads/{branch_name}','-f')
 

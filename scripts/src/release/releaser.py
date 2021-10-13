@@ -147,6 +147,16 @@ def main():
 
     args = parser.parse_args()
 
+    print("[INFO] releaser inputs:")
+    print(f"[INFO] arg version : {args.version}")
+    print(f"[INFO] arg dev_dir : {args.dev_dir}")
+    print(f"[INFO] arg charts_dir : {args.charts_dir}")
+    print(f"[INFO] arg pr_dir : {args.pr_dir}")
+    print(f"[INFO] arg dev_pr_body : {args.dev_pr_body}")
+    print(f"[INFO] arg target_branch :  {args.target_branch}")
+    print(f"[INFO] arg target_repository :  {args.target_repository}")
+
+
     start_directory = os.getcwd()
     print(f"working directory: {start_directory}")
 
@@ -159,7 +169,7 @@ def main():
 
     organization = args.target_repository.split("/")[0]
     charts_repository=f"{organization}{gitutils.CHARTS_REPO}"
-    print(f"create charts pull request")
+    print(f"create charts pull request, repository: {charts_repository}, branch: {args.target_branch} ")
     branch_name = f"{CHARTS_PR_BRANCH_NAME_PREFIX}{args.version}"
     message = f'{CHARTS_PR_BRANCH_BODY_PREFIX} {branch_name}'
     outcome = gitutils.create_pr(branch_name,[],charts_repository,message,args.target_branch)
