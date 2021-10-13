@@ -159,7 +159,7 @@ def main():
 
     organization = args.target_repository.split("/")[0]
     charts_repository=f"{organization}{gitutils.CHARTS_REPO}"
-    print(f"create charts pull request")
+    print(f"create charts pull request, repository: {charts_repository}, branch: {args.target_branch} ")
     branch_name = f"{CHARTS_PR_BRANCH_NAME_PREFIX}{args.version}"
     message = f'{CHARTS_PR_BRANCH_BODY_PREFIX} {branch_name}'
     outcome = gitutils.create_pr(branch_name,[],charts_repository,message,args.target_branch)
