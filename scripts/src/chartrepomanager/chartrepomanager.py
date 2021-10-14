@@ -274,6 +274,13 @@ def update_chart_annotation(category, organization, chart_file_name, chart, repo
 
     annotations = report_info.get_report_annotations(report_path)
 
+    print("[INFO] Check 'charts.openshift.io/name'")
+    # Fixes https://issues.redhat.com/browse/HELM-226
+    if 'charts.openshift.io/name' not in annotations:
+        print("[ERROR] 'charts.openshift.io/name' is required in chart annotations.")
+        print("[ERROR] See https://helm.sh/docs/topics/charts/#the-chartyaml-file")
+        sys.exit(1)
+
     print("category:", category)
     redhat_to_community = bool(os.environ.get("REDHAT_TO_COMMUNITY"))
     if category == "partners":
@@ -283,6 +290,8 @@ def update_chart_annotation(category, organization, chart_file_name, chart, repo
     else:
         annotations["charts.openshift.io/providerType"] = category
 
+    # Fixes https://issues.redhat.com/browse/HELM-226
+    # 'charts.openshift.io/provider' annotation defaults to '.vendor.name' in OWNERS file
     if "charts.openshift.io/provider" not in annotations:
         data = open(os.path.join("charts", category, organization, chart, "OWNERS")).read()
         out = yaml.load(data, Loader=Loader)
