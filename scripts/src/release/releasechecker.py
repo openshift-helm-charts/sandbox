@@ -44,15 +44,14 @@ CHARTS_PR_HEAD_REPO = gitutils.CHARTS_REPO
 DEV_PR_BASE_REPO = gitutils.DEVELOPMENT_REPO
 DEV_PR_HEAD_REPO = gitutils.DEVELOPMENT_REPO
 DEFAULT_BOT_NAME = "openshift-helm-charts-bot"
+ERROR_IF_MATCH_NOT_FOUND = False
+ERROR_IF_MATCH_FOUND = True
 
-
-
-def check_if_only_charts_are_included(api_url):
+def check_file_in_pr(api_url,pattern,error_value):
 
     print("[INFO] check if PR includes only chart files")
     files_api_url = f'{api_url}/files'
     headers = {'Accept': 'application/vnd.github.v3+json'}
-    chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/.*")
     page_number = 1
     max_page_size,page_size = 100,100
     file_count = 0
@@ -69,77 +68,39 @@ def check_if_only_charts_are_included(api_url):
 
         for f in files:
             file_path = f["filename"]
-            match = chart_pattern.match(file_path)
-            if not match:
-                print(f"[INFO non chart file found: {file_path}")
+            match = pattern.match(file_path)
+
+            if match == error_value:
+                print(f"[INFO] stop matching at file  : {file_path}")
                 return False
 
     return True
+
+
+def check_if_only_charts_are_included(api_url):
+    chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/.*")
+    return check_file_in_pr(api_url, chart_pattern, ERROR_IF_MATCH_NOT_FOUND)
 
 def check_if_no_charts_are_included(api_url):
-
-    print("[INFO] check if PR contains any chart files")
-    files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
     chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/.*")
-    page_number = 1
-    max_page_size,page_size = 100,100
-    file_count = 0
-
-    while page_size == max_page_size:
-
-        files_api_query = f'{files_api_url}?per_page={page_size}&page={page_number}'
-        print(f"Query files : {files_api_query}")
-        pr_files = requests.get(files_api_query,headers=headers)
-        files = pr_files.json()
-        page_size = len(files)
-        file_count += page_size
-        page_number += 1
-
-        for f in files:
-            file_path = f["filename"]
-            match = chart_pattern.match(file_path)
-            if match:
-                print(f"[INFO chart file found: {file_path}")
-                return False
-
-    return True
+    return check_file_in_pr(api_url, chart_pattern, ERROR_IF_MATCH_FOUND)
 
 def check_if_only_version_file_is_modified(api_url):
-    # api_url https://api.github.com/repos/<organization-name>/<repository-name>/pulls/<pr_number>
-
-    files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
     pattern_versionfile = re.compile(r"release/release_info.json")
-    page_number = 1
-    max_page_size,page_size = 100,100
-
-    version_file_found = False
-    while (page_size == max_page_size):
-
-        files_api_query = f'{files_api_url}?per_page={page_size}&page={page_number}'
-        r = requests.get(files_api_query,headers=headers)
-        files = r.json()
-        page_size = len(files)
-        page_number += 1
-
-        for f in files:
-            filename = f["filename"]
-            if pattern_versionfile.match(filename):
-                version_file_found = True
-            else:
-                return False
-
-    return version_file_found
+    return check_file_in_pr(api_url, pattern_versionfile, ERROR_IF_MATCH_NOT_FOUND)
 
 def check_if_dev_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo):
 
     print("[INFO] check if PR is release branch on dev")
 
-    if not sender==os.environ.get("BOT_NAME") and not sender==DEFAULT_BOT_NAME:
+    if not sender!=os.environ.get("BOT_NAME") and sender!=DEFAULT_BOT_NAME:
         print(f"Sender indicates PR is not part of a release: {sender}")
         return False
 
+    if not checkuser.verify_user(sender):
+        print(f"Sender is not authorized to create a release PR : {sender}")
+        return False
+    
     if not pr_branch.startswith(releaser.DEV_PR_BRANCH_NAME_PREFIX):
         print(f"PR branch indicates PR is not part of a release: {pr_branch}")
         return False
@@ -163,8 +124,12 @@ def check_if_charts_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo
 
     print("[INFO] check if PR is release branch on charts")
 
-    if not sender==os.environ.get("BOT_NAME") and not sender==DEFAULT_BOT_NAME:
+    if not sender!=os.environ.get("BOT_NAME") and sender!=DEFAULT_BOT_NAME:
         print(f"Sender indicates PR is not part of a release: {sender}")
+        return False
+
+    if not checkuser.verify_user(sender):
+        print(f"Sender is not authorized to create a release PR : {sender}")
         return False
 
     if not pr_branch.startswith(releaser.CHARTS_PR_BRANCH_NAME_PREFIX):
