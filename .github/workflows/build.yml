@@ -9,8 +9,7 @@ jobs:
     name: Chart Certification
     runs-on: ubuntu-20.04
     env:
-      VERIFIER_IMAGE: quay.io/redhat-certification/chart-verifier:main
-      REPOSITORY_ORGANIZATION: mmulholla
+      VERIFIER_IMAGE: quay.io/redhat-certification/chart-verifier:latest
     if: |
       github.event.pull_request.draft == false &&
       (github.event.action != 'labeled' || github.event.label.name == 'force-publish')
@@ -65,10 +64,10 @@ jobs:
             echo "The PR is workflow changes only - do not continue."
             exit 0
           elif [ ${NO_CODE_TO_BUILD} == "true" ]; then
-             echo "The PR does not contain changes which need build or test."
-             exit 0
+            echo "The PR does not contain changes which need build or test."
+            exit 0
           elif [ ${DEV_PR_FOR_RELEASE} == "true" ]; then
-              echo "The PR is part of release processing for the devlepment repostory - do not continue."
+            echo "The PR is part of release processing for the development repository - do not continue."
           elif [ ${CHART_PR_FOR_RELEASE} == "true" ]; then
             echo "The PR is part of release processing for the charts repository - do not continue."
           else

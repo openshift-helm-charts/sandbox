@@ -28,8 +28,6 @@ jobs:
   workflow-test:
     name: Workflow Test
     runs-on: ubuntu-20.04
-    env:
-      REPOSITORY_ORGANIZATION: mmulholla
     if: |
       github.event.pull_request.draft == false
     steps:
