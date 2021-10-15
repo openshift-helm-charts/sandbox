@@ -59,7 +59,7 @@ def check_file_in_pr(api_url,pattern,error_value):
     while page_size == max_page_size:
 
         files_api_query = f'{files_api_url}?per_page={page_size}&page={page_number}'
-        print(f"Query files : {files_api_query}")
+        print(f"[INFO] Query files : {files_api_query}")
         pr_files = requests.get(files_api_query,headers=headers)
         files = pr_files.json()
         page_size = len(files)
@@ -69,7 +69,6 @@ def check_file_in_pr(api_url,pattern,error_value):
         for f in files:
             file_path = f["filename"]
             match = pattern.match(file_path)
-            print(f"[INFO] match file  : {file_path}, match: {match}, error: {error_value}")
             if not match and not error_value:
                 print(f"[INFO] stop non match found  : {file_path}")
                 return False
