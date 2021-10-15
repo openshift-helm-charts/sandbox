@@ -70,8 +70,11 @@ def check_file_in_pr(api_url,pattern,error_value):
             file_path = f["filename"]
             match = pattern.match(file_path)
             print(f"[INFO] match file  : {file_path}, match: {match}, error: {error_value}")
-            if match == error_value:
-                print(f"[INFO] stop matching at file  : {file_path}")
+            if not match and error_value:
+                print(f"[INFO] stop non match found  : {file_path}")
+                return False
+            elif match and error_value:
+                print(f"[INFO] stop match found  : {file_path}")
                 return False
 
     return True
