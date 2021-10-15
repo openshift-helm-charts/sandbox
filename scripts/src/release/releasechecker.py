@@ -44,8 +44,8 @@ CHARTS_PR_HEAD_REPO = gitutils.CHARTS_REPO
 DEV_PR_BASE_REPO = gitutils.DEVELOPMENT_REPO
 DEV_PR_HEAD_REPO = gitutils.DEVELOPMENT_REPO
 DEFAULT_BOT_NAME = "openshift-helm-charts-bot"
-ERROR_IF_MATCH_NOT_FOUND = False
-ERROR_IF_MATCH_FOUND = True
+ERROR_IF_MATCH_NOT_FOUND = True
+ERROR_IF_MATCH_FOUND = False
 
 def check_file_in_pr(api_url,pattern,error_value):
 
@@ -69,7 +69,6 @@ def check_file_in_pr(api_url,pattern,error_value):
         for f in files:
             file_path = f["filename"]
             match = pattern.match(file_path)
-
             if match == error_value:
                 print(f"[INFO] stop matching at file  : {file_path}")
                 return False
@@ -78,14 +77,17 @@ def check_file_in_pr(api_url,pattern,error_value):
 
 
 def check_if_only_charts_are_included(api_url):
+    print("[INFO] check if only chart files are included")
     chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/.*")
     return check_file_in_pr(api_url, chart_pattern, ERROR_IF_MATCH_NOT_FOUND)
 
 def check_if_no_charts_are_included(api_url):
+    print("[INFO] check if no chart files are included")
     chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/.*")
     return check_file_in_pr(api_url, chart_pattern, ERROR_IF_MATCH_FOUND)
 
 def check_if_only_version_file_is_modified(api_url):
+    print("[INFO] check if only version file is modified")
     pattern_versionfile = re.compile(r"release/release_info.json")
     return check_file_in_pr(api_url, pattern_versionfile, ERROR_IF_MATCH_NOT_FOUND)
 
