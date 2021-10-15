@@ -49,7 +49,7 @@ ERROR_IF_MATCH_FOUND = True
 
 def check_file_in_pr(api_url,pattern,error_value):
 
-    print("[INFO] check if PR includes only chart files")
+    print("[INFO] check if PR for matching files")
     files_api_url = f'{api_url}/files'
     headers = {'Accept': 'application/vnd.github.v3+json'}
     page_number = 1
@@ -59,7 +59,7 @@ def check_file_in_pr(api_url,pattern,error_value):
     while page_size == max_page_size:
 
         files_api_query = f'{files_api_url}?per_page={page_size}&page={page_number}'
-        print(f"Query files : {files_api_query}")
+        print(f"[INFO] Query files : {files_api_query}")
         pr_files = requests.get(files_api_query,headers=headers)
         files = pr_files.json()
         page_size = len(files)
@@ -69,23 +69,28 @@ def check_file_in_pr(api_url,pattern,error_value):
         for f in files:
             file_path = f["filename"]
             match = pattern.match(file_path)
-
-            if match == error_value:
-                print(f"[INFO] stop matching at file  : {file_path}")
+            if not match and not error_value:
+                print(f"[INFO] stop non match found  : {file_path}")
+                return False
+            elif match and error_value:
+                print(f"[INFO] stop match found  : {file_path}")
                 return False
 
     return True
 
 
 def check_if_only_charts_are_included(api_url):
+    print("[INFO] check if only chart files are included")
     chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/.*")
     return check_file_in_pr(api_url, chart_pattern, ERROR_IF_MATCH_NOT_FOUND)
 
 def check_if_no_charts_are_included(api_url):
+    print("[INFO] check if no chart files are included")
     chart_pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/.*")
     return check_file_in_pr(api_url, chart_pattern, ERROR_IF_MATCH_FOUND)
 
 def check_if_only_version_file_is_modified(api_url):
+    print("[INFO] check if only version file is modified")
     pattern_versionfile = re.compile(r"release/release_info.json")
     return check_file_in_pr(api_url, pattern_versionfile, ERROR_IF_MATCH_NOT_FOUND)
 
@@ -93,7 +98,7 @@ def check_if_dev_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo):
 
     print("[INFO] check if PR is release branch on dev")
 
-    if not sender!=os.environ.get("BOT_NAME") and sender!=DEFAULT_BOT_NAME:
+    if sender!=os.environ.get("BOT_NAME") and sender!=DEFAULT_BOT_NAME:
         print(f"Sender indicates PR is not part of a release: {sender}")
         return False
 
@@ -124,7 +129,7 @@ def check_if_charts_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo
 
     print("[INFO] check if PR is release branch on charts")
 
-    if not sender!=os.environ.get("BOT_NAME") and sender!=DEFAULT_BOT_NAME:
+    if sender!=os.environ.get("BOT_NAME") and sender!=DEFAULT_BOT_NAME:
         print(f"Sender indicates PR is not part of a release: {sender}")
         return False
 
