@@ -28,14 +28,6 @@ jobs:
     name: Check OpenShift Version
     runs-on: ubuntu-20.04
     steps:
-      - name: get some info
-        run: |
-          echo "Github repository: $GITHUB_REPOSITORY"
-          echo "Github event: $GITHUB_EVENT_NAME"
-          echo "Github actor: $GITHUB_ACTOR"
-          echo "Github workspace: $GITHUB_WORKSPACE"
-          env
-
       - name: Install oc
         run: |
           curl -sLO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
