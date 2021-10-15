@@ -44,12 +44,12 @@ CHARTS_PR_HEAD_REPO = gitutils.CHARTS_REPO
 DEV_PR_BASE_REPO = gitutils.DEVELOPMENT_REPO
 DEV_PR_HEAD_REPO = gitutils.DEVELOPMENT_REPO
 DEFAULT_BOT_NAME = "openshift-helm-charts-bot"
-ERROR_IF_MATCH_NOT_FOUND = True
-ERROR_IF_MATCH_FOUND = False
+ERROR_IF_MATCH_NOT_FOUND = False
+ERROR_IF_MATCH_FOUND = True
 
 def check_file_in_pr(api_url,pattern,error_value):
 
-    print("[INFO] check if PR includes only chart files")
+    print("[INFO] check if PR for matching files")
     files_api_url = f'{api_url}/files'
     headers = {'Accept': 'application/vnd.github.v3+json'}
     page_number = 1
@@ -68,6 +68,7 @@ def check_file_in_pr(api_url,pattern,error_value):
 
         for f in files:
             file_path = f["filename"]
+            print(f"[INFO] match file  : {file_path}")
             match = pattern.match(file_path)
             if match == error_value:
                 print(f"[INFO] stop matching at file  : {file_path}")
