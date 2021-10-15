@@ -99,7 +99,7 @@ def check_if_dev_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo):
 
     print("[INFO] check if PR is release branch on dev")
 
-    if not sender!=os.environ.get("BOT_NAME") and sender!=DEFAULT_BOT_NAME:
+    if sender!=os.environ.get("BOT_NAME") and sender!=DEFAULT_BOT_NAME:
         print(f"Sender indicates PR is not part of a release: {sender}")
         return False
 
