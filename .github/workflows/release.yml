@@ -7,6 +7,7 @@ on:
 jobs:
   check-run:
     name: Check run
+    runs-on: ubuntu-20.04
     outputs:
       status: ${{ steps.check_main.conclusion }}
     steps:
