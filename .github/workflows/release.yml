@@ -23,7 +23,7 @@ jobs:
   chart-workflow-release:
     name: Chart Workflow Release
     runs-on: ubuntu-20.04
-    needs: check-schedule
+    needs: check-run
     if: |
       needs.check-schedule.outputs.status == 'success' && github.event.pull_request.draft == false
     steps:
