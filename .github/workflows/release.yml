@@ -5,11 +5,26 @@ on:
     types: [opened, synchronize, reopened, edited, ready_for_review, labeled]
 
 jobs:
+  check-run:
+    name: Check run
+    outputs:
+      status: ${{ steps.check_main.conclusion }}
+    steps:
+      - name: check shcdule main repository
+        id: check_main
+        run: |
+          env
+          if [ ${github.event_name} == 'pull_request' ] && [ ${github.repository} != "openshift-helm-charts/charts" ]; then
+            echo "Dont run workflow"
+            exit 1
+          fi
+
   chart-workflow-release:
     name: Chart Workflow Release
     runs-on: ubuntu-20.04
+    needs: check-schedule
     if: |
-      github.event.pull_request.draft == false
+      needs.check-schedule.outputs.status == 'success' && github.event.pull_request.draft == false
     steps:
       - name: Checkout
         uses: actions/checkout@v2
