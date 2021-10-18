@@ -14,7 +14,7 @@ pointing to the downloadable location of the chart.  In this case, the Helm
 charts repository index will include the download URL and other chart metadata
 available in the report.  If you want the chart published through GitHub but do
 not want the CI/CD pipeline running chart-verifier against your chart, you can
-submit a chart and the report together.
+submit a chart and the report together please.
 
 ---
 
