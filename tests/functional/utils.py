@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Common utility functions used by tests"""
 
+from logging import log
 import os
 import shutil
 import tarfile
@@ -11,6 +12,7 @@ import pytest
 import requests
 import yaml
 from retrying import retry
+from string import Template
 
 GITHUB_BASE_URL = 'https://api.github.com'
 # The sandbox repository where we run all our tests on
@@ -329,6 +331,24 @@ def commit_current_changes(repo, commit_message='Auto Commit'):
     except git.exc.GitCommandError:
         pytest.fail("Failed to commit current changes")
 
+def create_new_branch_locally(repo):
+    head_sha = repo.git.rev_parse('--short', 'HEAD')
+    local_branches = [h.name for h in repo.heads]
+    if head_sha not in local_branches:
+        repo.git.checkout('-b', f'{head_sha}')
+    return head_sha
+
+def get_active_branch_name(repo):
+    return repo.active_branch.name
+
+def push_current_branch_to_remote_test_repo(repo, test_repo, bot_token):
+    current_branch = get_active_branch_name(repo)
+    branch_names = get_branch_names_from_remote_repo(test_repo, bot_token)
+    if current_branch not in branch_names:
+        repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
+                  f'HEAD:refs/heads/{current_branch}', '-f')
+    return current_branch
+
 def remove_chart_dir_from_base_branch(secrets, chart_dir, repo, logger):
     logger.info(
             f"Remove {chart_dir}/{secrets.chart_version} from {secrets.test_repo}:{secrets.base_branch}")
@@ -379,3 +399,32 @@ def push_chart_files_to_pr_branch(secrets, chart_dir, chart_tar, repo, logger):
                 f'HEAD:refs/heads/{secrets.pr_branch}', '-f')
     except git.exc.GitCommandError:
         pytest.fail("Failed to push chart files to pr branch")
+
+def push_chart_files_only_to_pr_branch(secrets, chart_dir, chart_tar, repo, logger):
+    logger.info(
+        f"Push report and chart tar to '{secrets.test_repo}:{secrets.pr_branch}'")
+    try:
+        repo.git.add(f'{chart_dir}/{secrets.chart_version}/{chart_tar}')
+        repo.git.commit(
+            '-m', f"Add {secrets.vendor} {secrets.chart_name} {secrets.chart_version} chart tar files")
+        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
+                f'HEAD:refs/heads/{secrets.pr_branch}', '-f')
+    except git.exc.GitCommandError:
+        pytest.fail("Failed to push chart files to pr branch")
+
+def get_chart_tar_file_name(secrets):
+    return secrets.chart_name + '-' + secrets.chart_version + '.tgz'
+
+def get_report_file(secrets):
+    return secrets.test_data_dir + 'report.yaml'
+
+def copy_report_to_tmp_location(secrets, chart_dir):
+    test_report = get_report_file(secrets)
+    tmpl = open(test_report).read()
+    values = {'repository': secrets.test_repo,
+                'branch': secrets.base_branch}
+    content = Template(tmpl).substitute(values)
+    with open(f'{chart_dir}/{secrets.chart_version}/report.yaml', 'w') as fd:
+        fd.write(content)
+    
+
