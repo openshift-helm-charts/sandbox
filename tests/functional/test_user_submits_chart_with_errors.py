@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-""" Chart submitted by an unauthorized user
-    Partners or redhat associates can not submit charts if they are not in the OWNERS file of the chart
+""" Chart submission with errors
+    Partners or redhat associates submit charts which result in errors
 """
 import os
 import json
@@ -42,20 +42,22 @@ def secrets():
         pr_number: int = -1
         vendor_type: str = ''
         vendor: str = ''
+        user: str = ''
         owners_file_content: str = """\
 chart:
   name: ${chart_name}
   shortDescription: Test chart for testing chart submission workflows.
 publicPgpKey: null
-users: []
+users:
+- githubUsername: ${bot_name}
 vendor:
   label: ${vendor}
   name: ${vendor}
 """
-        test_chart: str = 'tests/data/vault-0.13.0.tgz'
-        test_report: str = 'tests/data/report.yaml'
-        chart_name, chart_version = get_name_and_version_from_report(
-            test_report)
+        test_data_dir: str = 'tests/data/'
+        #test_chart: str = 'tests/data/vault-0.13.0.tgz'
+        #test_report: str = 'tests/data/report.yaml'
+        #chart_name, chart_version = get_name_and_version_from_report(test_report)
 
     bot_name, bot_token = get_bot_name_and_token()
 
@@ -66,20 +68,11 @@ vendor:
     github_actions = os.environ.get("GITHUB_ACTIONS")
     if github_actions:
         # Create a new branch locally from detached HEAD
-        head_sha = repo.git.rev_parse('--short', 'HEAD')
-        local_branches = [h.name for h in repo.heads]
-        if head_sha not in local_branches:
-            repo.git.checkout('-b', f'{head_sha}')
+        head_sha = create_new_branch_locally(repo)
 
-    current_branch = repo.active_branch.name
-    branch_names = get_branch_names_from_remote_repo(test_repo, bot_token)
-    if current_branch not in branch_names:
-        logger.info(
-            f"{test_repo}:{current_branch} does not exists, creating with local branch")
-    repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
-                  f'HEAD:refs/heads/{current_branch}', '-f')
+    push_current_branch_to_remote_test_repo(repo, test_repo, bot_token)
 
-    base_branch = f'unauthorized-user-{current_branch}'
+    base_branch = 'error-chart-' + get_active_branch_name(repo)
 
     secrets = Secret(test_repo, bot_name, bot_token, base_branch)
     yield secrets
@@ -95,21 +88,30 @@ vendor:
     cleanup_branches(secrets, repo, logger)
 
 
-@scenario('features/chart_submitted_by_unauthorized_user.feature', "An unauthorized user submits a chart with report")
+@scenario('features/user_submits_chart_with_errors.feature', "An unauthorized user submits a chart with report")
 def test_chart_submission_by_unauthorized_user():
     """An unauthorized user submits a chart with report"""
 
-@given(parsers.parse("<vendor> of <vendor_type> user is not present in the OWNERS file of the chart"))
-def user_is_not_present_in_the_chart_owners_file(secrets, vendor, vendor_type):
+@given(parsers.parse("A <user> wants to submit a chart"))
+def user_wants_to_submit_a_chart(secrets, user):
+    """A user wants to submit a chart"""
+
+    logger.info(f"User: {user}")
+    secrets.user = user
+
+@given(parsers.parse("<vendor> of <vendor_type> wants to submit <chart> of <version>"))
+def vendor_of_vendor_type_wants_to_submit_chart_of_version(secrets, vendor, vendor_type, chart, version):
     """partner user is not present in the OWNERS file of the chart"""
     
-    logger.info(f"Vendor is: {vendor} Vendor Type is: {vendor_type}")
+    logger.info(f"Vendor: {vendor} Vendor Type: {vendor_type} Chart: {chart} Version: {version}")
 
     secrets.vendor_type = vendor_type
     secrets.vendor = get_unique_vendor(vendor)
+    secrets.chart_name = chart
+    secrets.chart_version = version
 
     #Substitude the values in owners file content
-    values = {'vendor': secrets.vendor, 'chart_name': secrets.chart_name}
+    values = {'bot_name': secrets.user, 'vendor': secrets.vendor, 'chart_name': secrets.chart_name}
     secrets.owners_file_content = Template(secrets.owners_file_content).substitute(values)
 
 
@@ -155,20 +157,15 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(secrets):
         push_owners_file_to_base_branch(secrets, chart_dir, repo, logger)
 
         # Copy the chart tar into temporary directory for PR submission
-        chart_tar = secrets.test_chart.split('/')[-1]
-        shutil.copyfile(f'{old_cwd}/{secrets.test_chart}',
-                        f'{chart_dir}/{secrets.chart_version}/{chart_tar}')
+        chart_tar_file = get_chart_tar_file_name(secrets)
+        shutil.copyfile(f'{old_cwd}/{secrets.test_data_dir}{chart_tar_file}',
+            f'{chart_dir}/{secrets.chart_version}/{chart_tar_file}')
 
         # Copy report to temporary location
-        tmpl = open(secrets.test_report).read()
-        values = {'repository': secrets.test_repo,
-                  'branch': secrets.base_branch}
-        content = Template(tmpl).substitute(values)
-        with open(f'{chart_dir}/{secrets.chart_version}/report.yaml', 'w') as fd:
-            fd.write(content)
+        copy_report_to_tmp_location(secrets, chart_dir)
 
         # Push chart src files to test_repo:pr_branch
-        push_chart_files_to_pr_branch(secrets, chart_dir, chart_tar, repo, logger)
+        push_chart_files_to_pr_branch(secrets, chart_dir, chart_tar_file, repo, logger)
 
         os.chdir(old_cwd)
 
