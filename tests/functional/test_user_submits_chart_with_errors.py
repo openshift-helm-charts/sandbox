@@ -43,6 +43,8 @@ def secrets():
         vendor_type: str = ''
         vendor: str = ''
         user: str = ''
+        bad_version: str = ''
+        chart_dir: str = ''
         owners_file_content: str = """\
 chart:
   name: ${chart_name}
@@ -55,9 +57,6 @@ vendor:
   name: ${vendor}
 """
         test_data_dir: str = 'tests/data/'
-        #test_chart: str = 'tests/data/vault-0.13.0.tgz'
-        #test_report: str = 'tests/data/report.yaml'
-        #chart_name, chart_version = get_name_and_version_from_report(test_report)
 
     bot_name, bot_token = get_bot_name_and_token()
 
@@ -88,9 +87,13 @@ vendor:
     cleanup_branches(secrets, repo, logger)
 
 
-@scenario('features/user_submits_chart_with_errors.feature', "An unauthorized user submits a chart with report")
+@scenario('features/user_submits_chart_with_errors.feature', "An unauthorized user submits a chart")
 def test_chart_submission_by_unauthorized_user():
-    """An unauthorized user submits a chart with report"""
+    """An unauthorized user submits a chart"""
+
+@scenario('features/user_submits_chart_with_errors.feature', "An authorized user submits a chart with incorrect version")
+def test_chart_submission_with_incorrect_version():
+    """ An authorized user submits a chart with incorrect version """
 
 @given(parsers.parse("A <user> wants to submit a chart"))
 def user_wants_to_submit_a_chart(secrets, user):
@@ -101,7 +104,7 @@ def user_wants_to_submit_a_chart(secrets, user):
 
 @given(parsers.parse("<vendor> of <vendor_type> wants to submit <chart> of <version>"))
 def vendor_of_vendor_type_wants_to_submit_chart_of_version(secrets, vendor, vendor_type, chart, version):
-    """partner user is not present in the OWNERS file of the chart"""
+    """<vendor> of <vendor_type> wants to submit <chart> of <version>"""
     
     logger.info(f"Vendor: {vendor} Vendor Type: {vendor_type} Chart: {chart} Version: {version}")
 
@@ -110,10 +113,14 @@ def vendor_of_vendor_type_wants_to_submit_chart_of_version(secrets, vendor, vend
     secrets.chart_name = chart
     secrets.chart_version = version
 
-    #Substitude the values in owners file content
-    values = {'bot_name': secrets.user, 'vendor': secrets.vendor, 'chart_name': secrets.chart_name}
-    secrets.owners_file_content = Template(secrets.owners_file_content).substitute(values)
-
+    secrets.chart_dir = f'charts/{secrets.vendor_type}/{secrets.vendor}/{secrets.chart_name}'
+    
+@given(parsers.parse("Chart.yaml specifies a <bad_version>"))
+def chart_yaml_specifies_bad_version(secrets, bad_version):
+    """ Chart.yaml specifies a <bad_version> """
+    
+    logger.info(f"Bad Version: {bad_version}")
+    secrets.bad_version = bad_version
 
 @given("the user creates a branch to add a new chart version")
 def the_user_creates_a_branch_to_add_a_new_chart_version(secrets):
@@ -139,40 +146,38 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(secrets):
         set_git_username_email(repo, secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
         repo.git.checkout('-b', secrets.base_branch)
         
-        chart_dir = f'charts/{secrets.vendor_type}/{secrets.vendor}/{secrets.chart_name}'
         pathlib.Path(
-            f'{chart_dir}/{secrets.chart_version}').mkdir(parents=True, exist_ok=True)
+            f'{secrets.chart_dir}/{secrets.chart_version}').mkdir(parents=True, exist_ok=True)
 
         # Remove chart files from base branch
-        remove_chart_dir_from_base_branch(secrets, chart_dir, repo, logger)
+        remove_chart_dir_from_base_branch(secrets, repo, logger)
 
         # Remove the OWNERS file from base branch
-        remove_owners_file_from_base_branch(secrets, chart_dir, repo, logger)
+        remove_owners_file_from_base_branch(secrets, repo, logger)
 
-        # Create the OWNERS file
-        with open(f'{chart_dir}/OWNERS', 'w') as fd:
-            fd.write(secrets.owners_file_content)
+        #create the OWNERS file under chart dir
+        create_owners_file_under_chart_dir(secrets)
         
         # Push OWNERS file to the test_repo
-        push_owners_file_to_base_branch(secrets, chart_dir, repo, logger)
+        push_owners_file_to_base_branch(secrets, repo, logger)
 
-        # Copy the chart tar into temporary directory for PR submission
-        chart_tar_file = get_chart_tar_file_name(secrets)
-        shutil.copyfile(f'{old_cwd}/{secrets.test_data_dir}{chart_tar_file}',
-            f'{chart_dir}/{secrets.chart_version}/{chart_tar_file}')
-
-        # Copy report to temporary location
-        copy_report_to_tmp_location(secrets, chart_dir)
+        # Unzip files into temporary directory for PR submission
+        chart_tar_file = secrets.test_data_dir + get_chart_tar_file_name(secrets)
+        extract_chart_tgz(chart_tar_file, f'{secrets.chart_dir}/{secrets.chart_version}', secrets, logger)
+        
+        #if bad version specified in the test case
+        if secrets.bad_version != '':
+            update_chart_version_in_chart_yaml(f'{secrets.chart_dir}/{secrets.chart_version}/src/Chart.yaml', secrets.bad_version)
 
         # Push chart src files to test_repo:pr_branch
-        push_chart_files_to_pr_branch(secrets, chart_dir, chart_tar_file, repo, logger)
+        push_chart_src_files_to_pr_branch(secrets, repo)
 
         os.chdir(old_cwd)
 
 
-@when("the user sends a pull request with chart and report")
-def the_user_sends_a_pull_request_with_chart_and_report(secrets):
-    """The user sends the pull request with the chart tar files."""
+@when("the user sends a pull request with chart")
+def the_user_sends_a_pull_request_with_chart(secrets):
+    """The user sends the pull request with the chart."""
     data = {'head': secrets.pr_branch, 'base': secrets.base_branch,
             'title': secrets.pr_branch, 'body': os.environ.get('PR_BODY')}
 
@@ -190,7 +195,6 @@ def the_pull_request_is_not_getting_merged(secrets):
 
     run_id = get_run_id(secrets)
     conclusion = get_run_result(secrets, run_id)
-
     if conclusion == 'failure':
         logger.info("Workflow run was 'failure' which is expected")
     else:
@@ -199,7 +203,6 @@ def the_pull_request_is_not_getting_merged(secrets):
 
     r = github_api(
         'get', f'repos/{secrets.test_repo}/pulls/{secrets.pr_number}/merge', secrets.bot_token)
-    
     if r.status_code == 404:
         logger.info("PR not merged, which is expected")
     else:
@@ -208,9 +211,6 @@ def the_pull_request_is_not_getting_merged(secrets):
 @then(parsers.parse("user gets the <message> with steps to follow for resolving the issue in the pull request"))
 def user_gets_the_message_with_steps_to_follow_for_resolving_the_issue_in_the_pull_request(secrets, message):
     """user gets the message with steps to follow for resolving the issue in the pull request"""
-    
-    #https://docs.github.com/en/rest/guides/working-with-comments
-    #curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/openshift-helm-charts/sandbox/issues/{pr_number}/comments
 
     r = github_api(
         'get', f'repos/{secrets.test_repo}/issues/{secrets.pr_number}/comments', secrets.bot_token)

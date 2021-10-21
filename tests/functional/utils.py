@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Common utility functions used by tests"""
 
-from logging import log
 import os
 import shutil
 import tarfile
@@ -349,37 +348,46 @@ def push_current_branch_to_remote_test_repo(repo, test_repo, bot_token):
                   f'HEAD:refs/heads/{current_branch}', '-f')
     return current_branch
 
-def remove_chart_dir_from_base_branch(secrets, chart_dir, repo, logger):
+def remove_chart_dir_from_base_branch(secrets, repo, logger):
     logger.info(
-            f"Remove {chart_dir}/{secrets.chart_version} from {secrets.test_repo}:{secrets.base_branch}")
+            f"Remove {secrets.chart_dir}/{secrets.chart_version} from {secrets.test_repo}:{secrets.base_branch}")
     try:
-        repo.git.rm('-rf', '--cached', f'{chart_dir}/{secrets.chart_version}')
+        repo.git.rm('-rf', '--cached', f'{secrets.chart_dir}/{secrets.chart_version}')
         repo.git.commit(
-            '-m', f'Remove {chart_dir}/{secrets.chart_version}')
+            '-m', f'Remove {secrets.chart_dir}/{secrets.chart_version}')
         repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
                 f'HEAD:refs/heads/{secrets.base_branch}')
     except git.exc.GitCommandError:
         logger.info(
-            f"{chart_dir}/{secrets.chart_version} not exist on {secrets.test_repo}:{secrets.base_branch}")
+            f"{secrets.chart_dir}/{secrets.chart_version} not exist on {secrets.test_repo}:{secrets.base_branch}")
 
-def remove_owners_file_from_base_branch(secrets, chart_dir, repo, logger):
+def remove_owners_file_from_base_branch(secrets, repo, logger):
     logger.info(
-        f"Remove {chart_dir}/OWNERS from {secrets.test_repo}:{secrets.base_branch}")
+        f"Remove {secrets.chart_dir}/OWNERS from {secrets.test_repo}:{secrets.base_branch}")
     try:
-        repo.git.rm('-rf', '--cached', f'{chart_dir}/OWNERS')
+        repo.git.rm('-rf', '--cached', f'{secrets.chart_dir}/OWNERS')
         repo.git.commit(
-            '-m', f'Remove {chart_dir}/OWNERS')
+            '-m', f'Remove {secrets.chart_dir}/OWNERS')
         repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
                         f'HEAD:refs/heads/{secrets.base_branch}')
     except git.exc.GitCommandError:
         logger.info(
-            f"{chart_dir}/OWNERS not exist on {secrets.test_repo}:{secrets.base_branch}")
+            f"{secrets.chart_dir}/OWNERS not exist on {secrets.test_repo}:{secrets.base_branch}")
 
-def push_owners_file_to_base_branch(secrets, chart_dir, repo, logger):
+def create_owners_file_under_chart_dir(secrets):
+    
+    #Substitude the values in owners file content
+    values = {'bot_name': secrets.user, 'vendor': secrets.vendor, 'chart_name': secrets.chart_name}
+    secrets.owners_file_content = Template(secrets.owners_file_content).substitute(values)
+    # Create the OWNERS file
+    with open(f'{secrets.chart_dir}/OWNERS', 'w') as fd:
+        fd.write(secrets.owners_file_content)
+
+def push_owners_file_to_base_branch(secrets, repo, logger):
     logger.info(
         f"Push OWNERS file to '{secrets.test_repo}:{secrets.base_branch}'")
     try:
-        repo.git.add(f'{chart_dir}/OWNERS')
+        repo.git.add(f'{secrets.chart_dir}/OWNERS')
         repo.git.commit(
             '-m', f"Add {secrets.vendor} {secrets.chart_name} OWNERS file")
         repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
@@ -387,30 +395,15 @@ def push_owners_file_to_base_branch(secrets, chart_dir, repo, logger):
     except git.exc.GitCommandError:
         pytest.fail("Failed to push OWNERS file to base branch")
 
-def push_chart_files_to_pr_branch(secrets, chart_dir, chart_tar, repo, logger):
-    logger.info(
-        f"Push report and chart tar to '{secrets.test_repo}:{secrets.pr_branch}'")
+def push_chart_src_files_to_pr_branch(secrets, repo):
     try:
-        repo.git.add(f'{chart_dir}/{secrets.chart_version}/report.yaml')
-        repo.git.add(f'{chart_dir}/{secrets.chart_version}/{chart_tar}')
+        repo.git.add(f'{secrets.chart_dir}/{secrets.chart_version}/src')
         repo.git.commit(
-            '-m', f"Add {secrets.vendor} {secrets.chart_name} {secrets.chart_version} chart tar files and report")
+            '-m', f"Add {secrets.vendor} {secrets.chart_name} {secrets.chart_version} chart source files")
         repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
-                f'HEAD:refs/heads/{secrets.pr_branch}', '-f')
+                    f'HEAD:refs/heads/{secrets.pr_branch}', '-f')
     except git.exc.GitCommandError:
-        pytest.fail("Failed to push chart files to pr branch")
-
-def push_chart_files_only_to_pr_branch(secrets, chart_dir, chart_tar, repo, logger):
-    logger.info(
-        f"Push report and chart tar to '{secrets.test_repo}:{secrets.pr_branch}'")
-    try:
-        repo.git.add(f'{chart_dir}/{secrets.chart_version}/{chart_tar}')
-        repo.git.commit(
-            '-m', f"Add {secrets.vendor} {secrets.chart_name} {secrets.chart_version} chart tar files")
-        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
-                f'HEAD:refs/heads/{secrets.pr_branch}', '-f')
-    except git.exc.GitCommandError:
-        pytest.fail("Failed to push chart files to pr branch")
+        pytest.fail("Failed to push chart src files to pr branch")
 
 def get_chart_tar_file_name(secrets):
     return secrets.chart_name + '-' + secrets.chart_version + '.tgz'
@@ -418,13 +411,29 @@ def get_chart_tar_file_name(secrets):
 def get_report_file(secrets):
     return secrets.test_data_dir + 'report.yaml'
 
-def copy_report_to_tmp_location(secrets, chart_dir):
+def copy_report_to_tmp_location(secrets):
     test_report = get_report_file(secrets)
     tmpl = open(test_report).read()
     values = {'repository': secrets.test_repo,
                 'branch': secrets.base_branch}
     content = Template(tmpl).substitute(values)
-    with open(f'{chart_dir}/{secrets.chart_version}/report.yaml', 'w') as fd:
+    with open(f'{secrets.chart_dir}/{secrets.chart_version}/report.yaml', 'w') as fd:
         fd.write(content)
+
+def update_chart_version_in_chart_yaml(path, new_version):
+    with open(path, 'r') as fd:
+        try:
+            chart = yaml.safe_load(fd)
+        except yaml.YAMLError as err:
+            pytest.fail(f"error parsing '{path}': {err}")
+    current_version = chart['version']
+    
+    if current_version != new_version:
+        chart['version'] = new_version
+        try:
+            with open(path, 'w') as fd:
+                fd.write(yaml.dump(chart))
+        except Exception as e:
+            pytest.fail("Failed to update version in yaml file")
     
 
