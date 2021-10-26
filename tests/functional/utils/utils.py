@@ -6,6 +6,7 @@ import shutil
 import tarfile
 import time
 import json
+import logging
 
 import pytest
 import requests
