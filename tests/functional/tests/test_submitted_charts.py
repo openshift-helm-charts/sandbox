@@ -27,9 +27,9 @@ from pytest_bdd import (
     then,
     when,
 )
-
-from functional.utils import *
-from functional.notifier import create_verification_issue
+from functional.utils.utils import *
+from functional.utils.notifier import create_verification_issue
+from functional.utils.secret import SecretRecursiveTesting
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -37,22 +37,7 @@ logger.setLevel(logging.INFO)
 
 @pytest.fixture
 def secrets():
-    @dataclass
-    class Secret:
-        software_name: str
-        software_version: str
-        test_repo: str
-        bot_name: str
-        bot_token: str
-        vendor_type: str
-        pr_base_branch: str
-        base_branches: list
-        pr_branches: list
-        dry_run: bool
-        notify_id: list
-
-        submitted_charts: list = None
-        owners_file_content: str = """\
+    owners_file_content = """\
 chart:
   name: ${chart_name}
   shortDescription: Test chart for testing chart submission workflows.
@@ -63,10 +48,10 @@ vendor:
   label: ${vendor}
   name: ${vendor}
 """
-        test_chart: str = 'tests/data/vault-0.13.0.tgz'
-        test_report: str = 'tests/data/report.yaml'
-        chart_name, chart_version = get_name_and_version_from_report(
-            test_report)
+    test_chart = 'tests/data/vault-0.13.0.tgz'
+    test_report = 'tests/data/report.yaml'
+    chart_name, chart_version = get_name_and_version_from_report(
+        test_report)
 
     # Accepts 'true' or 'false', depending on whether we want to notify
     dry_run = os.environ.get("DRY_RUN")
@@ -116,8 +101,23 @@ vendor:
     repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
                   f'HEAD:refs/heads/{pr_base_branch}', '-f')
 
-    secrets = Secret(software_name, software_version, test_repo, bot_name, bot_token,
-                     vendor_type, pr_base_branch, base_branches, pr_branches, dry_run, notify_id)
+    secrets = SecretRecursiveTesting()
+    secrets.software_name = software_name
+    secrets.software_version = software_version
+    secrets.test_repo = test_repo
+    secrets.bot_name = bot_name
+    secrets.bot_token = bot_token
+    secrets.vendor_type = vendor_type
+    secrets.pr_base_branch = pr_base_branch
+    secrets.base_branches = base_branches
+    secrets.pr_branches = pr_branches
+    secrets.dry_run = dry_run
+    secrets.notify_id = notify_id
+    secrets.owners_file_content = owners_file_content
+    secrets.test_chart = test_chart
+    secrets.test_report = test_report
+    secrets.chart_name = chart_name
+    secrets.chart_version = chart_version
     yield secrets
 
     # Teardown step to cleanup branches
