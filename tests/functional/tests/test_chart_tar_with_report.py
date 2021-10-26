@@ -40,12 +40,12 @@ def workflow_test():
     workflow_test.cleanup()
 
 
-@scenario('features/report_and_chart_tar.feature', "The partner hashicorp submits an error-free chart tar with report for vault")
+@scenario('../features/report_and_chart_tar.feature', "The partner hashicorp submits an error-free chart tar with report for vault")
 def test_partner_chart_tar_with_report_submission():
     """The partner hashicorp submits an error-free chart tar with report for vault."""
 
 
-@scenario('features/report_and_chart_tar.feature', "A redhat associate submits an error-free chart tar with report for vault")
+@scenario('../features/report_and_chart_tar.feature', "A redhat associate submits an error-free chart tar with report for vault")
 def test_redhat_chart_tar_with_report_submission():
     """A redhat associate submits an error-free chart tar with report for vault."""
 
@@ -72,7 +72,7 @@ def the_user_has_created_a_error_free_chart_tar_with_report(workflow_test):
     workflow_test.process_owners_file()
     workflow_test.process_chart(is_tarball=True)
     workflow_test.process_report()
-    workflow_test.push_chart()
+    workflow_test.push_chart(is_tarball=True)
 
 @when("hashicorp sends a pull request with the vault tar chart and report")
 @when("the redhat associate sends a pull request with the vault tar chart and report")

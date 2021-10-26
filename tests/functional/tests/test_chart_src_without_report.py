@@ -69,7 +69,7 @@ def the_user_has_created_a_error_free_chart_src(workflow_test):
     workflow_test.setup_temp_dir()
     workflow_test.process_owners_file()
     workflow_test.process_chart(is_tarball=False)
-    workflow_test.push_chart()
+    workflow_test.push_chart(is_tarball=False)
 
 
 @when("hashicorp sends a pull request with the vault source chart")

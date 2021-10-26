@@ -82,8 +82,8 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
         self.repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
                     f'HEAD:refs/heads/{current_branch}', '-f')
 
-        base_branch = f'chart-{"tar" if self.test_chart[-3:]=="tgz" else "src"}-with{"out" if not self.test_report else ""}-report-{current_branch}'
-        pr_branch = base_branch + '-pr'
+        base_branch = f'test-{current_branch}'
+        pr_branch = base_branch + '-pr-branch'
 
         self.secrets.owners_file_content = self.owners_file_content
         self.secrets.test_chart = self.test_chart
@@ -129,7 +129,7 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
         self.secrets.vendor = vendor
         self.secrets.vendor_type = vendor_type
         self.secrets.base_branch = f'{self.secrets.vendor_type}-{self.secrets.vendor}-{self.secrets.base_branch}'
-        self.secrets.pr_branch = f'{self.secrets.base_branch}-pr'
+        self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
         self.chart_dir = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
 
     def setup_git_context(self):
@@ -239,9 +239,9 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                         f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
 
-    def push_chart(self):
+    def push_chart(self, is_tarball: bool):
         # Push chart to test_repo:pr_branch
-        if self.test_chart[-3:] == 'tgz':
+        if is_tarball:
             chart_tar = self.secrets.test_chart.split('/')[-1]
             self.temp_repo.git.add(f'{self.chart_dir}/{self.secrets.chart_version}/{chart_tar}')
         else:
