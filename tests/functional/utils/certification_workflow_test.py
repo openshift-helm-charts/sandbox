@@ -54,6 +54,8 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
     github_actions: str = os.environ.get("GITHUB_ACTIONS")
 
     def __post_init__(self) -> None:
+        if not self.test_report and not self.test_chart:
+            pytest.fail("Provide at least one of test report or test chart.")
         if self.test_report:
             chart_name, chart_version = get_name_and_version_from_report(self.test_report)
         else:
@@ -231,6 +233,11 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             content = Template(tmpl).substitute(values)
             with open(f'{self.chart_dir}/{self.secrets.chart_version}/report.yaml', 'w') as fd:
                 fd.write(content)
+            self.temp_repo.git.add(f'{self.chart_dir}/{self.secrets.chart_version}/report.yaml')
+            self.temp_repo.git.commit(
+                '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} report")
+            self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
+                        f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
 
     def push_chart(self):
         # Push chart to test_repo:pr_branch
@@ -239,10 +246,8 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             self.temp_repo.git.add(f'{self.chart_dir}/{self.secrets.chart_version}/{chart_tar}')
         else:
             self.temp_repo.git.add(f'{self.chart_dir}/{self.secrets.chart_version}/src')
-        if self.test_report:
-            self.temp_repo.git.add(f'{self.chart_dir}/{self.secrets.chart_version}/report.yaml')
         self.temp_repo.git.commit(
-            '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} chart {' and report' if self.test_report else ''}")
+            '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} chart")
 
         self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                       f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
