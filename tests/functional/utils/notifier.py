@@ -10,7 +10,7 @@ import time
 
 import requests
 
-from functional.utils import GITHUB_BASE_URL
+from functional.utils.utils import GITHUB_BASE_URL
 
 endpoint_data = {}
 
