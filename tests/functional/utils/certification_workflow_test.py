@@ -54,7 +54,10 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
     github_actions: str = os.environ.get("GITHUB_ACTIONS")
 
     def __post_init__(self) -> None:
-        chart_name, chart_version = get_name_and_version_from_report(self.test_report)
+        if self.test_report:
+            chart_name, chart_version = get_name_and_version_from_report(self.test_report)
+        else:
+            chart_name, chart_version = get_name_and_version_from_chart_tar(self.test_chart)
         bot_name, bot_token = get_bot_name_and_token()
         test_repo = TEST_REPO
 
@@ -77,7 +80,7 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
         self.repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
                     f'HEAD:refs/heads/{current_branch}', '-f')
 
-        base_branch = f'chart-src-with-report-{current_branch}'
+        base_branch = f'chart-src-with{"out" if not self.test_report else ""}-report-{current_branch}'
         pr_branch = base_branch + '-pr'
 
         self.secrets.owners_file_content = self.owners_file_content
@@ -210,8 +213,6 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
         with SetDirectory(Path(self.temp_dir.name)):
             if is_tarball:
                 # Copy the chart tar into temporary directory for PR submission
-                logging.info(
-                    f"Push report and chart tar to '{self.secrets.test_repo}:{self.secrets.pr_branch}'")
                 chart_tar = self.secrets.test_chart.split('/')[-1]
                 shutil.copyfile(f'{self.old_cwd}/{self.secrets.test_chart}',
                                 f'{self.chart_dir}/{self.secrets.chart_version}/{chart_tar}')
@@ -234,9 +235,10 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
     def push_chart(self):
         # Push chart src files to test_repo:pr_branch
         self.temp_repo.git.add(f'{self.chart_dir}/{self.secrets.chart_version}/src')
-        self.temp_repo.git.add(f'{self.chart_dir}/{self.secrets.chart_version}/report.yaml')
+        if self.test_report:
+            self.temp_repo.git.add(f'{self.chart_dir}/{self.secrets.chart_version}/report.yaml')
         self.temp_repo.git.commit(
-            '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} chart source files and report")
+            '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} chart source files{' and report' if self.test_report else ''}")
 
         self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                       f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
