@@ -23,7 +23,7 @@ from pytest_bdd import (
     parsers
 )
 
-from functional.utils import *
+from functional.utils.utils import *
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -87,11 +87,11 @@ vendor:
     cleanup_branches(secrets, repo, logger)
 
 
-@scenario('features/user_submits_chart_with_errors.feature', "An unauthorized user submits a chart")
+@scenario('../features/user_submits_chart_with_errors.feature', "An unauthorized user submits a chart")
 def test_chart_submission_by_unauthorized_user():
     """An unauthorized user submits a chart"""
 
-@scenario('features/user_submits_chart_with_errors.feature', "An authorized user submits a chart with incorrect version")
+@scenario('../features/user_submits_chart_with_errors.feature', "An authorized user submits a chart with incorrect version")
 def test_chart_submission_with_incorrect_version():
     """ An authorized user submits a chart with incorrect version """
 
