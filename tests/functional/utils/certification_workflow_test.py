@@ -34,8 +34,8 @@ class CertificationWorkflowTest:
     chart_dir: str = ''
 
     secrets: SecretOneShotTesting = SecretOneShotTesting()
-    temp_dir: TemporaryDirectory = TemporaryDirectory(prefix='tci-')
-    temp_repo: git.Repo = git.Repo(temp_dir.name)
+    temp_dir: TemporaryDirectory = None
+    temp_repo: git.Repo = None
 
 
 @dataclass
@@ -139,11 +139,13 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
         r = github_api(
             'post', f'repos/{self.secrets.test_repo}/git/refs', self.secrets.bot_token, json=data)
 
-    def cleanup_temp_dir(self):
+    def setup_temp_dir(self):
+        self.temp_dir = TemporaryDirectory(prefix='tci-')
         with SetDirectory(Path(self.temp_dir.name)):
             # Make PR's from a temporary directory
             logging.info(f'Worktree directory: {self.temp_dir.name}')
             self.repo.git.worktree('add', '--detach', self.temp_dir.name, f'HEAD')
+            self.temp_repo = git.Repo(self.temp_dir.name)
 
             set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
             self.temp_repo.git.checkout('-b', self.secrets.base_branch)
@@ -196,16 +198,17 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
                         f'HEAD:refs/heads/{self.secrets.base_branch}', '-f')
 
     def process_chart(self, is_tarball: bool):
-        if is_tarball:
-            # Copy the chart tar into temporary directory for PR submission
-            logging.info(
-                f"Push report and chart tar to '{self.secrets.test_repo}:{self.secrets.pr_branch}'")
-            chart_tar = self.secrets.test_chart.split('/')[-1]
-            shutil.copyfile(f'{self.old_cwd}/{self.secrets.test_chart}',
-                            f'{self.chart_dir}/{self.secrets.chart_version}/{chart_tar}')
-        else:
-            # Unzip files into temporary directory for PR submission
-            extract_chart_tgz(self.secrets.test_chart, f'{self.secrets.chart_dir}/{self.secrets.chart_version}', self.secrets, logging)
+        with SetDirectory(Path(self.temp_dir.name)):
+            if is_tarball:
+                # Copy the chart tar into temporary directory for PR submission
+                logging.info(
+                    f"Push report and chart tar to '{self.secrets.test_repo}:{self.secrets.pr_branch}'")
+                chart_tar = self.secrets.test_chart.split('/')[-1]
+                shutil.copyfile(f'{self.old_cwd}/{self.secrets.test_chart}',
+                                f'{self.chart_dir}/{self.secrets.chart_version}/{chart_tar}')
+            else:
+                # Unzip files into temporary directory for PR submission
+                extract_chart_tgz(self.secrets.test_chart, f'{self.chart_dir}/{self.secrets.chart_version}', self.secrets, logging)
 
     def process_report(self):
         with SetDirectory(Path(self.temp_dir.name)):

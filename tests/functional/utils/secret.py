@@ -32,9 +32,9 @@ class SecretRecursiveTesting(Secret):
     software_name: str = ''
     software_version: str = ''
     pr_base_branch: str = ''
-    base_branches: list = []
-    pr_branches: list = []
+    base_branches: list = None
+    pr_branches: list = None
     dry_run: bool = True
-    notify_id: list = []
-    submitted_charts: list = []
+    notify_id: list = None
+    submitted_charts: list = None
     vendor: str = ''

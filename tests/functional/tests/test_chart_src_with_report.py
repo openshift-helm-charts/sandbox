@@ -26,7 +26,6 @@ from pytest_bdd import (
 )
 
 from functional.utils.utils import *
-from functional.utils.secret import OneShotTestingSecret, SecretOneShotTesting
 from functional.utils.certification_workflow_test import CertificationWorkflowTestOneShot
 
 logger = logging.getLogger(__name__)
@@ -53,12 +52,12 @@ vendor:
     workflow_test.cleanup()
 
 
-@scenario('features/report_and_chart_src.feature', "The partner hashicorp submits an error-free chart source with report for vault")
+@scenario('../features/report_and_chart_src.feature', "The partner hashicorp submits an error-free chart source with report for vault")
 def test_partner_chart_src_submission():
     """The partner hashicorp submits an error-free chart source with report for vault."""
 
 
-@scenario('features/report_and_chart_src.feature', "A redhat associate submits an error-free chart source with report for vault")
+@scenario('../features/report_and_chart_src.feature', "A redhat associate submits an error-free chart source with report for vault")
 def test_redhat_chart_src_submission():
     """A redhat associate submits an error-free chart source with report for vault."""
 
@@ -82,7 +81,7 @@ def the_user_has_created_a_error_free_chart_src_with_report(secrets):
 
     secrets.setup_git_context()
     secrets.setup_gh_pages_branch()
-    secrets.cleanup_temp_dir()
+    secrets.setup_temp_dir()
     secrets.process_owners_file()
     secrets.process_chart(is_tarball=False)
     secrets.process_report()
