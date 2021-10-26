@@ -40,12 +40,12 @@ def workflow_test():
     workflow_test.cleanup()
 
 
-@scenario('features/report_and_chart_tar.feature', "The partner hashicorp submits an error-free chart tar with report for vault")
+@scenario('../features/report_and_chart_tar.feature', "The partner hashicorp submits an error-free chart tar with report for vault")
 def test_partner_chart_tar_with_report_submission():
     """The partner hashicorp submits an error-free chart tar with report for vault."""
 
 
-@scenario('features/report_and_chart_tar.feature', "A redhat associate submits an error-free chart tar with report for vault")
+@scenario('../features/report_and_chart_tar.feature', "A redhat associate submits an error-free chart tar with report for vault")
 def test_redhat_chart_tar_with_report_submission():
     """A redhat associate submits an error-free chart tar with report for vault."""
 
