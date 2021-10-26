@@ -24,7 +24,8 @@ from pytest_bdd import (
     when,
 )
 
-from functional.utils import *
+from functional.utils.utils import *
+from functional.utils.secret import OneShotTestingSecret, SecretOneShotTesting
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -32,18 +33,7 @@ logger.setLevel(logging.INFO)
 
 @pytest.fixture
 def secrets():
-    @dataclass
-    class Secret:
-        test_repo: str
-        bot_name: str
-        bot_token: str
-        base_branch: str
-        pr_branch: str
-
-        pr_number: int = -1
-        vendor_type: str = ''
-        vendor: str = ''
-        owners_file_content: str = """\
+    owners_file_content  = """\
 chart:
   name: ${chart_name}
   shortDescription: Test chart for testing chart submission workflows.
@@ -54,12 +44,10 @@ vendor:
   label: ${vendor}
   name: ${vendor}
 """
-        test_chart: str = 'tests/data/vault-0.13.0.tgz'
-        chart_name, chart_version = get_name_and_version_from_chart_tar(
-            test_chart)
-
+    test_chart = 'tests/data/vault-0.13.0.tgz'
+    chart_name, chart_version = get_name_and_version_from_chart_tar(
+        test_chart)
     bot_name, bot_token = get_bot_name_and_token()
-
     test_repo = TEST_REPO
     repo = git.Repo()
 
@@ -86,8 +74,16 @@ vendor:
     base_branch = f'chart-tar-without-report-{current_branch}'
     pr_branch = base_branch + '-pr'
 
-    secrets = Secret(test_repo, bot_name, bot_token, base_branch, pr_branch)
-
+    secrets = SecretOneShotTesting()
+    secrets.test_repo = test_repo
+    secrets.bot_name = bot_name
+    secrets.bot_token = bot_token
+    secrets.base_branch = base_branch
+    secrets.pr_branch = pr_branch
+    secrets.owners_file_content = owners_file_content
+    secrets.test_chart = test_chart
+    secrets.chart_name = chart_name
+    secrets.chart_version = chart_version
     yield secrets
 
     # Teardown step to cleanup branches
