@@ -21,6 +21,8 @@ from pytest_bdd import (
     then,
     when,
 )
+from functional.tests.test_submitted_charts import vendor_type_is_specified
+from functional.utils.notifier import create_verification_issue
 
 from functional.utils.utils import *
 from functional.utils.secret import *
@@ -41,25 +43,108 @@ vendor:
   label: ${vendor}
   name: ${vendor}
 """
-    chart_dir: str = ''
-    secrets: SecretOneShotTesting = SecretOneShotTesting()
-    temp_dir: TemporaryDirectory = None
-    temp_repo: git.Repo = None
+    secrets: Secret = Secret()
 
-
-@dataclass
-class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
     old_cwd: str = os.getcwd()
     repo: git.Repo = git.Repo()
+    temp_dir: TemporaryDirectory = None
+    temp_repo: git.Repo = None
     github_actions: str = os.environ.get("GITHUB_ACTIONS")
 
-    def __post_init__(self) -> None:
+    def get_chart_name_version(self):
         if not self.test_report and not self.test_chart:
             pytest.fail("Provide at least one of test report or test chart.")
         if self.test_report:
             chart_name, chart_version = get_name_and_version_from_report(self.test_report)
         else:
             chart_name, chart_version = get_name_and_version_from_chart_tar(self.test_chart)
+        return chart_name, chart_version
+
+    def remove_chart(self, chart_directory, chart_version, remote_repo, base_branch, bot_token):
+        # Remove chart files from base branch
+        logging.info(
+            f"Remove {chart_directory}/{chart_version} from {remote_repo}:{base_branch}")
+        try:
+            self.temp_repo.git.rm('-rf', '--cached', f'{chart_directory}/{chart_version}')
+            self.temp_repo.git.commit(
+                '-m', f'Remove {chart_directory}/{chart_version}')
+            self.temp_repo.git.push(f'https://x-access-token:{bot_token}@github.com/{remote_repo}',
+                            f'HEAD:refs/heads/{base_branch}')
+        except git.exc.GitCommandError:
+            logging.info(
+                f"{chart_directory}/{chart_version} not exist on {remote_repo}:{base_branch}")
+
+    def remove_owners_file(self, chart_directory, remote_repo, base_branch, bot_token):
+        # Remove the OWNERS file from base branch
+        logging.info(
+            f"Remove {chart_directory}/OWNERS from {remote_repo}:{base_branch}")
+        try:
+            self.temp_repo.git.rm('-rf', '--cached', f'{chart_directory}/OWNERS')
+            self.temp_repo.git.commit(
+                '-m', f'Remove {chart_directory}/OWNERS')
+            self.temp_repo.git.push(f'https://x-access-token:{bot_token}@github.com/{remote_repo}',
+                            f'HEAD:refs/heads/{base_branch}')
+        except git.exc.GitCommandError:
+            logging.info(
+                f"{chart_directory}/OWNERS not exist on {remote_repo}:{base_branch}")
+
+    def create_test_gh_pages_branch(self, remote_repo, base_branch, bot_token):
+        # Get SHA from 'dev-gh-pages' branch
+        logging.info(
+            f"Create '{remote_repo}:{base_branch}-gh-pages' from '{remote_repo}:dev-gh-pages'")
+        r = github_api(
+            'get', f'repos/{remote_repo}/git/ref/heads/dev-gh-pages', bot_token)
+        j = json.loads(r.text)
+        sha = j['object']['sha']
+
+        # Create a new gh-pages branch for testing
+        data = {'ref': f'refs/heads/{base_branch}-gh-pages', 'sha': sha}
+        r = github_api(
+            'post', f'repos/{remote_repo}/git/refs', bot_token, json=data)
+
+    def setup_git_context(self, repo: git.Repo):
+        set_git_username_email(repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
+        if os.environ.get('WORKFLOW_DEVELOPMENT'):
+            logging.info("Wokflow development enabled")
+            repo.git.add(A=True)
+            repo.git.commit('-m', 'Checkpoint')
+
+    def send_pull_request(self, remote_repo, base_branch, pr_branch, bot_token):
+        data = {'head': pr_branch, 'base': base_branch,
+                'title': pr_branch, 'body': os.environ.get('PR_BODY')}
+
+        logging.info(
+            f"Create PR from '{remote_repo}:{pr_branch}'")
+        r = github_api(
+            'post', f'repos/{remote_repo}/pulls', bot_token, json=data)
+        j = json.loads(r.text)
+        return j['number']
+
+    def create_and_push_owners_file(self, chart_directory, base_branch, vendor_name, vendor_type, chart_name):
+        with SetDirectory(Path(self.temp_dir.name)):
+            # Create the OWNERS file from the string template
+            values = {'bot_name': self.secrets.bot_name,
+                    'vendor': vendor_name, 'chart_name': chart_name}
+            content = Template(self.secrets.owners_file_content).substitute(values)
+            with open(f'{chart_directory}/OWNERS', 'w') as fd:
+                fd.write(content)
+
+            # Push OWNERS file to the test_repo
+            logging.info(
+                f"Push OWNERS file to '{self.secrets.test_repo}:{base_branch}'")
+            self.temp_repo.git.add(f'{chart_directory}/OWNERS')
+            self.temp_repo.git.commit(
+                '-m', f"Add {vendor_type} {vendor_name} {chart_name} OWNERS file")
+            self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
+                        f'HEAD:refs/heads/{base_branch}', '-f')
+
+@dataclass
+class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
+    chart_directory: str = ''
+    secrets: SecretOneShotTesting = SecretOneShotTesting()
+
+    def __post_init__(self) -> None:
+        chart_name, chart_version = self.get_chart_name_version()
         bot_name, bot_token = get_bot_name_and_token()
         test_repo = TEST_REPO
 
@@ -130,28 +215,13 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
         self.secrets.vendor_type = vendor_type
         self.secrets.base_branch = f'{self.secrets.vendor_type}-{self.secrets.vendor}-{self.secrets.base_branch}'
         self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
-        self.chart_dir = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
+        self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
 
     def setup_git_context(self):
-        set_git_username_email(self.repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
-        if os.environ.get('WORKFLOW_DEVELOPMENT'):
-            logging.info("Wokflow development enabled")
-            self.repo.git.add(A=True)
-            self.repo.git.commit('-m', 'Checkpoint')
+        super().setup_git_context(self.repo)
 
     def setup_gh_pages_branch(self):
-        # Get SHA from 'dev-gh-pages' branch
-        logging.info(
-            f"Create '{self.secrets.test_repo}:{self.secrets.base_branch}-gh-pages' from '{self.secrets.test_repo}:dev-gh-pages'")
-        r = github_api(
-            'get', f'repos/{self.secrets.test_repo}/git/ref/heads/dev-gh-pages', self.secrets.bot_token)
-        j = json.loads(r.text)
-        sha = j['object']['sha']
-
-        # Create a new gh-pages branch for testing
-        data = {'ref': f'refs/heads/{self.secrets.base_branch}-gh-pages', 'sha': sha}
-        r = github_api(
-            'post', f'repos/{self.secrets.test_repo}/git/refs', self.secrets.bot_token, json=data)
+        self.create_test_gh_pages_branch(self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
 
     def setup_temp_dir(self):
         self.temp_dir = TemporaryDirectory(prefix='tci-')
@@ -164,52 +234,14 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
             self.temp_repo.git.checkout('-b', self.secrets.base_branch)
             pathlib.Path(
-                f'{self.chart_dir}/{self.secrets.chart_version}').mkdir(parents=True, exist_ok=True)
+                f'{self.chart_directory}/{self.secrets.chart_version}').mkdir(parents=True, exist_ok=True)
 
-            # Remove chart files from base branch
-            logging.info(
-                f"Remove {self.chart_dir}/{self.secrets.chart_version} from {self.secrets.test_repo}:{self.secrets.base_branch}")
-            try:
-                self.temp_repo.git.rm('-rf', '--cached', f'{self.chart_dir}/{self.secrets.chart_version}')
-                self.temp_repo.git.commit(
-                    '-m', f'Remove {self.chart_dir}/{self.secrets.chart_version}')
-                self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
-                                f'HEAD:refs/heads/{self.secrets.base_branch}')
-            except git.exc.GitCommandError:
-                logging.info(
-                    f"{self.chart_dir}/{self.secrets.chart_version} not exist on {self.secrets.test_repo}:{self.secrets.base_branch}")
-
-            # Remove the OWNERS file from base branch
-            logging.info(
-                f"Remove {self.chart_dir}/OWNERS from {self.secrets.test_repo}:{self.secrets.base_branch}")
-            try:
-                self.temp_repo.git.rm('-rf', '--cached', f'{self.chart_dir}/OWNERS')
-                self.temp_repo.git.commit(
-                    '-m', f'Remove {self.chart_dir}/OWNERS')
-                self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
-                                f'HEAD:refs/heads/{self.secrets.base_branch}')
-            except git.exc.GitCommandError:
-                logging.info(
-                    f"{self.chart_dir}/OWNERS not exist on {self.secrets.test_repo}:{self.secrets.base_branch}")
+            self.remove_chart(self.chart_directory, self.secrets.chart_version, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
+            self.remove_owners_file(self.chart_directory, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
 
 
     def process_owners_file(self):
-        with SetDirectory(Path(self.temp_dir.name)):
-            # Create the OWNERS file from the string template
-            values = {'bot_name': self.secrets.bot_name,
-                    'vendor': self.secrets.vendor, 'chart_name': self.secrets.chart_name}
-            content = Template(self.secrets.owners_file_content).substitute(values)
-            with open(f'{self.chart_dir}/OWNERS', 'w') as fd:
-                fd.write(content)
-
-            # Push OWNERS file to the test_repo
-            logging.info(
-                f"Push OWNERS file to '{self.secrets.test_repo}:{self.secrets.base_branch}'")
-            self.temp_repo.git.add(f'{self.chart_dir}/OWNERS')
-            self.temp_repo.git.commit(
-                '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} OWNERS file")
-            self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
-                        f'HEAD:refs/heads/{self.secrets.base_branch}', '-f')
+        super().create_and_push_owners_file(self, self.chart_directory, self.secrets.base_branch, self.secrets.vendor_type, self.secrets.chart_name)
 
     def process_chart(self, is_tarball: bool):
         with SetDirectory(Path(self.temp_dir.name)):
@@ -217,10 +249,10 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
                 # Copy the chart tar into temporary directory for PR submission
                 chart_tar = self.secrets.test_chart.split('/')[-1]
                 shutil.copyfile(f'{self.old_cwd}/{self.secrets.test_chart}',
-                                f'{self.chart_dir}/{self.secrets.chart_version}/{chart_tar}')
+                                f'{self.chart_directory}/{self.secrets.chart_version}/{chart_tar}')
             else:
                 # Unzip files into temporary directory for PR submission
-                extract_chart_tgz(self.secrets.test_chart, f'{self.chart_dir}/{self.secrets.chart_version}', self.secrets, logging)
+                extract_chart_tgz(self.secrets.test_chart, f'{self.chart_directory}/{self.secrets.chart_version}', self.secrets, logging)
 
     def process_report(self):
         with SetDirectory(Path(self.temp_dir.name)):
@@ -231,9 +263,9 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             values = {'repository': self.secrets.test_repo,
                     'branch': self.secrets.base_branch}
             content = Template(tmpl).substitute(values)
-            with open(f'{self.chart_dir}/{self.secrets.chart_version}/report.yaml', 'w') as fd:
+            with open(f'{self.chart_directory}/{self.secrets.chart_version}/report.yaml', 'w') as fd:
                 fd.write(content)
-            self.temp_repo.git.add(f'{self.chart_dir}/{self.secrets.chart_version}/report.yaml')
+            self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/report.yaml')
             self.temp_repo.git.commit(
                 '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} report")
             self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
@@ -243,9 +275,9 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
         # Push chart to test_repo:pr_branch
         if is_tarball:
             chart_tar = self.secrets.test_chart.split('/')[-1]
-            self.temp_repo.git.add(f'{self.chart_dir}/{self.secrets.chart_version}/{chart_tar}')
+            self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/{chart_tar}')
         else:
-            self.temp_repo.git.add(f'{self.chart_dir}/{self.secrets.chart_version}/src')
+            self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/src')
         self.temp_repo.git.commit(
             '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} chart")
 
@@ -253,15 +285,7 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
                       f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
 
     def send_pull_request(self):
-        data = {'head': self.secrets.pr_branch, 'base': self.secrets.base_branch,
-                'title': self.secrets.pr_branch, 'body': os.environ.get('PR_BODY')}
-
-        logging.info(
-            f"Create PR from '{self.secrets.test_repo}:{self.secrets.pr_branch}'")
-        r = github_api(
-            'post', f'repos/{self.secrets.test_repo}/pulls', self.secrets.bot_token, json=data)
-        j = json.loads(r.text)
-        self.secrets.pr_number = j['number']
+        self.secrets.pr_number = super().send_pull_request(self.secrets.test_repo, self.secrets.base_branch, self.secrets.pr_branch, self.secrets.bot_token)
 
     def check_workflow_conclusion(self):
         # Check workflow conclusion
@@ -328,3 +352,323 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             logging.info(f"Delete release tag '{expected_tag}'")
             github_api(
                 'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
+
+
+@dataclass
+class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
+    secrets: SecretRecursiveTesting = SecretRecursiveTesting()
+
+    def __post_init__(self) -> None:
+        chart_name, chart_version = self.get_chart_name_version()
+        bot_name, bot_token = get_bot_name_and_token()
+        dry_run = self.get_dry_run()
+        notify_id = self.get_notify_id()
+        software_name, software_version = self.get_software_name_version()
+        vendor_type = self.get_vendor_type()
+
+        test_repo = TEST_REPO
+        base_branches = []
+        pr_branches = []
+
+        pr_base_branch = self.repo.active_branch.name
+        r = github_api(
+            'get', f'repos/{test_repo}/branches', bot_token)
+        branches = json.loads(r.text)
+        branch_names = [branch['name'] for branch in branches]
+        if pr_base_branch not in branch_names:
+            logging.info(
+                f"{test_repo}:{pr_base_branch} does not exists, creating with local branch")
+        self.repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
+                    f'HEAD:refs/heads/{pr_base_branch}', '-f')
+
+        self.secrets = SecretRecursiveTesting()
+        self.secrets.software_name = software_name
+        self.secrets.software_version = software_version
+        self.secrets.test_repo = test_repo
+        self.secrets.bot_name = bot_name
+        self.secrets.bot_token = bot_token
+        self.secrets.vendor_type = vendor_type
+        self.secrets.pr_base_branch = pr_base_branch
+        self.secrets.base_branches = base_branches
+        self.secrets.pr_branches = pr_branches
+        self.secrets.dry_run = dry_run
+        self.secrets.notify_id = notify_id
+        self.secrets.owners_file_content = self.owners_file_content
+        self.secrets.test_chart = self.test_chart
+        self.secrets.test_report = self.test_report
+        self.secrets.chart_name = chart_name
+        self.secrets.chart_version = chart_version
+
+    def cleanup (self):
+        # Teardown step to cleanup branches
+        self.repo.git.worktree('prune')
+        for base_branch in self.secrets.base_branches:
+            logging.info(f"Delete '{self.secrets.test_repo}:{base_branch}'")
+            github_api(
+                'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{base_branch}', self.secrets.bot_token)
+
+            logging.info(f"Delete '{self.secrets.test_repo}:{base_branch}-gh-pages'")
+            github_api(
+                'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{base_branch}-gh-pages', self.secrets.bot_token)
+
+            logging.info(f"Delete local '{base_branch}'")
+            try:
+                self.repo.git.branch('-D', base_branch)
+            except git.exc.GitCommandError:
+                logging.info(f"Local '{base_branch}' does not exist")
+
+        for pr_branch in self.secrets.pr_branches:
+            logging.info(f"Delete '{self.secrets.test_repo}:{pr_branch}'")
+            github_api(
+                'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{pr_branch}', self.secrets.bot_token)
+
+        logging.info("Delete local 'tmp' branch")
+        self.repo.git.branch('-D', 'tmp')
+
+    def get_dry_run(self):
+        # Accepts 'true' or 'false', depending on whether we want to notify
+        # Don't notify on dry runs, default to True
+        dry_run = False if os.environ.get("DRY_RUN") == 'false' else True
+        # Don't notify if not triggerd on PROD_REPO and PROD_BRANCH
+        if not dry_run:
+            triggered_branch = os.environ.get("GITHUB_REF").split('/')[-1]
+            triggered_repo = os.environ.get("GITHUB_REPOSITORY")
+            if triggered_repo != PROD_REPO or triggered_branch != PROD_BRANCH:
+                dry_run = True
+        return dry_run
+
+    def get_notify_id(self):
+        # Accepts comma separated Github IDs or empty strings to override people to tag in notifications
+        notify_id = os.environ.get("NOTIFY_ID")
+        if notify_id:
+            notify_id = [vt.strip() for vt in notify_id.split(',')]
+        else:
+            # Default to not override, i.e. use chart owners
+            notify_id = []
+        return notify_id
+
+    def get_software_name_version(self):
+        software_name = os.environ.get("SOFTWARE_NAME")
+        if not software_name:
+            raise Exception("SOFTWARE_NAME environment variable not defined")
+
+        software_version = os.environ.get("SOFTWARE_VERSION")
+        if not software_version:
+            raise Exception("SOFTWARE_VERSION environment variable not defined")
+
+        return software_name, software_version
+
+    def get_vendor_type(self):
+        vendor_type = os.environ.get("VENDOR_TYPE")
+        if not vendor_type:
+            logging.info(
+                f"VENDOR_TYPE environment variable not defined, default to `all`")
+            vendor_type = 'all'
+        return vendor_type
+
+    def setup_temp_dir(self):
+        self.temp_dir = TemporaryDirectory(prefix='tci-')
+        with SetDirectory(Path(self.temp_dir.name)):
+            # Make PR's from a temporary directory
+            logging.info(f'Worktree directory: {self.temp_dir.name}')
+            self.repo.git.worktree('add', '--detach', self.temp_dir.name, f'HEAD')
+            self.temp_repo = git.Repo(self.temp_dir.name)
+
+            # Run submission flow test with charts in PROD_REPO:PROD_BRANCH
+            self.temp_repo = git.Repo(self.temp_dir)
+            set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
+            self.temp_repo.git.fetch(
+                f'https://github.com/{PROD_REPO}.git', f'{PROD_BRANCH}:{PROD_BRANCH}', '-f')
+            self.temp_repo.git.checkout(PROD_BRANCH, 'charts')
+            self.temp_repo.git.restore('--staged', 'charts')
+            self.temp_repo.secrets.submitted_charts = get_all_charts(
+                'charts', self.secrets.vendor_type)
+            logging.info(
+                f"Found charts for {self.secrets.vendor_type}: {self.secrets.submitted_charts}")
+            self.temp_repo.git.checkout('-b', 'tmp')
+
+    def get_owner_ids(self, chart_directory, owners_table):
+        # Don't send notifications on dry runs
+        if not self.secrets.dry_run:
+            if len(self.secrets.notify_id) == 0:
+                with open(f'{chart_directory}/OWNERS', 'r') as fd:
+                    try:
+                        owners = yaml.safe_load(fd)
+                        # Pick owner ids for notification
+                        owners_table[chart_directory] = [
+                            owner.get(['githubUsername'], '') for owner in owners['users']]
+                    except yaml.YAMLError as err:
+                        logging.warning(
+                            f"Error parsing OWNERS of {chart_directory}: {err}")
+            else:
+                owners_table[chart_directory] = self.secrets.notify_id
+
+    def push_chart(self, chart_directory, chart_name, chart_version, vendor_name, vendor_type, pr_branch):
+        # Push chart files to test_repo:pr_branch
+        self.temp_repo.git.add(f'{chart_directory}/{chart_version}')
+        self.temp_repo.git.commit(
+            '-m', f"Add {vendor_type} {vendor_name} {chart_name} {chart_version} chart files")
+        self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
+                    f'HEAD:refs/heads/{pr_branch}', '-f')
+
+    def check_single_chart_result(self, vendor_type, vendor_name, chart_name, chart_version, pr_number, owners_table):
+        base_branch = f'{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}'
+
+        # Check PRs are merged
+        chart = f'{vendor_type} {vendor_name} {chart_name} {chart_version}'
+        run_id = get_run_id(self.secrets, pr_number)
+        conclusion = get_run_result(self.secrets, run_id)
+
+        # Send notification to owner through GitHub issues
+        if not self.secrets.dry_run:
+            r = github_api(
+                'get', f'repos/{self.secrets.test_repo}/actions/runs/{run_id}', self.secrets.bot_token)
+            run = r.json()
+            run_html_url = run['html_url']
+            chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
+            chart_owners = owners_table[chart_directory]
+            pass_verification = conclusion == 'success'
+            os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
+            os.environ['GITHUB_REPO'] = PROD_REPO.split('/')[1]
+            os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
+            logging.info(
+                f"Send notification to '{chart_owners}' about verification result of '{chart}'")
+            create_verification_issue(chart_name, chart_owners, run_html_url, self.secrets.software_name,
+                                    self.secrets.software_version, pass_verification, self.secrets.bot_token)
+
+        if conclusion == 'success':
+            logging.info(f"Workflow run for {chart} was 'success'")
+        else:
+            logging.warning(
+                f"Workflow for the submitted PR did not success, run id: {run_id}, chart: {chart}")
+            return
+
+        r = github_api(
+            'get', f'repos/{self.secrets.test_repo}/pulls/{pr_number}/merge', self.secrets.bot_token)
+        if r.status_code == 204:
+            logging.info(f"PR for {chart} merged sucessfully")
+        else:
+            logging.warning(
+                f"Workflow for submitted PR success but PR not merged, chart: {chart}")
+            return
+
+        # Check index.yaml is updated
+        repo = git.Repo(os.getcwd())
+        old_branch = repo.active_branch.name
+        repo.git.fetch(f'https://github.com/{self.secrets.test_repo}.git',
+                    '{0}:{0}'.format(f'{base_branch}-gh-pages'), '-f')
+        repo.git.checkout(f'{base_branch}-gh-pages')
+        with open('index.yaml', 'r') as fd:
+            try:
+                index = yaml.safe_load(fd)
+            except yaml.YAMLError as err:
+                logging.warning(
+                    f"error parsing index.yaml of {chart}: {err}")
+                return
+
+        entry = vendor_name + '-' + chart_name
+        if entry not in index['entries']:
+            logging.warning(
+                f"{chart} not added to index")
+            return
+
+        version_list = [release['version']
+                        for release in index['entries'][entry]]
+        if chart_version not in version_list:
+            logging.warning(
+                f"{chart} not added to index")
+            return
+
+        logging.info(
+            f"Index updated correctly for {chart}, cleaning up local branch")
+        repo.git.checkout(old_branch)
+        repo.git.branch('-D', f'{base_branch}-gh-pages')
+
+        # Check release is published
+        expected_tag = f'{vendor_name}-{chart_name}-{chart_version}'
+        try:
+            release = get_release_by_tag(self.secrets, expected_tag)
+            logging.info(f"Released '{expected_tag}' successfully")
+
+            chart_tgz = f'{chart_name}-{chart_version}.tgz'
+            expected_chart_asset = f'{vendor_name}-{chart_tgz}'
+            required_assets = [expected_chart_asset]
+            logging.info(f"Check '{required_assets}' is in release assets")
+            release_id = release['id']
+            get_release_assets(self.secrets, release_id, required_assets)
+        finally:
+            logging.info(f"Delete release '{expected_tag}'")
+            github_api(
+                'delete', f'repos/{self.secrets.test_repo}/releases/{release_id}', self.secrets.bot_token)
+
+            logging.info(f"Delete release tag '{expected_tag}'")
+            github_api(
+                'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
+
+
+    def process_single_chart(self, vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table):
+        # Get SHA from 'pr_base_branch' branch
+        r = github_api(
+            'get', f'repos/{self.secrets.test_repo}/git/ref/heads/{self.secrets.pr_base_branch}', self.secrets.bot_token)
+        j = json.loads(r.text)
+        pr_base_branch_sha = j['object']['sha']
+
+        chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
+        base_branch = f'{self.secrets.software_name}-{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}'
+        pr_branch = f'{self.secrets.software_name}-{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}-pr'
+
+        self.secrets.base_branches.append(base_branch)
+        self.secrets.pr_branches.append(pr_branch)
+        self.temp_repo.git.checkout('tmp')
+        self.temp_repo.git.checkout('-b', base_branch)
+
+        # Create test gh-pages branch for checking index.yaml
+        self.create_test_gh_pages_branch(self.secrets.test_repo, base_branch, self.secrets.bot_token)
+
+        # Create a new base branch for testing current chart
+        logging.info(
+            f"Create {self.secrets.test_repo}:{base_branch} for testing")
+        r = github_api(
+            'get', f'repos/{self.secrets.test_repo}/branches', self.secrets.bot_token)
+        branches = json.loads(r.text)
+        branch_names = [branch['name'] for branch in branches]
+        if base_branch in branch_names:
+            logging.warning(
+                f"{self.secrets.test_repo}:{base_branch} already exists")
+            return
+        data = {'ref': f'refs/heads/{base_branch}',
+                'sha': pr_base_branch_sha}
+        r = github_api(
+            'post', f'repos/{self.secrets.test_repo}/git/refs', self.secrets.bot_token, json=data)
+
+        # Remove chart and owners file from git
+        self.remove_chart(chart_directory, chart_version, self.secrets.test_repo, base_branch, self.secrets.bot_token)
+        self.remove_owners_file(chart_directory, self.secrets.test_repo, base_branch, self.secrets.bot_token)
+
+        # Get owners id for notifications
+        self.get_owner_ids(chart_directory, owners_table)
+
+        # Create and push test owners file
+        super().create_and_push_owners_file(chart_directory, base_branch, vendor_name, vendor_type, chart_name)
+
+        # Push test chart to pr_branch
+        self.push_chart(chart_directory, chart_name, chart_version, vendor_name, vendor_type, pr_branch)
+
+        # Create PR from pr_branch to base_branch
+        pr_number = super().send_pull_request(self.secrets.test_repo, base_branch, pr_branch, self.secrets.bot_token)
+        pr_number_list.append((vendor_type, vendor_name, chart_name, chart_version, pr_number))
+
+    def process_all_charts(self):
+        self.setup_git_context(self.repo)
+        self.setup_temp_dir()
+
+        owners_table = dict()
+        pr_number_list = list()
+
+        # Process test charts and send PRs from temporary directory
+        with SetDirectory(Path(self.temp_dir.name)):
+            for vendor_type, vendor_name, chart_name, chart_version in self.secrets.submitted_charts:
+                self.process_single_chart(vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table)
+
+        for vendor_type, vendor_name, chart_name, chart_version, pr_number in pr_number_list:
+            self.check_single_chart_result(vendor_type, vendor_name, chart_name, chart_version, pr_number, owners_table)

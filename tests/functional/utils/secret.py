@@ -37,4 +37,3 @@ class SecretRecursiveTesting(Secret):
     dry_run: bool = True
     notify_id: list = None
     submitted_charts: list = None
-    vendor: str = ''
