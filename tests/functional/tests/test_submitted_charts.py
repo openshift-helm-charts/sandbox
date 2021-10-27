@@ -37,11 +37,17 @@ logger.setLevel(logging.INFO)
 
 @pytest.fixture
 def workflow_test():
+    ##########TODO: REMOVE BEFORE MERGE#############
+    os.environ["SOFTWARE_NAME"] = "chart-verifier"
+    os.environ["SOFTWARE_VERSION"] = "1.0.0"
+    os.environ["DRY_RUN"] = "true"
+    os.environ["VENDOR_TYPE"] = "redhat"
+
     workflow_test = CertificationWorkflowTestRecursive()
     yield workflow_test
     workflow_test.cleanup()
 
-@scenario('features/check_submitted_charts.feature', "A new Openshift or chart-verifier version is specified either by a cron job or manually")
+@scenario('../features/check_submitted_charts.feature', "A new Openshift or chart-verifier version is specified either by a cron job or manually")
 def test_submitted_charts():
     """A new Openshift or chart-verifier version is specified either by a cron job or manually."""
 
@@ -69,10 +75,9 @@ def workflow_is_triggered():
 @then("submission tests are run for existing charts")
 def submission_tests_run_for_submitted_charts(workflow_test):
     """submission tests are run for existing charts."""
-
+    workflow_test.process_all_charts()
 
 
 @then("all results are reported back to the caller")
 def all_results_report_back_to_caller():
     """all results are reported back to the caller."""
-    workflow_test.process_all_charts()

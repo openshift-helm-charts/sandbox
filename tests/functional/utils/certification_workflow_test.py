@@ -21,7 +21,6 @@ from pytest_bdd import (
     then,
     when,
 )
-from functional.tests.test_submitted_charts import vendor_type_is_specified
 from functional.utils.notifier import create_verification_issue
 
 from functional.utils.utils import *
@@ -30,8 +29,6 @@ from functional.utils.set_directory import SetDirectory
 
 @dataclass
 class CertificationWorkflowTest:
-    test_chart: str = ''
-    test_report: str = ''
     owners_file_content: str = """\
 chart:
   name: ${chart_name}
@@ -50,15 +47,6 @@ vendor:
     temp_dir: TemporaryDirectory = None
     temp_repo: git.Repo = None
     github_actions: str = os.environ.get("GITHUB_ACTIONS")
-
-    def get_chart_name_version(self):
-        if not self.test_report and not self.test_chart:
-            pytest.fail("Provide at least one of test report or test chart.")
-        if self.test_report:
-            chart_name, chart_version = get_name_and_version_from_report(self.test_report)
-        else:
-            chart_name, chart_version = get_name_and_version_from_chart_tar(self.test_chart)
-        return chart_name, chart_version
 
     def remove_chart(self, chart_directory, chart_version, remote_repo, base_branch, bot_token):
         # Remove chart files from base branch
@@ -140,6 +128,8 @@ vendor:
 
 @dataclass
 class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
+    test_chart: str = ''
+    test_report: str = ''
     chart_directory: str = ''
     secrets: SecretOneShotTesting = SecretOneShotTesting()
 
@@ -209,6 +199,15 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             self.repo.git.branch('-D', self.secrets.base_branch)
         except git.exc.GitCommandError:
             logging.info(f"Local '{self.secrets.base_branch}' does not exist")
+
+    def get_chart_name_version(self):
+        if not self.test_report and not self.test_chart:
+            pytest.fail("Provide at least one of test report or test chart.")
+        if self.test_report:
+            chart_name, chart_version = get_name_and_version_from_report(self.test_report)
+        else:
+            chart_name, chart_version = get_name_and_version_from_chart_tar(self.test_chart)
+        return chart_name, chart_version
 
     def set_vendor(self, vendor, vendor_type):
         self.secrets.vendor = vendor
@@ -359,7 +358,6 @@ class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
     secrets: SecretRecursiveTesting = SecretRecursiveTesting()
 
     def __post_init__(self) -> None:
-        chart_name, chart_version = self.get_chart_name_version()
         bot_name, bot_token = get_bot_name_and_token()
         dry_run = self.get_dry_run()
         notify_id = self.get_notify_id()
@@ -370,7 +368,9 @@ class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
         base_branches = []
         pr_branches = []
 
-        pr_base_branch = self.repo.active_branch.name
+        #############TODO: REMOVE THIS BEFORE MERGING
+        pr_base_branch = 'main'
+        # pr_base_branch = self.repo.active_branch.name
         r = github_api(
             'get', f'repos/{test_repo}/branches', bot_token)
         branches = json.loads(r.text)
@@ -394,10 +394,6 @@ class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
         self.secrets.dry_run = dry_run
         self.secrets.notify_id = notify_id
         self.secrets.owners_file_content = self.owners_file_content
-        self.secrets.test_chart = self.test_chart
-        self.secrets.test_report = self.test_report
-        self.secrets.chart_name = chart_name
-        self.secrets.chart_version = chart_version
 
     def cleanup (self):
         # Teardown step to cleanup branches
@@ -422,8 +418,12 @@ class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
             github_api(
                 'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{pr_branch}', self.secrets.bot_token)
 
-        logging.info("Delete local 'tmp' branch")
-        self.repo.git.branch('-D', 'tmp')
+
+        try:
+            logging.info("Delete local 'tmp' branch")
+            self.temp_repo.git.branch('-D', 'tmp')
+        except git.exc.GitCommandError:
+            logging.info(f"Local 'tmp' branch does not exist")
 
     def get_dry_run(self):
         # Accepts 'true' or 'false', depending on whether we want to notify
@@ -475,13 +475,12 @@ class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
             self.temp_repo = git.Repo(self.temp_dir.name)
 
             # Run submission flow test with charts in PROD_REPO:PROD_BRANCH
-            self.temp_repo = git.Repo(self.temp_dir)
             set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
             self.temp_repo.git.fetch(
                 f'https://github.com/{PROD_REPO}.git', f'{PROD_BRANCH}:{PROD_BRANCH}', '-f')
             self.temp_repo.git.checkout(PROD_BRANCH, 'charts')
             self.temp_repo.git.restore('--staged', 'charts')
-            self.temp_repo.secrets.submitted_charts = get_all_charts(
+            self.secrets.submitted_charts = get_all_charts(
                 'charts', self.secrets.vendor_type)
             logging.info(
                 f"Found charts for {self.secrets.vendor_type}: {self.secrets.submitted_charts}")
