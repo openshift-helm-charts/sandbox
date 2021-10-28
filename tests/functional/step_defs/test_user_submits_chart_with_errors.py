@@ -45,29 +45,29 @@ def vendor_of_vendor_type_wants_to_submit_chart_of_version(workflow_test, vendor
     workflow_test.set_vendor(get_unique_vendor(vendor), vendor_type)
     workflow_test.chart_name, workflow_test.chart_version = chart, version
 
-@given(parsers.parse("Chart.yaml specifies a <bad_version>"))
-def chart_yaml_specifies_bad_version(workflow_test, bad_version):
-    """ Chart.yaml specifies a <bad_version> """
-    logging.info(f"Bad Version: {bad_version}")
-    if bad_version != '':
-        update_chart_version_in_chart_yaml(f'{workflow_test.chart_dir}/{workflow_test.chart_version}/src/Chart.yaml', bad_version)
-
-@given("the user creates a branch to add a new chart version")
-def the_user_creates_a_branch_to_add_a_new_chart_version(workflow_test):
-    """the user creates a branch to add a new chart version."""
+    # Setup steps after desired testing values are set
     workflow_test.setup_git_context()
     workflow_test.setup_gh_pages_branch()
     workflow_test.setup_temp_dir()
     workflow_test.process_owners_file()
     workflow_test.process_chart(is_tarball=False)
-    workflow_test.push_chart(is_tarball=False)
 
+@given(parsers.parse("Chart.yaml specifies a <bad_version>"))
+def chart_yaml_specifies_bad_version(workflow_test, bad_version):
+    """ Chart.yaml specifies a <bad_version> """
+    logging.info(f"Bad Version: {bad_version}")
+    if bad_version != '':
+        workflow_test.update_chart_version_in_chart_yaml(bad_version)
+
+@given("the user creates a branch to add a new chart version")
+def the_user_creates_a_branch_to_add_a_new_chart_version(workflow_test):
+    """the user creates a branch to add a new chart version."""
+    workflow_test.push_chart(is_tarball=False)
 
 @when("the user sends a pull request with chart")
 def the_user_sends_a_pull_request_with_chart(workflow_test):
     """The user sends the pull request with the chart."""
     workflow_test.send_pull_request()
-
 
 @then("the pull request is not merged")
 def the_pull_request_is_not_getting_merged(workflow_test):
@@ -78,5 +78,4 @@ def the_pull_request_is_not_getting_merged(workflow_test):
 @then(parsers.parse("user gets the <message> with steps to follow for resolving the issue in the pull request"))
 def user_gets_the_message_with_steps_to_follow_for_resolving_the_issue_in_the_pull_request(workflow_test, message):
     """user gets the message with steps to follow for resolving the issue in the pull request"""
-
     workflow_test.check_pull_request_comments(expect_message=message)

@@ -177,7 +177,8 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
 
     def cleanup (self):
         # Teardown step to cleanup branches
-        self.temp_dir.cleanup()
+        if self.temp_dir is not None:
+            self.temp_dir.cleanup()
         self.repo.git.worktree('prune')
 
         if self.github_actions:
@@ -242,6 +243,22 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             self.remove_chart(self.chart_directory, self.secrets.chart_version, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
             self.remove_owners_file(self.chart_directory, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
 
+    def update_chart_version_in_chart_yaml(self, new_version):
+        path = f'{self.chart_directory}/{self.secrets.chart_version}/Chart.yaml'
+        with open(path, 'r') as fd:
+            try:
+                chart = yaml.safe_load(fd)
+            except yaml.YAMLError as err:
+                pytest.fail(f"error parsing '{path}': {err}")
+        current_version = chart['version']
+
+        if current_version != new_version:
+            chart['version'] = new_version
+            try:
+                with open(path, 'w') as fd:
+                    fd.write(yaml.dump(chart))
+            except Exception as e:
+                pytest.fail("Failed to update version in yaml file")
 
     def process_owners_file(self):
         super().create_and_push_owners_file(self.chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.secrets.chart_name)
@@ -376,7 +393,6 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             logging.info(f"Delete release tag '{expected_tag}'")
             github_api(
                 'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
-
 
 @dataclass
 class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
