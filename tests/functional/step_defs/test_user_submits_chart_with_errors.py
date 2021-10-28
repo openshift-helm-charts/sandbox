@@ -50,7 +50,7 @@ def chart_yaml_specifies_bad_version(workflow_test, bad_version):
     """ Chart.yaml specifies a <bad_version> """
     logging.info(f"Bad Version: {bad_version}")
     if bad_version != '':
-        update_chart_version_in_chart_yaml(f'{workflow_test.chart_dir}/{workflow_test.chart_version}/src/Chart.yaml', bad_version)
+        update_chart_version_in_chart_yaml(f'{workflow_test.secrets.chart_dir}/{workflow_test.secrets.chart_version}/src/Chart.yaml', bad_version)
 
 @given("the user creates a branch to add a new chart version")
 def the_user_creates_a_branch_to_add_a_new_chart_version(workflow_test):
