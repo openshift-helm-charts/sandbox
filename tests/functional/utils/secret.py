@@ -25,6 +25,7 @@ class SecretOneShotTesting(Secret):
     pr_branch: str = ''
     pr_number: int = -1
     vendor: str = ''
+    bad_version: str = ''
 
 @dataclass
 class SecretRecursiveTesting(Secret):

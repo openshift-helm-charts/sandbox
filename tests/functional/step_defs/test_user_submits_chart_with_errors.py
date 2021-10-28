@@ -4,6 +4,7 @@
 """
 import logging
 import pytest
+import subprocess
 from pytest_bdd import (
     given,
     scenario,
@@ -17,16 +18,16 @@ from functional.utils.certification_workflow_test import CertificationWorkflowTe
 
 @pytest.fixture
 def workflow_test():
-    test_name = 'Test User Submits Chart With Errors'
+    test_name = 'Chart Submission with Errors'
     test_chart = 'tests/data/vault-0.13.0.tgz'
     workflow_test = CertificationWorkflowTestOneShot(test_name=test_name, test_chart=test_chart)
     yield workflow_test
     workflow_test.cleanup()
 
 
-@scenario('../features/user_submits_chart_with_errors.feature', "An unauthorized user submits a chart")
-def test_chart_submission_by_unauthorized_user():
-    """An unauthorized user submits a chart"""
+# @scenario('../features/user_submits_chart_with_errors.feature', "An unauthorized user submits a chart")
+# def test_chart_submission_by_unauthorized_user():
+#     """An unauthorized user submits a chart"""
 
 @scenario('../features/user_submits_chart_with_errors.feature', "An authorized user submits a chart with incorrect version")
 def test_chart_submission_with_incorrect_version():
@@ -36,7 +37,7 @@ def test_chart_submission_with_incorrect_version():
 def user_wants_to_submit_a_chart(workflow_test, user):
     """A user wants to submit a chart"""
     logging.info(f"User: {user}")
-    workflow_test.bot_name = user
+    workflow_test.secrets.bot_name = user
 
 @given(parsers.parse("<vendor> of <vendor_type> wants to submit <chart> of <version>"))
 def vendor_of_vendor_type_wants_to_submit_chart_of_version(workflow_test, vendor, vendor_type, chart, version):
@@ -50,7 +51,7 @@ def chart_yaml_specifies_bad_version(workflow_test, bad_version):
     """ Chart.yaml specifies a <bad_version> """
     logging.info(f"Bad Version: {bad_version}")
     if bad_version != '':
-        update_chart_version_in_chart_yaml(f'{workflow_test.chart_dir}/{workflow_test.chart_version}/src/Chart.yaml', bad_version)
+        workflow_test.secrets.bad_version = bad_version
 
 @given("the user creates a branch to add a new chart version")
 def the_user_creates_a_branch_to_add_a_new_chart_version(workflow_test):
@@ -60,14 +61,14 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(workflow_test):
     workflow_test.setup_temp_dir()
     workflow_test.process_owners_file()
     workflow_test.process_chart(is_tarball=False)
+    if workflow_test.secrets.bad_version:
+        workflow_test.update_chart_version_in_chart_yaml(workflow_test.secrets.bad_version)
     workflow_test.push_chart(is_tarball=False)
-
 
 @when("the user sends a pull request with chart")
 def the_user_sends_a_pull_request_with_chart(workflow_test):
     """The user sends the pull request with the chart."""
     workflow_test.send_pull_request()
-
 
 @then("the pull request is not merged")
 def the_pull_request_is_not_getting_merged(workflow_test):
@@ -78,5 +79,4 @@ def the_pull_request_is_not_getting_merged(workflow_test):
 @then(parsers.parse("user gets the <message> with steps to follow for resolving the issue in the pull request"))
 def user_gets_the_message_with_steps_to_follow_for_resolving_the_issue_in_the_pull_request(workflow_test, message):
     """user gets the message with steps to follow for resolving the issue in the pull request"""
-
     workflow_test.check_pull_request_comments(expect_message=message)
