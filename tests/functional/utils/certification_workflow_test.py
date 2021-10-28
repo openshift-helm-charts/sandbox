@@ -36,7 +36,7 @@ chart:
   shortDescription: Test chart for testing chart submission workflows.
 publicPgpKey: null
 users:
-- githubUsername: ${username}
+- githubUsername: ${bot_name}
 vendor:
   label: ${vendor}
   name: ${vendor}
@@ -112,7 +112,7 @@ vendor:
     def create_and_push_owners_file(self, chart_directory, base_branch, vendor_name, vendor_type, chart_name):
         with SetDirectory(Path(self.temp_dir.name)):
             # Create the OWNERS file from the string template
-            values = {'username': self.secrets.bot_name,
+            values = {'bot_name': self.secrets.bot_name,
                     'vendor': vendor_name, 'chart_name': chart_name}
             content = Template(self.secrets.owners_file_content).substitute(values)
             with open(f'{chart_directory}/OWNERS', 'w') as fd:
@@ -129,7 +129,7 @@ vendor:
 
 @dataclass
 class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
-    test_name: str = '' # Meaningful test name for 
+    test_name: str = '' # Meaningful test name for this test, displayed in PR title
 
     test_chart: str = ''
     test_report: str = ''
@@ -161,7 +161,7 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
                     f'HEAD:refs/heads/{current_branch}', '-f')
 
         pretty_test_name = self.test_name.strip().lower().replace(' ', '-')
-        base_branch = f'{pretty_test_name}-{current_branch}'
+        base_branch = f'{pretty_test_name}-{current_branch}' if pretty_test_name else f'test-{current_branch}'
         pr_branch = base_branch + '-pr-branch'
 
         self.secrets.owners_file_content = self.owners_file_content
@@ -177,7 +177,8 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
 
     def cleanup (self):
         # Teardown step to cleanup branches
-        self.temp_dir.cleanup()
+        if self.temp_dir is not None:
+            self.temp_dir.cleanup()
         self.repo.git.worktree('prune')
 
         if self.github_actions:
@@ -242,6 +243,22 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             self.remove_chart(self.chart_directory, self.secrets.chart_version, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
             self.remove_owners_file(self.chart_directory, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
 
+    def update_chart_version_in_chart_yaml(self, new_version):
+        path = f'{self.chart_directory}/{self.secrets.chart_version}/Chart.yaml'
+        with open(path, 'r') as fd:
+            try:
+                chart = yaml.safe_load(fd)
+            except yaml.YAMLError as err:
+                pytest.fail(f"error parsing '{path}': {err}")
+        current_version = chart['version']
+
+        if current_version != new_version:
+            chart['version'] = new_version
+            try:
+                with open(path, 'w') as fd:
+                    fd.write(yaml.dump(chart))
+            except Exception as e:
+                pytest.fail("Failed to update version in yaml file")
 
     def process_owners_file(self):
         super().create_and_push_owners_file(self.chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.secrets.chart_name)
@@ -376,7 +393,6 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             logging.info(f"Delete release tag '{expected_tag}'")
             github_api(
                 'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
-
 
 @dataclass
 class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
