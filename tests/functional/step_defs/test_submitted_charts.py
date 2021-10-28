@@ -8,18 +8,8 @@ version.
 Besides, during workflow development, engineers would like to check if the changes will break checks
 on existing submitted charts.
 """
-import os
-import json
-import base64
-import pathlib
 import logging
-import shutil
-from tempfile import TemporaryDirectory
-from dataclasses import dataclass
-from string import Template
 
-import git
-import yaml
 import pytest
 from pytest_bdd import (
     given,
@@ -28,12 +18,7 @@ from pytest_bdd import (
     when,
 )
 from functional.utils.utils import *
-from functional.utils.notifier import create_verification_issue
 from functional.utils.certification_workflow_test import CertificationWorkflowTestRecursive
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
 
 @pytest.fixture
 def workflow_test():

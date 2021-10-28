@@ -36,7 +36,7 @@ chart:
   shortDescription: Test chart for testing chart submission workflows.
 publicPgpKey: null
 users:
-- githubUsername: ${bot_name}
+- githubUsername: ${username}
 vendor:
   label: ${vendor}
   name: ${vendor}
@@ -112,7 +112,7 @@ vendor:
     def create_and_push_owners_file(self, chart_directory, base_branch, vendor_name, vendor_type, chart_name):
         with SetDirectory(Path(self.temp_dir.name)):
             # Create the OWNERS file from the string template
-            values = {'bot_name': self.secrets.bot_name,
+            values = {'username': self.secrets.bot_name,
                     'vendor': vendor_name, 'chart_name': chart_name}
             content = Template(self.secrets.owners_file_content).substitute(values)
             with open(f'{chart_directory}/OWNERS', 'w') as fd:
@@ -129,7 +129,7 @@ vendor:
 
 @dataclass
 class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
-    name: str = '' # Meaningful test name for 
+    test_name: str = '' # Meaningful test name for 
 
     test_chart: str = ''
     test_report: str = ''
@@ -160,7 +160,7 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
         self.repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
                     f'HEAD:refs/heads/{current_branch}', '-f')
 
-        pretty_test_name = self.name.strip().lower().replace(' ', '-')
+        pretty_test_name = self.test_name.strip().lower().replace(' ', '-')
         base_branch = f'{pretty_test_name}-{current_branch}'
         pr_branch = base_branch + '-pr-branch'
 
@@ -290,24 +290,45 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
     def send_pull_request(self):
         self.secrets.pr_number = super().send_pull_request(self.secrets.test_repo, self.secrets.base_branch, self.secrets.pr_branch, self.secrets.bot_token)
 
-    def check_workflow_conclusion(self):
+    # expect_result: a string representation of expected result, e.g. 'success'
+    def check_workflow_conclusion(self, expect_result: str):
         # Check workflow conclusion
         run_id = get_run_id(self.secrets)
         conclusion = get_run_result(self.secrets, run_id)
-        if conclusion == 'success':
-            logging.info("Workflow run was 'success'")
+        if conclusion == expect_result:
+            logging.info(f"Workflow run was '{expect_result}' which is expected")
         else:
             pytest.fail(
-                f"Workflow for the submitted PR did not success, run id: {run_id}")
+                f"Workflow run was '{conclusion}' which is unexpected, run id: {run_id}")
 
-    def check_pull_request_result(self):
+    # expect_merged: boolean representing whether the PR should be merged
+    def check_pull_request_result(self, expect_merged: bool):
         # Check if PR merged
         r = github_api(
             'get', f'repos/{self.secrets.test_repo}/pulls/{self.secrets.pr_number}/merge', self.secrets.bot_token)
-        if r.status_code == 204:
-            logging.info("PR merged sucessfully")
+        if r.status_code == 204 and expect_merged:
+            logging.info("PR merged sucessfully as expected")
+        elif r.status_code == 404 and not expect_merged:
+            logging.info("PR not merged, which is expected")
+        elif r.status_code == 204 and not expect_merged:
+            pytest.fail("Expecting PR not merged but PR was merged")
+        elif r.status_code == 404 and expect_merged:
+            pytest.fail("Expecting PR merged but PR was not merged")
         else:
-            pytest.fail("Workflow for submitted PR success but PR not merged")
+            pytest.fail(f"Got unexpected status code from PR: {r.status_code}")
+
+    def check_pull_request_comments(self, expect_message: str):
+        r = github_api(
+            'get', f'repos/{self.secrets.test_repo}/issues/{self.secrets.pr_number}/comments', self.secrets.bot_token)
+        logging.info(f'STATUS_CODE: {r.status_code}')
+
+        response = json.loads(r.text)
+        complete_comment = response[0]['body']
+
+        if expect_message in complete_comment:
+            logging.info("Found the expected comment in the PR")
+        else:
+            pytest.fail(f"Was expecting '{expect_message}' in the comment {complete_comment}")
 
     def check_index_yaml(self):
         old_branch = self.repo.active_branch.name

@@ -4,18 +4,8 @@
 Partners or redhat associates can publish their chart by submitting
 error-free chart in tar format with the report.
 """
-import os
-import json
-import base64
-import pathlib
 import logging
-import shutil
-from tempfile import TemporaryDirectory
-from dataclasses import dataclass
-from string import Template
 
-import git
-import yaml
 import pytest
 from pytest_bdd import (
     given,
@@ -26,10 +16,6 @@ from pytest_bdd import (
 
 from functional.utils.utils import *
 from functional.utils.certification_workflow_test import CertificationWorkflowTestOneShot
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
 
 @pytest.fixture
 def workflow_test():
@@ -86,8 +72,8 @@ def the_user_sends_the_pull_request(workflow_test):
 @then("the redhat associate sees the pull request is merged")
 def the_user_should_see_the_pull_request_getting_merged(workflow_test):
     """The user should see the pull request getting merged."""
-    workflow_test.check_workflow_conclusion()
-    workflow_test.check_pull_request_result()
+    workflow_test.check_workflow_conclusion(expect_result='success')
+    workflow_test.check_pull_request_result(expect_merged=True)
 
 
 @then("the index.yaml file is updated with an entry for the submitted chart")
