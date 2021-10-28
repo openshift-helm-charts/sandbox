@@ -6,11 +6,12 @@ import shutil
 import tarfile
 import time
 import json
-
+import git
 import pytest
 import requests
 import yaml
 from retrying import retry
+from string import Template
 
 GITHUB_BASE_URL = 'https://api.github.com'
 # The sandbox repository where we run all our tests on
@@ -278,3 +279,161 @@ def get_unique_vendor(vendor):
     if "PR_NUMBER" in os.environ:
         suffix = os.environ["PR_NUMBER"]
     return f"{vendor}-{suffix}"
+
+def setup_gh_pages_branch(secrets, logger):
+    # Get SHA from 'dev-gh-pages' branch
+    logger.info(
+        f"Create '{secrets.test_repo}:{secrets.base_branch}-gh-pages' from '{secrets.test_repo}:dev-gh-pages'")
+    r = github_api(
+        'get', f'repos/{secrets.test_repo}/git/ref/heads/dev-gh-pages', secrets.bot_token)
+    j = json.loads(r.text)
+    sha = j['object']['sha']
+
+    # Create a new gh-pages branch for testing
+    data = {'ref': f'refs/heads/{secrets.base_branch}-gh-pages', 'sha': sha}
+    r = github_api(
+        'post', f'repos/{secrets.test_repo}/git/refs', secrets.bot_token, json=data)
+    
+    return r
+
+def cleanup_branches(secrets, repo, logger):
+
+    logger.info(f"Delete '{secrets.test_repo}:{secrets.base_branch}'")
+    github_api(
+        'delete', f'repos/{secrets.test_repo}/git/refs/heads/{secrets.base_branch}', secrets.bot_token)
+
+    logger.info(f"Delete '{secrets.test_repo}:{secrets.base_branch}-gh-pages'")
+    github_api(
+        'delete', f'repos/{secrets.test_repo}/git/refs/heads/{secrets.base_branch}-gh-pages', secrets.bot_token)
+
+    logger.info(f"Delete '{secrets.test_repo}:{secrets.pr_branch}'")
+    github_api(
+        'delete', f'repos/{secrets.test_repo}/git/refs/heads/{secrets.pr_branch}', secrets.bot_token)
+
+    logger.info(f"Delete local '{secrets.base_branch}'")
+    try:
+        repo.git.branch('-D', secrets.base_branch)
+    except git.exc.GitCommandError:
+        logger.info(f"Local '{secrets.base_branch}' does not exist")
+
+def get_branch_names_from_remote_repo(repo_name, bot_token):
+    r = github_api(
+        'get', f'repos/{repo_name}/branches', bot_token)
+    branches = json.loads(r.text)
+    branch_names = [branch['name'] for branch in branches]
+    return branch_names
+
+def commit_current_changes(repo, commit_message='Auto Commit'):
+    try:
+        repo.git.add(A=True)
+        repo.git.commit('-m', commit_message)
+    except git.exc.GitCommandError:
+        pytest.fail("Failed to commit current changes")
+
+def create_new_branch_locally(repo):
+    head_sha = repo.git.rev_parse('--short', 'HEAD')
+    local_branches = [h.name for h in repo.heads]
+    if head_sha not in local_branches:
+        repo.git.checkout('-b', f'{head_sha}')
+    return head_sha
+
+def get_active_branch_name(repo):
+    return repo.active_branch.name
+
+def push_current_branch_to_remote_test_repo(repo, test_repo, bot_token):
+    current_branch = get_active_branch_name(repo)
+    branch_names = get_branch_names_from_remote_repo(test_repo, bot_token)
+    if current_branch not in branch_names:
+        repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
+                  f'HEAD:refs/heads/{current_branch}', '-f')
+    return current_branch
+
+def remove_chart_dir_from_base_branch(secrets, repo, logger):
+    logger.info(
+            f"Remove {secrets.chart_dir}/{secrets.chart_version} from {secrets.test_repo}:{secrets.base_branch}")
+    try:
+        repo.git.rm('-rf', '--cached', f'{secrets.chart_dir}/{secrets.chart_version}')
+        repo.git.commit(
+            '-m', f'Remove {secrets.chart_dir}/{secrets.chart_version}')
+        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
+                f'HEAD:refs/heads/{secrets.base_branch}')
+    except git.exc.GitCommandError:
+        logger.info(
+            f"{secrets.chart_dir}/{secrets.chart_version} not exist on {secrets.test_repo}:{secrets.base_branch}")
+
+def remove_owners_file_from_base_branch(secrets, repo, logger):
+    logger.info(
+        f"Remove {secrets.chart_dir}/OWNERS from {secrets.test_repo}:{secrets.base_branch}")
+    try:
+        repo.git.rm('-rf', '--cached', f'{secrets.chart_dir}/OWNERS')
+        repo.git.commit(
+            '-m', f'Remove {secrets.chart_dir}/OWNERS')
+        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
+                        f'HEAD:refs/heads/{secrets.base_branch}')
+    except git.exc.GitCommandError:
+        logger.info(
+            f"{secrets.chart_dir}/OWNERS not exist on {secrets.test_repo}:{secrets.base_branch}")
+
+def create_owners_file_under_chart_dir(secrets):
+    
+    #Substitude the values in owners file content
+    values = {'bot_name': secrets.user, 'vendor': secrets.vendor, 'chart_name': secrets.chart_name}
+    secrets.owners_file_content = Template(secrets.owners_file_content).substitute(values)
+    # Create the OWNERS file
+    with open(f'{secrets.chart_dir}/OWNERS', 'w') as fd:
+        fd.write(secrets.owners_file_content)
+
+def push_owners_file_to_base_branch(secrets, repo, logger):
+    logger.info(
+        f"Push OWNERS file to '{secrets.test_repo}:{secrets.base_branch}'")
+    try:
+        repo.git.add(f'{secrets.chart_dir}/OWNERS')
+        repo.git.commit(
+            '-m', f"Add {secrets.vendor} {secrets.chart_name} OWNERS file")
+        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
+                    f'HEAD:refs/heads/{secrets.base_branch}', '-f')
+    except git.exc.GitCommandError:
+        pytest.fail("Failed to push OWNERS file to base branch")
+
+def push_chart_src_files_to_pr_branch(secrets, repo):
+    try:
+        repo.git.add(f'{secrets.chart_dir}/{secrets.chart_version}/src')
+        repo.git.commit(
+            '-m', f"Add {secrets.vendor} {secrets.chart_name} {secrets.chart_version} chart source files")
+        repo.git.push(f'https://x-access-token:{secrets.bot_token}@github.com/{secrets.test_repo}',
+                    f'HEAD:refs/heads/{secrets.pr_branch}', '-f')
+    except git.exc.GitCommandError:
+        pytest.fail("Failed to push chart src files to pr branch")
+
+def get_chart_tar_file_name(secrets):
+    return secrets.chart_name + '-' + secrets.chart_version + '.tgz'
+
+def get_report_file(secrets):
+    return secrets.test_data_dir + 'report.yaml'
+
+def copy_report_to_tmp_location(secrets):
+    test_report = get_report_file(secrets)
+    tmpl = open(test_report).read()
+    values = {'repository': secrets.test_repo,
+                'branch': secrets.base_branch}
+    content = Template(tmpl).substitute(values)
+    with open(f'{secrets.chart_dir}/{secrets.chart_version}/report.yaml', 'w') as fd:
+        fd.write(content)
+
+def update_chart_version_in_chart_yaml(path, new_version):
+    with open(path, 'r') as fd:
+        try:
+            chart = yaml.safe_load(fd)
+        except yaml.YAMLError as err:
+            pytest.fail(f"error parsing '{path}': {err}")
+    current_version = chart['version']
+    
+    if current_version != new_version:
+        chart['version'] = new_version
+        try:
+            with open(path, 'w') as fd:
+                fd.write(yaml.dump(chart))
+        except Exception as e:
+            pytest.fail("Failed to update version in yaml file")
+    
+
