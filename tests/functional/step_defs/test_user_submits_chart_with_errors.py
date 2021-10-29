@@ -4,7 +4,6 @@
 """
 import logging
 import pytest
-import subprocess
 from pytest_bdd import (
     given,
     scenario,
@@ -13,14 +12,13 @@ from pytest_bdd import (
     parsers
 )
 
-from functional.utils.utils import *
-from functional.utils.certification_workflow_test import CertificationWorkflowTestOneShot
+from functional.utils.chart_certification import ChartCertificationE2ETestSingle
 
 @pytest.fixture
 def workflow_test():
     test_name = 'Chart Submission with Errors'
     test_chart = 'tests/data/vault-0.13.0.tgz'
-    workflow_test = CertificationWorkflowTestOneShot(test_name=test_name, test_chart=test_chart)
+    workflow_test = ChartCertificationE2ETestSingle(test_name=test_name, test_chart=test_chart)
     yield workflow_test
     workflow_test.cleanup()
 
@@ -43,7 +41,7 @@ def user_wants_to_submit_a_chart(workflow_test, user):
 def vendor_of_vendor_type_wants_to_submit_chart_of_version(workflow_test, vendor, vendor_type, chart, version):
     """<vendor> of <vendor_type> wants to submit <chart> of <version>"""
     logging.info(f"Vendor: {vendor} Vendor Type: {vendor_type} Chart: {chart} Version: {version}")
-    workflow_test.set_vendor(get_unique_vendor(vendor), vendor_type)
+    workflow_test.set_vendor(vendor, vendor_type)
     workflow_test.chart_name, workflow_test.chart_version = chart, version
 
 @given(parsers.parse("Chart.yaml specifies a <bad_version>"))

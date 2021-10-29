@@ -4,8 +4,6 @@
 Partners or redhat associates can publish their chart by submitting
 error-free chart in source format with the report.
 """
-import logging
-
 import pytest
 from pytest_bdd import (
     given,
@@ -14,15 +12,14 @@ from pytest_bdd import (
     when,
 )
 
-from functional.utils.utils import *
-from functional.utils.certification_workflow_test import CertificationWorkflowTestOneShot
+from functional.utils.chart_certification import ChartCertificationE2ETestSingle
 
 @pytest.fixture
 def workflow_test():
     test_name = 'Test Chart Source With Report'
     test_chart = 'tests/data/vault-0.13.0.tgz'
     test_report = 'tests/data/report.yaml'
-    workflow_test = CertificationWorkflowTestOneShot(test_name=test_name, test_chart=test_chart, test_report=test_report)
+    workflow_test = ChartCertificationE2ETestSingle(test_name=test_name, test_chart=test_chart, test_report=test_report)
     yield workflow_test
     workflow_test.cleanup()
 
@@ -40,13 +37,13 @@ def test_redhat_chart_src_submission():
 @given("hashicorp is a valid partner")
 def hashicorp_is_a_valid_partner(workflow_test):
     """hashicorp is a valid partner"""
-    workflow_test.set_vendor(get_unique_vendor('hashicorp'), 'partners')
+    workflow_test.set_vendor('hashicorp', 'partners')
 
 
 @given("a redhat associate has a valid identity")
 def redhat_associate_is_valid(workflow_test):
     """a redhat associate has a valid identity"""
-    workflow_test.set_vendor(get_unique_vendor('redhat'), 'redhat')
+    workflow_test.set_vendor('redhat', 'redhat')
 
 
 @given("hashicorp has created an error-free chart source and report for vault")
