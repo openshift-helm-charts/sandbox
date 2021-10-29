@@ -1,13 +1,16 @@
+# -*- coding: utf-8 -*-
+"""Sets the cwd within the context.
+
+Reference: https://dev.to/teckert/changing-directory-with-a-python-context-manager-2bj8
+"""
+
 import os
 from dataclasses import dataclass
 from pathlib import Path
 
 @dataclass
 class SetDirectory(object):
-    """Sets the cwd within the context.
-
-    Reference: https://dev.to/teckert/changing-directory-with-a-python-context-manager-2bj8
-
+    """
     Args:
         path (Path): The path to the cwd
     """
