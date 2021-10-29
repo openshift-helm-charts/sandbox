@@ -1,11 +1,10 @@
+# -*- coding: utf-8 -*-
 """Utility class for storing test specific settings."""
 
 from dataclasses import dataclass
-from functional.utils.utils import *
-
 
 @dataclass
-class Secret:
+class E2ETestSecret:
     # common secrets between one-shot and recursive tests
     test_repo: str = ''
     bot_name: str = ''
@@ -19,7 +18,7 @@ class Secret:
     chart_version: str = ''
 
 @dataclass
-class SecretOneShotTesting(Secret):
+class E2ETestSecretOneShot(E2ETestSecret):
     # one-shot testing
     base_branch: str = ''
     pr_branch: str = ''
@@ -28,7 +27,7 @@ class SecretOneShotTesting(Secret):
     bad_version: str = ''
 
 @dataclass
-class SecretRecursiveTesting(Secret):
+class E2ETestSecretRecursive(E2ETestSecret):
     # recursive testing
     software_name: str = ''
     software_version: str = ''

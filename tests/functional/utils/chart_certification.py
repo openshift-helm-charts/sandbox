@@ -1,12 +1,12 @@
+# -*- coding: utf-8 -*-
 """Utility class for setting up and manipulating certification workflow tests."""
 
 import os
 import json
-import base64
 from datetime import datetime
 import pathlib
 import shutil
-import tarfile
+import time
 import logging
 from tempfile import TemporaryDirectory
 from dataclasses import dataclass
@@ -16,20 +16,16 @@ from pathlib import Path
 import git
 import yaml
 import pytest
-from pytest_bdd import (
-    given,
-    scenario,
-    then,
-    when,
-)
 from functional.utils.notifier import create_verification_issue
 
-from functional.utils.utils import *
+from functional.utils.github import *
 from functional.utils.secret import *
 from functional.utils.set_directory import SetDirectory
+from functional.utils.setttings import *
+from functional.utils.chart import *
 
 @dataclass
-class CertificationWorkflowTest:
+class ChartCertificationE2ETest:
     owners_file_content: str = """\
 chart:
   name: ${chart_name}
@@ -41,13 +37,37 @@ vendor:
   label: ${vendor}
   name: ${vendor}
 """
-    secrets: Secret = Secret()
+    secrets: E2ETestSecret = E2ETestSecret()
 
     old_cwd: str = os.getcwd()
     repo: git.Repo = git.Repo()
     temp_dir: TemporaryDirectory = None
     temp_repo: git.Repo = None
     github_actions: str = os.environ.get("GITHUB_ACTIONS")
+
+    def set_git_username_email(self, repo, username, email):
+        """
+        Parameters:
+        repo (git.Repo): git.Repo instance of the local directory
+        username (str): git username to set
+        email (str): git email to set
+        """
+        repo.config_writer().set_value("user", "name", username).release()
+        repo.config_writer().set_value("user", "email", email).release()
+
+    def get_bot_name_and_token(self):
+        bot_name = os.environ.get("BOT_NAME")
+        bot_token = os.environ.get("BOT_TOKEN")
+        if not bot_name and not bot_token:
+            bot_name = "github-actions[bot]"
+            bot_token = os.environ.get("GITHUB_TOKEN")
+            if not bot_token:
+                raise Exception("BOT_TOKEN environment variable not defined")
+        elif not bot_name:
+            raise Exception("BOT_TOKEN set but BOT_NAME not specified")
+        elif not bot_token:
+            raise Exception("BOT_NAME set but BOT_TOKEN not specified")
+        return bot_name, bot_token
 
     def remove_chart(self, chart_directory, chart_version, remote_repo, base_branch, bot_token):
         # Remove chart files from base branch
@@ -92,7 +112,7 @@ vendor:
             'post', f'repos/{remote_repo}/git/refs', bot_token, json=data)
 
     def setup_git_context(self, repo: git.Repo):
-        set_git_username_email(repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
+        self.set_git_username_email(repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
         if os.environ.get('WORKFLOW_DEVELOPMENT'):
             logging.info("Wokflow development enabled")
             repo.git.add(A=True)
@@ -128,16 +148,16 @@ vendor:
                         f'HEAD:refs/heads/{base_branch}', '-f')
 
 @dataclass
-class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
+class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     test_name: str = '' # Meaningful test name for this test, displayed in PR title
     test_chart: str = ''
     test_report: str = ''
     chart_directory: str = ''
-    secrets: SecretOneShotTesting = SecretOneShotTesting()
+    secrets: E2ETestSecretOneShot = E2ETestSecretOneShot()
 
     def __post_init__(self) -> None:
         chart_name, chart_version = self.get_chart_name_version()
-        bot_name, bot_token = get_bot_name_and_token()
+        bot_name, bot_token = self.get_bot_name_and_token()
         test_repo = TEST_REPO
 
         # Differentiate between github runner env and local env
@@ -204,6 +224,13 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
         except git.exc.GitCommandError:
             logging.info(f"Local '{self.secrets.base_branch}' does not exist")
 
+    def get_unique_vendor(self, vendor):
+        # unique string based on current time in seconds
+        suffix = str(int(time.time()))
+        if "PR_NUMBER" in os.environ:
+            suffix = os.environ["PR_NUMBER"]
+        return f"{vendor}-{suffix}"
+
     def get_chart_name_version(self):
         if not self.test_report and not self.test_chart:
             pytest.fail("Provide at least one of test report or test chart.")
@@ -214,7 +241,8 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
         return chart_name, chart_version
 
     def set_vendor(self, vendor, vendor_type):
-        self.secrets.vendor = vendor
+        # use unique vendor id to avoid collision between tests
+        self.secrets.vendor = self.get_unique_vendor(vendor)
         self.secrets.vendor_type = vendor_type
         self.secrets.base_branch = f'{self.secrets.base_branch}-{self.secrets.vendor_type}-{self.secrets.vendor}-{self.secrets.chart_name}-{self.secrets.chart_version}'
         self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
@@ -234,7 +262,7 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
             self.repo.git.worktree('add', '--detach', self.temp_dir.name, f'HEAD')
             self.temp_repo = git.Repo(self.temp_dir.name)
 
-            set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
+            self.set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
             self.temp_repo.git.checkout('-b', self.secrets.base_branch)
             pathlib.Path(
                 f'{self.chart_directory}/{self.secrets.chart_version}').mkdir(parents=True, exist_ok=True)
@@ -395,11 +423,11 @@ class CertificationWorkflowTestOneShot(CertificationWorkflowTest):
                 'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
 
 @dataclass
-class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
-    secrets: SecretRecursiveTesting = SecretRecursiveTesting()
+class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
+    secrets: E2ETestSecretRecursive = E2ETestSecretRecursive()
 
     def __post_init__(self) -> None:
-        bot_name, bot_token = get_bot_name_and_token()
+        bot_name, bot_token = self.get_bot_name_and_token()
         dry_run = self.get_dry_run()
         notify_id = self.get_notify_id()
         software_name, software_version = self.get_software_name_version()
@@ -420,7 +448,7 @@ class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
         self.repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
                     f'HEAD:refs/heads/{pr_base_branch}', '-f')
 
-        self.secrets = SecretRecursiveTesting()
+        self.secrets = E2ETestSecretRecursive()
         self.secrets.software_name = software_name
         self.secrets.software_version = software_version
         self.secrets.test_repo = test_repo
@@ -514,7 +542,7 @@ class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
             self.temp_repo = git.Repo(self.temp_dir.name)
 
             # Run submission flow test with charts in PROD_REPO:PROD_BRANCH
-            set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
+            self.set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
             self.temp_repo.git.fetch(
                 f'https://github.com/{PROD_REPO}.git', f'{PROD_BRANCH}:{PROD_BRANCH}', '-f')
             self.temp_repo.git.checkout(PROD_BRANCH, 'charts')
@@ -550,7 +578,8 @@ class CertificationWorkflowTestRecursive(CertificationWorkflowTest):
                     f'HEAD:refs/heads/{pr_branch}', '-f')
 
     def check_single_chart_result(self, vendor_type, vendor_name, chart_name, chart_version, pr_number, owners_table):
-        base_branch = f'{self.secrets.software_name}-{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}'
+        now = datetime.now().strftime("%Y%m%d%H%M%S")
+        base_branch = f'{now}-{self.secrets.software_name}-{self.secrets.software_version}-{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}'
 
         # Check PRs are merged
         chart = f'{vendor_type} {vendor_name} {chart_name} {chart_version}'

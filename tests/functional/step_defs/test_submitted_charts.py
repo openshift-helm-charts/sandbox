@@ -8,8 +8,6 @@ version.
 Besides, during workflow development, engineers would like to check if the changes will break checks
 on existing submitted charts.
 """
-import logging
-
 import pytest
 from pytest_bdd import (
     given,
@@ -17,12 +15,11 @@ from pytest_bdd import (
     then,
     when,
 )
-from functional.utils.utils import *
-from functional.utils.certification_workflow_test import CertificationWorkflowTestRecursive
+from functional.utils.chart_certification import ChartCertificationE2ETestMultiple
 
 @pytest.fixture
 def workflow_test():
-    workflow_test = CertificationWorkflowTestRecursive()
+    workflow_test = ChartCertificationE2ETestMultiple()
     yield workflow_test
     workflow_test.cleanup()
 
