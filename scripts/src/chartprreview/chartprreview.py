@@ -216,6 +216,10 @@ def check_report_success(directory, api_url, report_path, version):
         write_error_log(directory, msg)
         sys.exit(1)
 
+    report_metadata = report_info.get_report_metadata(report_path)
+    profile_version = report_metadata["profileVersion"]
+
+    print(f"[INFO] Profile version:  {profile_version}")
     annotations = report_info.get_report_annotations(report_path)
 
     required_annotations = {"charts.openshift.io/lastCertifiedTimestamp",
@@ -223,7 +227,7 @@ def check_report_success(directory, api_url, report_path, version):
                             "charts.openshift.io/supportedOpenShiftVersions",
                             "charts.openshift.io/digest"}
 
-    if report_version == "1.0":
+    if profile_version == "v1.0":
         required_annotations = {"charts.openshift.io/lastCertifiedTimestamp",
                                 "charts.openshift.io/certifiedOpenShiftVersions",
                                 "charts.openshift.io/digest"}
