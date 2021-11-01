@@ -10,6 +10,7 @@ from pytest_bdd import (
     scenario,
     then,
     when,
+    parsers
 )
 
 from functional.utils.chart_certification import ChartCertificationE2ETestSingle
@@ -23,32 +24,21 @@ def workflow_test():
     workflow_test.cleanup()
 
 
-@scenario('../features/report_without_chart.feature', "The partner hashicorp submits a error-free report for the vault chart")
-def test_partner_submits_report_without_any_errors():
-    """The partner hashicorp submits a error-free report for the vault chart."""
+@scenario('../features/report_without_chart.feature', "A partner or redhat associate submits an error-free report")
+def test_report_submission():
+    """A partner or redhat associate submits an error-free report."""
 
 
-@scenario('../features/report_without_chart.feature', "The redhat associate submits a error-free report for the vault chart")
-def test_redhat_submits_report_without_any_errors():
-    """The redhat associate submits a error-free report for the vault chart."""
+@given(parsers.parse("the vendor <vendor> has a valid identity as <vendor_type>"))
+def user_has_valid_identity(workflow_test, vendor, vendor_type):
+    """the vendor <vendor> has a valid identity as <vendor_type>."""
+    workflow_test.set_vendor(vendor, vendor_type)
 
 
-@given("hashicorp is a valid partner")
-def hashicorp_is_a_valid_partner(workflow_test):
-    """hashicorp is a valid partner"""
-    workflow_test.set_vendor('hashicorp', 'partners')
-
-
-@given("a redhat associate has a valid identity")
-def redhat_associate_is_valid(workflow_test):
-    """a redhat associate has a valid identity"""
-    workflow_test.set_vendor('redhat', 'redhat')
-
-
-@given("hashicorp has created a error-free report")
-@given("the redhat associate has created a report without any errors")
-def the_user_has_created_a_report_without_errors(workflow_test):
-    """The user has created a report without any errors."""
+@given(parsers.parse("an error-free report is used in <report_path>"))
+def user_has_created_error_free_report(workflow_test, report_path):
+    """an error-free report is used in <report_path>."""
+    workflow_test.update_test_report(report_path)
     workflow_test.setup_git_context()
     workflow_test.setup_gh_pages_branch()
     workflow_test.setup_temp_dir()
@@ -56,22 +46,20 @@ def the_user_has_created_a_report_without_errors(workflow_test):
     workflow_test.process_report()
 
 
-@when("hashicorp sends a pull request with the report")
-@when("the redhat associate sends the pull request with the report")
-def the_user_sends_the_pull_request_with_the_report(workflow_test):
-    """The user sends the pull request with the report."""
+@when("the user sends a pull request with the report")
+def user_sends_pull_request_with_report(workflow_test):
+    """the user sends a pull request with the report."""
     workflow_test.send_pull_request()
 
 
-@then("hashicorp sees the pull request is merged")
-@then("the redhat associate sees the pull request is merged")
-def the_user_should_see_the_pull_request_getting_merged(workflow_test):
-    """The user should see the pull request getting merged."""
+@then("the user sees the pull request is merged")
+def user_should_see_pull_request_getting_merged(workflow_test):
+    """the user sees the pull request is merged."""
     workflow_test.check_workflow_conclusion(expect_result='success')
     workflow_test.check_pull_request_result(expect_merged=True)
 
 
 @then("the index.yaml file is updated with an entry for the submitted chart")
-def the_index_yaml_is_updated_with_a_new_entry(workflow_test):
+def index_yaml_is_updated_with_new_entry(workflow_test):
     """The index.yaml file is updated with a new entry."""
     workflow_test.check_index_yaml()

@@ -224,6 +224,18 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         except git.exc.GitCommandError:
             logging.info(f"Local '{self.secrets.base_branch}' does not exist")
 
+    def update_test_chart(self, test_chart):
+        if test_chart != self.test_chart:
+            # reinitialize the settings according with new chart
+            self.test_chart = test_chart
+            self.__post_init__()
+
+    def update_test_report(self, test_report):
+        if test_report != self.test_report:
+            # reinitialize the settings according with new report
+            self.test_report = test_report
+            self.__post_init__()
+
     def get_unique_vendor(self, vendor):
         # unique string based on current time in seconds
         suffix = str(int(time.time()))

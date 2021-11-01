@@ -1,19 +1,16 @@
-Feature: Chart source only submission
+Feature: Chart source submission without report
     Partners or redhat associates can publish their chart by submitting
-    error-free chart in source format without the report.
+    error-free chart in source format without a report.
 
-    Scenario: The partner hashicorp submits a error-free chart source for vault
-        Given hashicorp is a valid partner
-        And hashicorp has created an error-free chart source for vault
-        When hashicorp sends a pull request with the vault source chart
-        Then hashicorp sees the pull request is merged
-        And the index.yaml file is updated with an entry for the submitted chart
-        And a release for the vault chart is published with corresponding report and chart tarball
+    Examples:
+    | vendor_type  | vendor    | chart_path                     |
+    | partners     | hashicorp | tests/data/vault-0.13.0.tgz    |
+    | redhat       | redhat    | tests/data/vault-0.13.0.tgz    |
 
-    Scenario: A redhat associate submits a error-free chart source for vault
-        Given a redhat associate has a valid identity
-        And the redhat associate has created an error-free chart source for vault
-        When the redhat associate sends a pull request with the vault source chart
-        Then the redhat associate sees the pull request is merged
+    Scenario Outline: A partner or redhat associate submits an error-free chart source
+        Given the vendor <vendor> has a valid identity as <vendor_type>
+        And an error-free chart source is used in <chart_path>
+        When the user sends a pull request with the chart
+        Then the user sees the pull request is merged
         And the index.yaml file is updated with an entry for the submitted chart
-        And a release for the vault chart is published with corresponding report and chart tarball
+        And a release is published with corresponding report and chart tarball
