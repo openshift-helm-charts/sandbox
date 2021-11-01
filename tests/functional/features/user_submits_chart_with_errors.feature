@@ -2,12 +2,12 @@ Feature: Chart submission with errors
   Partners or redhat associates submit charts which result in errors
 
   Examples:
-  | vendor_type  | vendor    | chart   | version  |
-  | partners     | hashicorp | vault   | 0.13.0   |
-  | redhat       | redhat    | vault   | 0.13.0   |
+  | vendor_type  | vendor    | chart   | version  | chart_path                     |
+  | partners     | hashicorp | vault   | 0.13.0   | tests/data/vault-0.13.0.tgz    |
+  | redhat       | redhat    | vault   | 0.13.0   | tests/data/vault-0.13.0.tgz    |
 
   Scenario Outline: An unauthorized user submits a chart
-    Given A <user> wants to submit a chart
+    Given A <user> wants to submit a chart in <chart_path>
     And <vendor> of <vendor_type> wants to submit <chart> of <version>
     And the user creates a branch to add a new chart version
     When the user sends a pull request with chart
@@ -19,7 +19,7 @@ Feature: Chart submission with errors
       | is not allowed to submit the chart on behalf of  | unauthorized |
 
   Scenario Outline: An authorized user submits a chart with incorrect version
-    Given A <user> wants to submit a chart
+    Given A <user> wants to submit a chart in <chart_path>
     And <vendor> of <vendor_type> wants to submit <chart> of <version>
     And Chart.yaml specifies a <bad_version>
     And the user creates a branch to add a new chart version

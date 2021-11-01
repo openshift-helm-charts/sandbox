@@ -31,9 +31,10 @@ def test_chart_submission_by_unauthorized_user():
 def test_chart_submission_with_incorrect_version():
     """ An authorized user submits a chart with incorrect version """
 
-@given(parsers.parse("A <user> wants to submit a chart"))
-def user_wants_to_submit_a_chart(workflow_test, user):
-    """A user wants to submit a chart"""
+@given(parsers.parse("A <user> wants to submit a chart in <chart_path>"))
+def user_wants_to_submit_a_chart(workflow_test, user, chart_path):
+    """A <user> wants to submit a chart in <chart_path>."""
+    workflow_test.update_test_chart(chart_path)
     logging.info(f"User: {user}")
     workflow_test.secrets.bot_name = user
 
