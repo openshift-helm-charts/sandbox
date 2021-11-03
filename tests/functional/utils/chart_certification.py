@@ -409,6 +409,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 f"{self.secrets.chart_name} {self.secrets.chart_version} not added to index")
 
         logging.info("Index updated correctly, cleaning up local branch")
+        logging.info(f">>>>>>>>> {old_branch}")
+        logging.info(f'>>>>>>>>> {self.secrets.base_branch}-gh-pages')
         self.repo.git.checkout(old_branch)
         self.repo.git.branch('-D', f'{self.secrets.base_branch}-gh-pages')
 
