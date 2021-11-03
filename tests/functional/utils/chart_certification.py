@@ -147,6 +147,115 @@ vendor:
             self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                         f'HEAD:refs/heads/{base_branch}', '-f')
 
+    def check_index_yaml(self, base_branch, vendor, chart_name, chart_version, logger=pytest.fail):
+        old_branch = self.repo.active_branch.name
+        self.repo.git.fetch(f'https://github.com/{self.secrets.test_repo}.git',
+                    '{0}:{0}'.format(f'{base_branch}-gh-pages'), '-f')
+        self.repo.git.checkout(f'{base_branch}-gh-pages')
+        with open('index.yaml', 'r') as fd:
+            try:
+                index = yaml.safe_load(fd)
+            except yaml.YAMLError as err:
+                logger(f"error parsing index.yaml: {err}")
+                return False
+
+        entry = vendor + '-' + chart_name
+        if entry not in index['entries']:
+            logger(
+                f"{chart_name} {chart_version} not added to index")
+            return False
+
+        version_list = [release['version'] for release in index['entries'][entry]]
+        if chart_version not in version_list:
+            logger(
+                f"{chart_name} {chart_version} not added to index")
+            return False
+
+        logging.info("Index updated correctly, cleaning up local branch")
+        self.repo.git.checkout(old_branch)
+        self.repo.git.branch('-D', f'{base_branch}-gh-pages')
+        return True
+
+    def check_release_result(self, vendor, chart_name, chart_version, chart_tgz, logger=pytest.fail):
+        expected_tag = f'{vendor}-{chart_name}-{chart_version}'
+        try:
+            release = get_release_by_tag(self.secrets, expected_tag)
+            logging.info(f"Released '{expected_tag}' successfully")
+
+            expected_chart_asset = f'{vendor}-{chart_tgz}'
+            required_assets = [expected_chart_asset]
+            logging.info(f"Check '{required_assets}' is in release assets")
+            release_id = release['id']
+            get_release_assets(self.secrets, release_id, required_assets, logger)
+            return True
+        except Exception as e:
+            logger(e)
+            return False
+        finally:
+            logging.info(f"Delete release '{expected_tag}'")
+            github_api(
+                'delete', f'repos/{self.secrets.test_repo}/releases/{release_id}', self.secrets.bot_token)
+
+            logging.info(f"Delete release tag '{expected_tag}'")
+            github_api(
+                'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
+
+    # expect_result: a string representation of expected result, e.g. 'success'
+    def check_workflow_conclusion(self, pr_number, expect_result: str, logger=pytest.fail):
+        try:
+            # Check workflow conclusion
+            run_id = get_run_id(self.secrets, pr_number, logger)
+            conclusion = get_run_result(self.secrets, run_id, logger)
+            if conclusion == expect_result:
+                logging.info(f"Workflow run was '{expect_result}' which is expected")
+            else:
+                logger(
+                    f"Workflow run was '{conclusion}' which is unexpected, run id: {run_id}")
+            return run_id, conclusion
+        except Exception as e:
+            logger(e)
+            return run_id, conclusion
+
+    # expect_merged: boolean representing whether the PR should be merged
+    def check_pull_request_result(self, pr_number, expect_merged: bool, logger=pytest.fail):
+        # Check if PR merged
+        r = github_api(
+            'get', f'repos/{self.secrets.test_repo}/pulls/{pr_number}/merge', self.secrets.bot_token)
+        if r.status_code == 204 and expect_merged:
+            logging.info("PR merged sucessfully as expected")
+            return True
+        elif r.status_code == 404 and not expect_merged:
+            logging.info("PR not merged, which is expected")
+            return True
+        elif r.status_code == 204 and not expect_merged:
+            logger("Expecting PR not merged but PR was merged")
+            return False
+        elif r.status_code == 404 and expect_merged:
+            logger("Expecting PR merged but PR was not merged")
+            return False
+        else:
+            logger(f"Got unexpected status code from PR: {r.status_code}")
+            return False
+
+    def cleanup_release(self, expected_tag):
+        """Cleanup the release and release tag.
+
+        Releases might be left behind if check_index_yam() ran before check_release_result() and fails the test.
+        """
+        r = github_api(
+            'get', f'repos/{self.secrets.test_repo}/releases', self.secrets.bot_token)
+        releases = json.loads(r.text)
+        for release in releases:
+            if release['tag_name'] == expected_tag:
+                release_id = release['id']
+                logging.info(f"Delete release '{expected_tag}'")
+                github_api(
+                    'delete', f'repos/{self.secrets.test_repo}/releases/{release_id}', self.secrets.bot_token)
+
+                logging.info(f"Delete release tag '{expected_tag}'")
+                github_api(
+                    'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
+
 @dataclass
 class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     test_name: str = '' # Meaningful test name for this test, displayed in PR title
@@ -195,6 +304,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.chart_version = chart_version
 
     def cleanup (self):
+        # Cleanup releases and release tags
+        self.cleanup_release()
         # Teardown step to cleanup branches
         if self.temp_dir is not None:
             self.temp_dir.cleanup()
@@ -350,29 +461,11 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     # expect_result: a string representation of expected result, e.g. 'success'
     def check_workflow_conclusion(self, expect_result: str):
         # Check workflow conclusion
-        run_id = get_run_id(self.secrets)
-        conclusion = get_run_result(self.secrets, run_id)
-        if conclusion == expect_result:
-            logging.info(f"Workflow run was '{expect_result}' which is expected")
-        else:
-            pytest.fail(
-                f"Workflow run was '{conclusion}' which is unexpected, run id: {run_id}")
+        super().check_workflow_conclusion(None, expect_result, pytest.fail)
 
     # expect_merged: boolean representing whether the PR should be merged
     def check_pull_request_result(self, expect_merged: bool):
-        # Check if PR merged
-        r = github_api(
-            'get', f'repos/{self.secrets.test_repo}/pulls/{self.secrets.pr_number}/merge', self.secrets.bot_token)
-        if r.status_code == 204 and expect_merged:
-            logging.info("PR merged sucessfully as expected")
-        elif r.status_code == 404 and not expect_merged:
-            logging.info("PR not merged, which is expected")
-        elif r.status_code == 204 and not expect_merged:
-            pytest.fail("Expecting PR not merged but PR was merged")
-        elif r.status_code == 404 and expect_merged:
-            pytest.fail("Expecting PR merged but PR was not merged")
-        else:
-            pytest.fail(f"Got unexpected status code from PR: {r.status_code}")
+        super().check_pull_request_result(self.secrets.pr_number, expect_merged, pytest.fail)
 
     def check_pull_request_comments(self, expect_message: str):
         r = github_api(
@@ -388,51 +481,15 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             pytest.fail(f"Was expecting '{expect_message}' in the comment {complete_comment}")
 
     def check_index_yaml(self):
-        old_branch = self.repo.active_branch.name
-        self.repo.git.fetch(f'https://github.com/{self.secrets.test_repo}.git',
-                    '{0}:{0}'.format(f'{self.secrets.base_branch}-gh-pages'), '-f')
-        self.repo.git.checkout(f'{self.secrets.base_branch}-gh-pages')
-        with open('index.yaml', 'r') as fd:
-            try:
-                index = yaml.safe_load(fd)
-            except yaml.YAMLError as err:
-                pytest.fail(f"error parsing index.yaml: {err}")
-
-        entry = self.secrets.vendor + '-' + self.secrets.chart_name
-        if entry not in index['entries']:
-            pytest.fail(
-                f"{self.secrets.chart_name} {self.secrets.chart_version} not added to index")
-
-        version_list = [release['version'] for release in index['entries'][entry]]
-        if self.secrets.chart_version not in version_list:
-            pytest.fail(
-                f"{self.secrets.chart_name} {self.secrets.chart_version} not added to index")
-
-        logging.info("Index updated correctly, cleaning up local branch")
-        self.repo.git.checkout(old_branch)
-        self.repo.git.branch('-D', f'{self.secrets.base_branch}-gh-pages')
+        super().check_index_yaml(self.secrets.base_branch, self.secrets.vendor, self.secrets.chart_name, self.secrets.chart_version, pytest.fail)
 
     def check_release_result(self):
+        chart_tgz = self.secrets.test_chart.split('/')[-1]
+        super().check_release_result(self.secrets.vendor, self.secrets.chart_name, self.secrets.chart_version, chart_tgz, pytest.fail)
+
+    def cleanup_release(self):
         expected_tag = f'{self.secrets.vendor}-{self.secrets.chart_name}-{self.secrets.chart_version}'
-        try:
-            release = get_release_by_tag(self.secrets, expected_tag)
-            logging.info(f"Released '{expected_tag}' successfully")
-
-            chart_tgz = self.secrets.test_chart.split('/')[-1]
-            expected_chart_asset = f'{self.secrets.vendor}-{chart_tgz}'
-            required_assets = [expected_chart_asset]
-            logging.info(f"Check '{required_assets}' is in release assets")
-            release_id = release['id']
-            get_release_assets(self.secrets, release_id, required_assets)
-            return
-        finally:
-            logging.info(f"Delete release '{expected_tag}'")
-            github_api(
-                'delete', f'repos/{self.secrets.test_repo}/releases/{release_id}', self.secrets.bot_token)
-
-            logging.info(f"Delete release tag '{expected_tag}'")
-            github_api(
-                'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
+        super().cleanup_release(expected_tag)
 
 @dataclass
 class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
@@ -473,9 +530,13 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         self.secrets.dry_run = dry_run
         self.secrets.notify_id = notify_id
         self.secrets.owners_file_content = self.owners_file_content
+        self.secrets.release_tags = list()
 
     def cleanup (self):
-        # Teardown step to cleanup branches
+        # Teardown step to cleanup releases and branches
+        for release_tag in self.secrets.release_tags:
+            self.cleanup_release(release_tag)
+
         self.repo.git.worktree('prune')
         for base_branch in self.secrets.base_branches:
             logging.info(f"Delete '{self.secrets.test_repo}:{base_branch}'")
@@ -496,7 +557,6 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             logging.info(f"Delete '{self.secrets.test_repo}:{pr_branch}'")
             github_api(
                 'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{pr_branch}', self.secrets.bot_token)
-
 
         try:
             logging.info("Delete local 'tmp' branch")
@@ -592,13 +652,12 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
     def check_single_chart_result(self, vendor_type, vendor_name, chart_name, chart_version, pr_number, owners_table):
         base_branch = f'{self.secrets.software_name}-{self.secrets.software_version}-{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}'
 
-        # Check PRs are merged
+        # Check workflow conclusion
         chart = f'{vendor_type} {vendor_name} {chart_name} {chart_version}'
-        run_id = get_run_id(self.secrets, pr_number)
-        conclusion = get_run_result(self.secrets, run_id)
+        run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', logging.warning)
 
         # Send notification to owner through GitHub issues
-        if not self.secrets.dry_run:
+        if not self.secrets.dry_run and run_id and conclusion:
             r = github_api(
                 'get', f'repos/{self.secrets.test_repo}/actions/runs/{run_id}', self.secrets.bot_token)
             run = r.json()
@@ -614,75 +673,22 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             create_verification_issue(chart_name, chart_owners, run_html_url, self.secrets.software_name,
                                     self.secrets.software_version, pass_verification, self.secrets.bot_token)
 
-        if conclusion == 'success':
-            logging.info(f"Workflow run for {chart} was 'success'")
-        else:
-            logging.warning(
-                f"Workflow for the submitted PR did not success, run id: {run_id}, chart: {chart}")
+        # Early return on workflow failures
+        if conclusion != 'success':
             return
 
-        r = github_api(
-            'get', f'repos/{self.secrets.test_repo}/pulls/{pr_number}/merge', self.secrets.bot_token)
-        if r.status_code == 204:
-            logging.info(f"PR for {chart} merged sucessfully")
-        else:
-            logging.warning(
-                f"Workflow for submitted PR success but PR not merged, chart: {chart}")
+        # Check PRs are merged
+        if not super().check_pull_request_result(pr_number, True, logging.warning):
             return
 
         # Check index.yaml is updated
-        repo = git.Repo(os.getcwd())
-        old_branch = repo.active_branch.name
-        repo.git.fetch(f'https://github.com/{self.secrets.test_repo}.git',
-                    '{0}:{0}'.format(f'{base_branch}-gh-pages'), '-f')
-        repo.git.checkout(f'{base_branch}-gh-pages')
-        with open('index.yaml', 'r') as fd:
-            try:
-                index = yaml.safe_load(fd)
-            except yaml.YAMLError as err:
-                logging.warning(
-                    f"error parsing index.yaml of {chart}: {err}")
-                return
-
-        entry = vendor_name + '-' + chart_name
-        if entry not in index['entries']:
-            logging.warning(
-                f"{chart} not added to index")
+        if not super().check_index_yaml(base_branch, vendor_name, chart_name, chart_version, logging.warning):
             return
-
-        version_list = [release['version']
-                        for release in index['entries'][entry]]
-        if chart_version not in version_list:
-            logging.warning(
-                f"{chart} not added to index")
-            return
-
-        logging.info(
-            f"Index updated correctly for {chart}, cleaning up local branch")
-        repo.git.checkout(old_branch)
-        repo.git.branch('-D', f'{base_branch}-gh-pages')
 
         # Check release is published
-        expected_tag = f'{vendor_name}-{chart_name}-{chart_version}'
-        try:
-            release = get_release_by_tag(self.secrets, expected_tag)
-            logging.info(f"Released '{expected_tag}' successfully")
-
-            chart_tgz = f'{chart_name}-{chart_version}.tgz'
-            expected_chart_asset = f'{vendor_name}-{chart_tgz}'
-            required_assets = [expected_chart_asset]
-            logging.info(f"Check '{required_assets}' is in release assets")
-            release_id = release['id']
-            get_release_assets(self.secrets, release_id, required_assets)
-        finally:
-            logging.info(f"Delete release '{expected_tag}'")
-            github_api(
-                'delete', f'repos/{self.secrets.test_repo}/releases/{release_id}', self.secrets.bot_token)
-
-            logging.info(f"Delete release tag '{expected_tag}'")
-            github_api(
-                'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
-
+        chart_tgz = f'{chart_name}-{chart_version}.tgz'
+        if not super().check_release_result(vendor_name, chart_name, chart_version, chart_tgz, logging.warning):
+            return
 
     def process_single_chart(self, vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table):
         # Get SHA from 'pr_base_branch' branch
@@ -735,6 +741,9 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         # Create PR from pr_branch to base_branch
         pr_number = super().send_pull_request(self.secrets.test_repo, base_branch, pr_branch, self.secrets.bot_token)
         pr_number_list.append((vendor_type, vendor_name, chart_name, chart_version, pr_number))
+
+        # Record expected release tags
+        self.secrets.release_tags.append(f'{vendor_name}-{chart_name}-{chart_version}')
 
     def process_all_charts(self):
         self.setup_git_context(self.repo)
