@@ -37,3 +37,4 @@ class E2ETestSecretRecursive(E2ETestSecret):
     dry_run: bool = True
     notify_id: list = None
     submitted_charts: list = None
+    release_tags: list = None
