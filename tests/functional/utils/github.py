@@ -9,7 +9,7 @@ from retrying import retry
 from functional.utils.setttings import *
 
 @retry(stop_max_delay=30_000, wait_fixed=1000)
-def get_run_id(secrets, pr_number=None):
+def get_run_id(secrets, pr_number=None, logger=pytest.fail):
     pr_number = secrets.pr_number if pr_number is None else pr_number
     r = github_api(
         'post', f'repos/{secrets.test_repo}/pulls/{pr_number}', secrets.bot_token)
@@ -23,23 +23,23 @@ def get_run_id(secrets, pr_number=None):
         if run['head_sha'] == pr['head']['sha'] and run['name'] == CERTIFICATION_CI_NAME:
             return run['id']
     else:
-        pytest.fail("Workflow for the submitted PR did not run.")
+        logger("Workflow for the submitted PR did not run.")
 
 
 @retry(stop_max_delay=60_000*10, wait_fixed=2000)
-def get_run_result(secrets, run_id):
+def get_run_result(secrets, run_id, logger=pytest.fail):
     r = github_api(
         'get', f'repos/{secrets.test_repo}/actions/runs/{run_id}', secrets.bot_token)
     run = json.loads(r.text)
 
     if run['conclusion'] is None:
-        pytest.fail("Workflow is still running.")
+        logger("Workflow is still running.")
 
     return run['conclusion']
 
 
 @retry(stop_max_delay=10_000, wait_fixed=1000)
-def get_release_assets(secrets, release_id, required_assets):
+def get_release_assets(secrets, release_id, required_assets, logger=pytest.fail):
     r = github_api(
         'get', f'repos/{secrets.test_repo}/releases/{release_id}/assets', secrets.bot_token)
     asset_list = json.loads(r.text)
@@ -49,7 +49,7 @@ def get_release_assets(secrets, release_id, required_assets):
         if asset not in asset_names:
             missing_assets.append(asset)
     if len(missing_assets) > 0:
-        pytest.fail(f"Missing release asset: {missing_assets}")
+        logger(f"Missing release asset: {missing_assets}")
 
 
 @retry(stop_max_delay=15_000, wait_fixed=1000)
