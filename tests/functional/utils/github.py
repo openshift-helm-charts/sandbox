@@ -23,7 +23,7 @@ def get_run_id(secrets, pr_number=None):
         if run['head_sha'] == pr['head']['sha'] and run['name'] == CERTIFICATION_CI_NAME:
             return run['id']
     else:
-        pytest.fail("Workflow for the submitted PR did not run.")
+        raise Exception("Workflow for the submitted PR did not run.")
 
 
 @retry(stop_max_delay=60_000*10, wait_fixed=2000)
@@ -33,7 +33,7 @@ def get_run_result(secrets, run_id):
     run = json.loads(r.text)
 
     if run['conclusion'] is None:
-        pytest.fail("Workflow is still running.")
+        raise Exception("Workflow is still running.")
 
     return run['conclusion']
 
@@ -49,7 +49,7 @@ def get_release_assets(secrets, release_id, required_assets):
         if asset not in asset_names:
             missing_assets.append(asset)
     if len(missing_assets) > 0:
-        pytest.fail(f"Missing release asset: {missing_assets}")
+        raise Exception(f"Missing release asset: {missing_assets}")
 
 
 @retry(stop_max_delay=15_000, wait_fixed=1000)
