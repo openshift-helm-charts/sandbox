@@ -25,10 +25,10 @@ def _get_report_info(report_path, info_type, profile_type, profile_version):
     if set_values:
         docker_command = "%s --set %s" % (docker_command, set_values)
 
-    print(f'Using imge: {os.environ.get("VERIFIER_IMAGE")}')
     client = docker.from_env()
     report_directory = os.path.dirname(os.path.abspath(report_path))
-    output = client.containers.run(os.environ.get("VERIFIER_IMAGE"),docker_command,stdin_open=True,tty=True,stderr=True,volumes={report_directory: {'bind': '/charts/', 'mode': 'rw'}})
+    print(f'Using imsge: {os.environ.get("VERIFIER_IMAGE")}, docker command: {docker_command}, report_path : {report_path}, report directory: {report_directory}')
+    output = client.containers.run(os.environ.get("VERIFIER_IMAGE"),docker_command,stdin_open=True,stderr=True,volumes={report_directory: {'bind': '/charts/', 'mode': 'rw'}})
     print(f'response : {output}')
 
     report_out = json.loads(output)
