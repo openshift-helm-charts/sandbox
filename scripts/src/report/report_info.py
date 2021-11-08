@@ -11,7 +11,7 @@ REPORT_METADATA = "metadata"
 
 def _get_report_info(report_path, info_type, profile_type, profile_version):
 
-    docker_command = "report " + info_type + " charts/"+os.path.basename(report_path)
+    docker_command = "report " + info_type + " /charts/"+os.path.basename(report_path)
 
     set_values = ""
     if profile_type:
@@ -28,11 +28,12 @@ def _get_report_info(report_path, info_type, profile_type, profile_version):
     client = docker.from_env()
     report_directory = os.path.dirname(os.path.abspath(report_path))
     print(f'Using imsge: {os.environ.get("VERIFIER_IMAGE")}, docker command: {docker_command}, report_path : {report_path}, report directory: {report_directory}')
-    output = client.containers.run(os.environ.get("VERIFIER_IMAGE"),docker_command,stdin_open=True,stderr=True,volumes={report_directory: {'bind': '/charts/', 'mode': 'rw'}})
+    output = client.containers.run(os.environ.get("VERIFIER_IMAGE"),docker_command,stdin_open=True,tty=True,stderr=True,volumes={report_directory: {'bind': '/charts/', 'mode': 'rw'}})
     print(f'response : {output}')
 
     report_out = json.loads(output)
 
+    print(f'response json : {report_out}')
     if not info_type in report_out:
         print(f"Error extracting {info_type} from the report:", report_out.strip())
         sys.exit(1)
