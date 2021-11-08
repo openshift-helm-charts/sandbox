@@ -33,6 +33,7 @@ def _get_report_info(report_path, info_type, profile_type, profile_version):
 
     report_out = json.loads(output)
 
+    print(f'response json : {report_out}')
     if not info_type in report_out:
         print(f"Error extracting {info_type} from the report:", report_out.strip())
         sys.exit(1)
