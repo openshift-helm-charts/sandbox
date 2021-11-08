@@ -1,19 +1,16 @@
-Feature: Report and chart tar submission
+Feature: Chart tarball submission with report
     Partners or redhat associates can publish their chart by submitting
-    error-free chart in tar format with the report.
+    error-free chart in tarball format with a report.
 
-    Scenario: The partner hashicorp submits an error-free chart tar with report for vault
-        Given hashicorp is a valid partner
-        And hashicorp has created an error-free chart tar and report for vault
-        When hashicorp sends a pull request with the vault tar chart and report
-        Then hashicorp sees the pull request is merged
-        And the index.yaml file is updated with an entry for the submitted chart
-        And a release for the vault chart is published with corresponding report and chart tarball
+    Examples:
+    | vendor_type  | vendor    | chart_path                     | report_path               |
+    | partners     | hashicorp | tests/data/vault-0.13.0.tgz    | tests/data/report.yaml    |
+    | redhat       | redhat    | tests/data/vault-0.13.0.tgz    | tests/data/report.yaml    |
 
-    Scenario: A redhat associate submits an error-free chart tar with report for vault
-        Given a redhat associate has a valid identity
-        And the redhat associate has created an error-free chart tar and report for vault
-        When the redhat associate sends a pull request with the vault tar chart and report
-        Then the redhat associate sees the pull request is merged
+    Scenario Outline: A partner or redhat associate submits an error-free chart tarball with report
+        Given the vendor <vendor> has a valid identity as <vendor_type>
+        And an error-free chart tarball is used in <chart_path> and report in <report_path>
+        When the user sends a pull request with the chart and report
+        Then the user sees the pull request is merged
         And the index.yaml file is updated with an entry for the submitted chart
-        And a release for the vault chart is published with corresponding report and chart tarball
+        And a release is published with corresponding report and chart tarball
