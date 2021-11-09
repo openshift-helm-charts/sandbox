@@ -40,20 +40,20 @@ jobs:
           fi
 
       - name: Install oc
-        if: steps.check_main.outputs.run-job == 'true'
+        if: steps.check_repo.outputs.run-job == 'true'
         run: |
           curl -sLO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
           tar zxvf openshift-client-linux.tar.gz oc
 
       - name: Log into OpenShift cluster
-        if: steps.check_main.outputs.run-job == 'true'
+        if: steps.check_repo.outputs.run-job == 'true'
         run: |
           API_SERVER=$(echo -n ${{ secrets.API_SERVER }} | base64 -d)
           ./oc login --insecure-skip-tls-verify --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}
         shell: bash
 
       - name: Get current OpenShift version
-        if: steps.check_main.outputs.run-job == 'true'
+        if: steps.check_repo.outputs.run-job == 'true'
         id: get_curr_ocp_version
         run: |
           OCP_VERSION=$(./oc version -o json | jq '.openshiftVersion')
@@ -62,14 +62,14 @@ jobs:
         shell: bash
 
       - name: Checkout software-version branch
-        if: steps.check_main.outputs.run-job == 'true'
+        if: steps.check_repo.outputs.run-job == 'true'
         uses: actions/checkout@v2
         with:
           ref: "software-version"
 
       - name: Read previous OpenShift version
         id: get_prev_ocp_version
-        if: steps.check_main.outputs.run-job == 'true'
+        if: steps.check_repo.outputs.run-job == 'true'
         uses: mikefarah/yq@master
         with:
           cmd: yq e '.openshift.release-client-version' software-version.yaml
@@ -199,7 +199,7 @@ jobs:
 
       - name: Get current Chart Verifier version
         id: get_curr_cv_version
-        if: steps.check_main.outputs.run-job == 'true'
+        if: steps.chart-repo.outputs.run-job == 'true'
         run: |
           QUAY_API='https://quay.io/api/v1/repository/redhat-certification/chart-verifier/tag/'
           CV_DIGEST=$(curl ${QUAY_API} | jq '[.tags[] | select(.name == "latest")] | .[0].manifest_digest')
@@ -208,13 +208,13 @@ jobs:
         shell: bash
 
       - name: Checkout software-version branch
-        if: steps.check_main.outputs.run-job == 'true'
+        if: steps.chart-repo.outputs.run-job == 'true'
         uses: actions/checkout@v2
         with:
           ref: "software-version"
 
       - name: Read previous Chart Verifier digest
-        if: steps.check_main.outputs.run-job == 'true'
+        if: steps.chart-repo.outputs.run-job == 'true'
         id: get_prev_cv_digest
         uses: mikefarah/yq@master
         with:
