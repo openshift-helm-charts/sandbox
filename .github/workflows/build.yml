@@ -181,11 +181,14 @@ jobs:
           API_SERVER=$( echo -n ${{ secrets.API_SERVER }} | base64 -d)
           gpg --version
           docker pull ${{ env.VERIFIER_IMAGE }}
+          echo "Get helm"
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
           if [ "${{steps.sanity_check_pr_content.outputs.report-exists}}" != "true" ]; then
             if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
+               echo "Logon to OCP : ${API_SERVER}"
               ./oc login --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}
             else
+              echo "Logon to OCP using --insecure-skip-tls-verify : ${API_SERVER}"
               ./oc login --insecure-skip-tls-verify --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}
             fi
             ve1/bin/sa-for-chart-testing --create charts-${{ github.event.number }} --token token.txt --server ${API_SERVER}
