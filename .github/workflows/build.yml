@@ -183,7 +183,11 @@ jobs:
           docker pull ${{ env.VERIFIER_IMAGE }}
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
           if [ "${{steps.sanity_check_pr_content.outputs.report-exists}}" != "true" ]; then
-            ./oc login --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}
+            if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
+              ./oc login --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}
+            else
+              ./oc login --insecure-skip-tls-verify --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}
+            fi
             ve1/bin/sa-for-chart-testing --create charts-${{ github.event.number }} --token token.txt --server ${API_SERVER}
           fi
           cd pr-branch
