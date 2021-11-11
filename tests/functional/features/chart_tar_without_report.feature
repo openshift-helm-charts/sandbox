@@ -15,7 +15,7 @@ Feature: Chart tarball submission without report
         And a release is published with corresponding report and chart tarball
 
         Examples:
-            | vendor_type  | vendor    |                      |
+            | vendor_type  | vendor    |
             | partners     | hashicorp |
             | redhat       | redhat    |
     
