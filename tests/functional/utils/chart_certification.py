@@ -351,7 +351,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         # unique string based on current time in seconds
         suffix = str(int(time.time()))
         if "PR_NUMBER" in os.environ:
-            suffix = os.environ["PR_NUMBER"]
+            pr_num = os.environ["PR_NUMBER"]
+            suffix = f"{suffix}-{pr_num}"
         return f"{vendor}-{suffix}"
 
     def get_chart_name_version(self):
