@@ -8,6 +8,7 @@ import hashlib
 import tempfile
 
 import semver
+import semantic_version
 import requests
 import yaml
 try:
@@ -272,9 +273,11 @@ def check_report_success(directory, api_url, report_path, version):
     if failures_in_report or vendor_type == "community":
         return
 
-    if "charts.openshift.io/testedOpenShiftVersions" in annotations:
-        full_version = annotations["charts.openshift.io/testedOpenShiftVersions"]
-        if not semver.VersionInfo.isvalid(full_version):
+    if "charts.openshift.io/testedOpenShiftVersion" in annotations:
+        full_version = annotations["charts.openshift.io/testedOpenShiftVersion"]
+        try:
+            semantic_version.Version.coerce(full_version)
+        except ValueError:
             msg = f"[ERROR] tested OpenShift version not conforming to SemVer spec: {full_version}"
             write_error_log(directory, msg)
             sys.exit(1)
@@ -282,7 +285,7 @@ def check_report_success(directory, api_url, report_path, version):
     if "charts.openshift.io/certifiedOpenShiftVersions" in annotations:
         full_version = annotations["charts.openshift.io/certifiedOpenShiftVersions"]
         if not semver.VersionInfo.isvalid(full_version):
-            msg = f"[ERROR] OpenShift version not conforming to SemVer spec: {full_version}"
+            msg = f"[ERROR] certified OpenShift version not conforming to SemVer spec: {full_version}"
             write_error_log(directory, msg)
             sys.exit(1)
 
