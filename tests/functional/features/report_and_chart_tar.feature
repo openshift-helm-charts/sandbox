@@ -1,11 +1,10 @@
 Feature: Chart tarball submission with report
-    Partners or redhat associates can publish their chart by submitting
+    Partners, redhat and community users can publish their chart by submitting
     error-free chart in tarball format with a report.
 
     Examples:
-    | vendor_type  | vendor    | chart_path                     | report_path               |
-    | partners     | hashicorp | tests/data/vault-0.13.0.tgz    | tests/data/report.yaml    |
-    | redhat       | redhat    | tests/data/vault-0.13.0.tgz    | tests/data/report.yaml    |
+        | chart_path                     | report_path               |
+        | tests/data/vault-0.13.0.tgz    | tests/data/report.yaml    |
 
     Scenario Outline: A partner or redhat associate submits an error-free chart tarball with report
         Given the vendor <vendor> has a valid identity as <vendor_type>
@@ -14,3 +13,19 @@ Feature: Chart tarball submission with report
         Then the user sees the pull request is merged
         And the index.yaml file is updated with an entry for the submitted chart
         And a release is published with corresponding report and chart tarball
+
+        Examples:
+            | vendor_type  | vendor    |
+            | partners     | hashicorp |
+            | redhat       | redhat    |
+    
+    Scenario Outline: A community user submits an error-free chart tarball with report
+        Given the vendor <vendor> has a valid identity as <vendor_type>
+        And an error-free chart tarball is used in <chart_path> and report in <report_path>
+        When the user sends a pull request with the chart and report
+        Then the pull request is not merged
+        And user gets the <message> in the pull request comment
+
+        Examples:
+            | vendor_type   | vendor    | message                                                               |
+            | community     | redhat    | Community charts require manual review and approval from maintainers  |

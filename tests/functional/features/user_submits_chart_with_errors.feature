@@ -1,10 +1,11 @@
 Feature: Chart submission with errors
-  Partners or redhat associates submit charts which result in errors
+  Partners, redhat or community user submit charts which result in errors
 
   Examples:
   | vendor_type  | vendor    | chart   | version  | chart_path                     |
   | partners     | hashicorp | vault   | 0.13.0   | tests/data/vault-0.13.0.tgz    |
   | redhat       | redhat    | vault   | 0.13.0   | tests/data/vault-0.13.0.tgz    |
+  | community    | redhat    | vault   | 0.13.0   | tests/data/vault-0.13.0.tgz    |
 
   Scenario Outline: An unauthorized user submits a chart
     Given A <user> wants to submit a chart in <chart_path>

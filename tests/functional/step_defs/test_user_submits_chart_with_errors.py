@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """ Chart submission with errors
-    Partners or redhat associates submit charts which result in errors
+    Partners, redhat or community user submit charts which result in errors
 """
 import logging
 import pytest

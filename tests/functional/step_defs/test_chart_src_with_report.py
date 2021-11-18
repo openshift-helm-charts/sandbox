@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Chart source submission with report
 
-Partners or redhat associates can publish their chart by submitting
+Partners, redhat and community users can publish their chart by submitting
 error-free chart in source format with a report.
 """
 import pytest
@@ -26,9 +26,12 @@ def workflow_test():
 
 
 @scenario('../features/report_and_chart_src.feature', "A partner or redhat associate submits an error-free chart source with report")
-def test_chart_src_submission_with_report():
+def test_partner_or_redhat_user_submits_chart_src_with_report():
     """A partner or redhat associate submits an error-free chart source with report."""
 
+@scenario('../features/report_and_chart_src.feature', "A community user submits an error-free chart source with report")
+def test_community_user_submits_chart_src_with_report():
+    """A community user submits an error-free chart source with report"""
 
 @given(parsers.parse("the vendor <vendor> has a valid identity as <vendor_type>"))
 def user_has_valid_identity(workflow_test, vendor, vendor_type):
@@ -73,3 +76,14 @@ def index_yaml_is_updated_with_new_entry(workflow_test):
 def release_is_published(workflow_test):
     """a release is published with corresponding report and chart tarball."""
     workflow_test.check_release_result()
+
+@then("the pull request is not merged")
+def the_pull_request_is_not_getting_merged(workflow_test):
+    """the pull request is not merged"""
+    workflow_test.check_workflow_conclusion(expect_result='failure')
+    workflow_test.check_pull_request_result(expect_merged=False)
+
+@then(parsers.parse("user gets the <message> in the pull request comment"))
+def user_gets_the_message_in_the_pull_request_comment(workflow_test, message):
+    """user gets the message in the pull request comment"""
+    workflow_test.check_pull_request_comments(expect_message=message)
