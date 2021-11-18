@@ -33,8 +33,6 @@ def getOCPVersions(kubeVersion):
             if separator != -1:
                 lowVersion = checkKubeVersion[:separator].strip()
                 highVersion = checkKubeVersion[separator+3:].strip()
-                #print(f"Low Version in range: {lowVersion}, high Version in range : {highVersion}")
-                #print(f"New Low Version in range: {semantic_version.Version.coerce(lowVersion)}, new high Version in range : {semantic_version.Version.coerce(highVersion)}")
                 checkKubeVersion = f"{semantic_version.Version.coerce(lowVersion)} - {semantic_version.Version.coerce(highVersion)}"
             else:
                 firstDigit = -1
@@ -45,7 +43,6 @@ def getOCPVersions(kubeVersion):
                 if firstDigit != -1:
                     versionInRange = checkKubeVersion[firstDigit:].strip()
                     preVersion = checkKubeVersion[:firstDigit].strip()
-                    #print(f"Version in range: {versionInRange}, pre Version : {preVersion}")
                     checkKubeVersion = f"{preVersion}{semantic_version.Version.coerce(versionInRange)}"
 
             # see if the updates have helped
@@ -88,7 +85,6 @@ def getIndexAnnotations(report_path):
     set_annotations = {}
     OCPSupportedSet = False
     for annotation in annotations:
-        #print(f"annotation : {annotation} = {annotations[annotation]}")
         if annotation == "charts.openshift.io/certifiedOpenShiftVersions":
             full_version = annotations[annotation]
             if full_version != "N/A" and semantic_version.validate(full_version):
