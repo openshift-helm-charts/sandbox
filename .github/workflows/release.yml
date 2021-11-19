@@ -53,10 +53,13 @@ jobs:
           BOT_NAME: ${{ secrets.BOT_NAME }}
         run: |
           # check if PR was created as part of release processing
+          pr_body=$(cat <<EOF | xargs -0 printf '%q'
+          ${{ github.event.pull_request.body }}
+          EOF)
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
                                   --sender='${{ github.event.sender.login }}' \
                                   --pr_branch='${{ github.event.pull_request.head.ref }}' \
-                                  --pr_body='${{ github.event.pull_request.body }}' \
+                                  --pr_body=${pr_body} \
                                   --pr_base_repo='${{ github.event.pull_request.base.repo.full_name }}' \
                                   --pr_head_repo='${{ github.event.pull_request.head.repo.full_name }}'
 
@@ -126,11 +129,14 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           # sync the repositories
+          dev_pr_body=$(cat <<EOF | xargs -0 printf '%q'
+          ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}
+          EOF)
           ./ve1/bin/releaser --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}\
                              --pr_dir="./pr-branch" \
                              --development_dir="./dev-repo" \
                              --charts_dir="./charts-repo" \
-                             --dev_pr_body="${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}" \
+                             --dev_pr_body=${dev_pr_body} \
                              --target_branch="${{ github.event.pull_request.base.ref }}" \
                              --target_repository="${{ github.event.pull_request.base.repo.full_name }}"
 
