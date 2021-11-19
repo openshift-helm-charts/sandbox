@@ -39,5 +39,5 @@ Feature: Chart verifier comes back with a failure
     And user gets the <message> in the pull request comment
 
     Examples:
-        | vendor_type  | vendor    | message                                                              |
-        | community    | redhat    | Community charts require manual review and approval from maintainers |
+        | vendor_type  | vendor    | message                                  |
+        | community    | redhat    | submitted chart has failed certification |
