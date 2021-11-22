@@ -71,7 +71,7 @@ def user_should_see_pull_request_getting_merged(workflow_test):
 @then("the index.yaml file is updated with an entry for the submitted chart")
 def index_yaml_is_updated_with_new_entry(workflow_test):
     """the index.yaml file is updated with an entry for the submitted chart."""
-    workflow_test.check_index_yaml()
+    workflow_test.check_index_yaml(check_provider_type=True)
 
 
 @then("a release is published with corresponding report and chart tarball")
