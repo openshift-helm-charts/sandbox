@@ -4,7 +4,7 @@ Feature: SHA value in the report does not match
 
     Examples:
       | chart_path                     | report_path               | message                 |
-      | tests/data/vault-0.13.0.tgz    | tests/data/report.yaml    | Digest is not matching  | 
+      | tests/data/vault-0.17.0.tgz    | tests/data/report.yaml    | Digest is not matching  | 
     
     Scenario Outline: A user submits a chart tarball with report
         Given the vendor <vendor> has a valid identity as <vendor_type>
