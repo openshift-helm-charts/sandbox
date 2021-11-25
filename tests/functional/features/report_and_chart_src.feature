@@ -4,7 +4,7 @@ Feature: Chart source submission with report
 
     Examples:
         | chart_path                     | report_path               |
-        | tests/data/vault-0.13.0.tgz    | tests/data/report.yaml    |
+        | tests/data/vault-0.17.0.tgz    | tests/data/report.yaml    |
 
     Scenario Outline: A partner or redhat associate submits an error-free chart source with report
         Given the vendor <vendor> has a valid identity as <vendor_type>

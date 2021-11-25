@@ -4,7 +4,7 @@ Feature: Chart tarball submission without report
 
     Examples:
         | chart_path                   |
-        | tests/data/vault-0.13.0.tgz  |
+        | tests/data/vault-0.17.0.tgz  |
 
     Scenario Outline: A partner or redhat associate submits an error-free chart tarball
         Given the vendor <vendor> has a valid identity as <vendor_type>
