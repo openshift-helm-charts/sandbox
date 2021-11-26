@@ -216,3 +216,4 @@ jobs:
           body: ${{ steps.check_merge_and_release.outputs.release_body }}
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
+
