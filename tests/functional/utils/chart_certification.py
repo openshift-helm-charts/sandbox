@@ -265,17 +265,20 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     secrets: E2ETestSecretOneShot = E2ETestSecretOneShot()
 
     def __post_init__(self) -> None:
+        # unique string based on current time in nanoseconds (10^-9 second)
+        # reserve only last 12 digits for readability and reasonable collision probability
+        self.time=str(int(time.time_ns())%(10**12))
+
         chart_name, chart_version = self.get_chart_name_version()
         bot_name, bot_token = self.get_bot_name_and_token()
         test_repo = TEST_REPO
 
-        # Differentiate between github runner env and local env
-        if self.github_actions:
-            # Create a new branch locally from detached HEAD
-            head_sha = self.repo.git.rev_parse('--short', 'HEAD')
-            local_branches = [h.name for h in self.repo.heads]
-            if head_sha not in local_branches:
-                self.repo.git.checkout('-b', f'{head_sha}')
+        # Create a new branch locally from detached HEAD
+        head_sha = self.repo.git.rev_parse('--short', 'HEAD')
+        unique_branch = f'{self.time}-{head_sha}'
+        local_branches = [h.name for h in self.repo.heads]
+        if unique_branch not in local_branches:
+            self.repo.git.checkout('-b', f'{unique_branch}')
 
         current_branch = self.repo.active_branch.name
         r = github_api(
@@ -289,8 +292,6 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                     f'HEAD:refs/heads/{current_branch}', '-f')
 
         pretty_test_name = self.test_name.strip().lower().replace(' ', '-')
-        # unique string based on current time in seconds
-        self.time=str(int(time.time()))
         base_branch = f'{self.time}-{pretty_test_name}-{current_branch}' if pretty_test_name else f'{self.time}-test-{current_branch}'
         pr_branch = base_branch + '-pr-branch'
 
@@ -313,11 +314,11 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             self.temp_dir.cleanup()
         self.repo.git.worktree('prune')
 
-        if self.github_actions:
-            head_sha = self.repo.git.rev_parse('--short', 'HEAD')
-            logging.info(f"Delete remote '{head_sha}' branch")
-            github_api(
-                'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{head_sha}', self.secrets.bot_token)
+        head_sha = self.repo.git.rev_parse('--short', 'HEAD')
+        current_branch = f'{self.time}-{head_sha}'
+        logging.info(f"Delete remote '{current_branch}' branch")
+        github_api(
+            'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{current_branch}', self.secrets.bot_token)
 
         logging.info(f"Delete '{self.secrets.test_repo}:{self.secrets.base_branch}'")
         github_api(
@@ -336,6 +337,12 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             self.repo.git.branch('-D', self.secrets.base_branch)
         except git.exc.GitCommandError:
             logging.info(f"Local '{self.secrets.base_branch}' does not exist")
+
+        logging.info(f"Delete local '{current_branch}'")
+        try:
+            self.repo.git.branch('-D', current_branch)
+        except git.exc.GitCommandError:
+            logging.info(f"Local '{current_branch}' does not exist")
 
     def update_test_chart(self, test_chart):
         if test_chart != self.test_chart:
