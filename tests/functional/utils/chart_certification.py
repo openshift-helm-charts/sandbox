@@ -315,7 +315,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.repo.git.worktree('prune')
 
         head_sha = self.repo.git.rev_parse('--short', 'HEAD')
-        current_branch = f'{self.time}-{head_sha}'
+        current_branch = f'{head_sha}-{self.time}'
         logging.info(f"Delete remote '{current_branch}' branch")
         github_api(
             'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{current_branch}', self.secrets.bot_token)
