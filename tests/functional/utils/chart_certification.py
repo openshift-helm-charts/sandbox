@@ -290,7 +290,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
         pretty_test_name = self.test_name.strip().lower().replace(' ', '-')
         # unique string based on current time in seconds
-        base_branch = f'{str(int(time.time()))}-{pretty_test_name}-{current_branch}' if pretty_test_name else f'{str(int(time.time()))}-test-{current_branch}'
+        self.time=str(int(time.time()))
+        base_branch = f'{self.time}-{pretty_test_name}-{current_branch}' if pretty_test_name else f'{self.time}-test-{current_branch}'
         pr_branch = base_branch + '-pr-branch'
 
         self.secrets.owners_file_content = self.owners_file_content
@@ -349,9 +350,15 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             self.__post_init__()
 
     def get_unique_vendor(self, vendor):
+        """Set unique vendor name.
+        Note that release tag is generated with this vendor name.
+        """
+        # unique string based on current time in seconds
+        suffix = self.time
         if "PR_NUMBER" in os.environ:
-            suffix = os.environ["PR_NUMBER"]
-        return f"{vendor}-{suffix}" if suffix else f"{vendor}"
+            pr_num = os.environ["PR_NUMBER"]
+            suffix = f"{suffix}-{pr_num}"
+        return f"{vendor}-{suffix}"
 
     def get_chart_name_version(self):
         if not self.test_report and not self.test_chart:
@@ -366,7 +373,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         # use unique vendor id to avoid collision between tests
         self.secrets.vendor = self.get_unique_vendor(vendor)
         self.secrets.vendor_type = vendor_type
-        self.secrets.base_branch = f'{self.secrets.base_branch}-{self.secrets.vendor_type}-{self.secrets.vendor}-{self.secrets.chart_name}-{self.secrets.chart_version}'
+        self.secrets.base_branch = f'{self.secrets.base_branch}-{self.secrets.vendor_type}-{self.secrets.vendor.split("-")[0]}-{self.secrets.chart_name}-{self.secrets.chart_version}'
         self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
         self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
 
