@@ -147,7 +147,7 @@ vendor:
             self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                         f'HEAD:refs/heads/{base_branch}', '-f')
 
-    def check_index_yaml(self, base_branch, vendor, chart_name, chart_version, logger=pytest.fail):
+    def check_index_yaml(self, base_branch, vendor, chart_name, chart_version, check_provider_type=False, logger=pytest.fail):
         old_branch = self.repo.active_branch.name
         self.repo.git.fetch(f'https://github.com/{self.secrets.test_repo}.git',
                     '{0}:{0}'.format(f'{base_branch}-gh-pages'), '-f')
@@ -170,6 +170,12 @@ vendor:
             logger(
                 f"{chart_name} {chart_version} not added to index")
             return False
+
+        if check_provider_type and self.secrets.vendor_type == 'redhat':
+            provider_type_in_index_yaml = index['entries'][entry][0]['annotations']['charts.openshift.io/providerType']
+            if provider_type_in_index_yaml != 'community':
+                logger(f"{provider_type_in_index_yaml} is not correct as providerType in index.yaml")
+
 
         logging.info("Index updated correctly, cleaning up local branch")
         self.repo.git.checkout(old_branch)
@@ -411,6 +417,14 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                         fd.write(yaml.dump(chart))
                 except Exception as e:
                     pytest.fail("Failed to update version in yaml file")
+    
+    def remove_readme_file(self):
+        with SetDirectory(Path(self.temp_dir.name)):
+            path = f'{self.chart_directory}/{self.secrets.chart_version}/src/README.md'
+            try:
+                os.remove(path)
+            except Exception as e:
+                pytest.fail(f"Failed to remove readme file : {e}")
 
     def process_owners_file(self):
         super().create_and_push_owners_file(self.chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.secrets.chart_name)
@@ -481,8 +495,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         else:
             pytest.fail(f"Was expecting '{expect_message}' in the comment {complete_comment}")
 
-    def check_index_yaml(self):
-        super().check_index_yaml(self.secrets.base_branch, self.secrets.vendor, self.secrets.chart_name, self.secrets.chart_version, pytest.fail)
+    def check_index_yaml(self, check_provider_type=False):
+        super().check_index_yaml(self.secrets.base_branch, self.secrets.vendor, self.secrets.chart_name, self.secrets.chart_version, check_provider_type, pytest.fail)
 
     def check_release_result(self):
         chart_tgz = self.secrets.test_chart.split('/')[-1]
@@ -683,7 +697,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             return
 
         # Check index.yaml is updated
-        if not super().check_index_yaml(base_branch, vendor_name, chart_name, chart_version, logging.warning):
+        if not super().check_index_yaml(base_branch, vendor_name, chart_name, chart_version, False, logging.warning):
             return
 
         # Check release is published
