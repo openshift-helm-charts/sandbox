@@ -8,6 +8,7 @@ import pathlib
 import shutil
 import time
 import logging
+import uuid
 from tempfile import TemporaryDirectory
 from dataclasses import dataclass
 from string import Template
@@ -265,9 +266,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     secrets: E2ETestSecretOneShot = E2ETestSecretOneShot()
 
     def __post_init__(self) -> None:
-        # unique string based on current time in nanoseconds (10^-9 second)
-        # reserve only last 12 digits for readability and reasonable collision probability
-        self.time=str(int(time.time_ns())%(10**12))
+        # unique string based on uuid.uuid4()
+        self.uuid = uuid.uuid4().hex
 
         chart_name, chart_version = self.get_chart_name_version()
         bot_name, bot_token = self.get_bot_name_and_token()
@@ -275,7 +275,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
         # Create a new branch locally from detached HEAD
         head_sha = self.repo.git.rev_parse('--short', 'HEAD')
-        unique_branch = f'{head_sha}-{self.time}'
+        unique_branch = f'{head_sha}-{self.uuid}'
         local_branches = [h.name for h in self.repo.heads]
         if unique_branch not in local_branches:
             self.repo.git.checkout('-b', f'{unique_branch}')
@@ -292,7 +292,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                     f'HEAD:refs/heads/{current_branch}', '-f')
 
         pretty_test_name = self.test_name.strip().lower().replace(' ', '-')
-        base_branch = f'{self.time}-{pretty_test_name}-{current_branch}' if pretty_test_name else f'{self.time}-test-{current_branch}'
+        base_branch = f'{self.uuid}-{pretty_test_name}-{current_branch}' if pretty_test_name else f'{self.uuid}-test-{current_branch}'
         pr_branch = base_branch + '-pr-branch'
 
         self.secrets.owners_file_content = self.owners_file_content
@@ -315,7 +315,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.repo.git.worktree('prune')
 
         head_sha = self.repo.git.rev_parse('--short', 'HEAD')
-        current_branch = f'{head_sha}-{self.time}'
+        current_branch = f'{head_sha}-{self.uuid}'
         logging.info(f"Delete remote '{current_branch}' branch")
         github_api(
             'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{current_branch}', self.secrets.bot_token)
@@ -361,7 +361,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         Note that release tag is generated with this vendor name.
         """
         # unique string based on current time in seconds
-        suffix = self.time
+        suffix = self.uuid
         if "PR_NUMBER" in os.environ:
             pr_num = os.environ["PR_NUMBER"]
             suffix = f"{suffix}-{pr_num}"
