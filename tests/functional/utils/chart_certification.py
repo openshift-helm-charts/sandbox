@@ -426,6 +426,14 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 except Exception as e:
                     pytest.fail("Failed to update version in yaml file")
 
+    def remove_readme_file(self):
+        with SetDirectory(Path(self.temp_dir.name)):
+            path = f'{self.chart_directory}/{self.secrets.chart_version}/src/README.md'
+            try:
+                os.remove(path)
+            except Exception as e:
+                pytest.fail(f"Failed to remove readme file : {e}")
+
     def process_owners_file(self):
         super().create_and_push_owners_file(self.chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.secrets.chart_name)
 
