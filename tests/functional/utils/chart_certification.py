@@ -170,6 +170,8 @@ vendor:
                 f"{chart_name} {chart_version} not added to index")
             return False
 
+        #This check is applicable for charts submitted in redhat path when one of the chart-verifier check fails
+        #Check whether providerType annotations is community in index.yaml when vendor_type is redhat
         if check_provider_type and self.secrets.vendor_type == 'redhat':
             provider_type_in_index_yaml = index['entries'][entry][0]['annotations']['charts.openshift.io/providerType']
             if provider_type_in_index_yaml != 'community':
