@@ -82,7 +82,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BODY: "Test triggered by ${{ github.event.pull_request.html_url }}."
         run: |
-          ve1/bin/pytest tests/ --log-cli-level=WARNING --ignore=tests/functional/step_defs/test_submitted_charts.py --tb=short
+          ve1/bin/pytest -n 4 tests/ --log-cli-level=WARNING --ignore=tests/functional/step_defs/test_submitted_charts.py --tb=short
 
       - name: (Manual) Test CI Workflow
         if: |

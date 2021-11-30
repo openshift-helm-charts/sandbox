@@ -3,11 +3,10 @@
 
 import os
 import json
-from datetime import datetime
 import pathlib
 import shutil
-import time
 import logging
+import uuid
 from tempfile import TemporaryDirectory
 from dataclasses import dataclass
 from string import Template
@@ -265,17 +264,21 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     secrets: E2ETestSecretOneShot = E2ETestSecretOneShot()
 
     def __post_init__(self) -> None:
+        # unique string based on uuid.uuid4(), not using timestamp here because even
+        # in nanoseconds there are chances of collisions among first test cases of
+        # different processes.
+        self.uuid = uuid.uuid4().hex
+
         chart_name, chart_version = self.get_chart_name_version()
         bot_name, bot_token = self.get_bot_name_and_token()
         test_repo = TEST_REPO
 
-        # Differentiate between github runner env and local env
-        if self.github_actions:
-            # Create a new branch locally from detached HEAD
-            head_sha = self.repo.git.rev_parse('--short', 'HEAD')
-            local_branches = [h.name for h in self.repo.heads]
-            if head_sha not in local_branches:
-                self.repo.git.checkout('-b', f'{head_sha}')
+        # Create a new branch locally from detached HEAD
+        head_sha = self.repo.git.rev_parse('--short', 'HEAD')
+        unique_branch = f'{head_sha}-{self.uuid}'
+        local_branches = [h.name for h in self.repo.heads]
+        if unique_branch not in local_branches:
+            self.repo.git.checkout('-b', f'{unique_branch}')
 
         current_branch = self.repo.active_branch.name
         r = github_api(
@@ -289,7 +292,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                     f'HEAD:refs/heads/{current_branch}', '-f')
 
         pretty_test_name = self.test_name.strip().lower().replace(' ', '-')
-        base_branch = f'{pretty_test_name}-{current_branch}' if pretty_test_name else f'test-{current_branch}'
+        base_branch = f'{self.uuid}-{pretty_test_name}-{current_branch}' if pretty_test_name else f'{self.uuid}-test-{current_branch}'
         pr_branch = base_branch + '-pr-branch'
 
         self.secrets.owners_file_content = self.owners_file_content
@@ -311,11 +314,11 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             self.temp_dir.cleanup()
         self.repo.git.worktree('prune')
 
-        if self.github_actions:
-            head_sha = self.repo.git.rev_parse('--short', 'HEAD')
-            logging.info(f"Delete remote '{head_sha}' branch")
-            github_api(
-                'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{head_sha}', self.secrets.bot_token)
+        head_sha = self.repo.git.rev_parse('--short', 'HEAD')
+        current_branch = f'{head_sha}-{self.uuid}'
+        logging.info(f"Delete remote '{current_branch}' branch")
+        github_api(
+            'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{current_branch}', self.secrets.bot_token)
 
         logging.info(f"Delete '{self.secrets.test_repo}:{self.secrets.base_branch}'")
         github_api(
@@ -335,6 +338,12 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         except git.exc.GitCommandError:
             logging.info(f"Local '{self.secrets.base_branch}' does not exist")
 
+        logging.info(f"Delete local '{current_branch}'")
+        try:
+            self.repo.git.branch('-D', current_branch)
+        except git.exc.GitCommandError:
+            logging.info(f"Local '{current_branch}' does not exist")
+
     def update_test_chart(self, test_chart):
         if test_chart != self.test_chart:
             # reinitialize the settings according with new chart
@@ -348,8 +357,11 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             self.__post_init__()
 
     def get_unique_vendor(self, vendor):
-        # unique string based on current time in seconds
-        suffix = str(int(time.time()))
+        """Set unique vendor name.
+        Note that release tag is generated with this vendor name.
+        """
+        # unique string based on uuid.uuid4()
+        suffix = self.uuid
         if "PR_NUMBER" in os.environ:
             pr_num = os.environ["PR_NUMBER"]
             suffix = f"{suffix}-{pr_num}"
@@ -368,7 +380,9 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         # use unique vendor id to avoid collision between tests
         self.secrets.vendor = self.get_unique_vendor(vendor)
         self.secrets.vendor_type = vendor_type
-        self.secrets.base_branch = f'{self.secrets.base_branch}-{self.secrets.vendor_type}-{self.secrets.vendor}-{self.secrets.chart_name}-{self.secrets.chart_version}'
+        base_branch_without_uuid = "-".join(self.secrets.base_branch.split("-")[:-1])
+        vendor_without_suffix = self.secrets.vendor.split("-")[0]
+        self.secrets.base_branch = f'{base_branch_without_uuid}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_name}-{self.secrets.chart_version}'
         self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
         self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
 
