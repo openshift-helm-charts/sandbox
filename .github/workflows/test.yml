@@ -103,7 +103,7 @@ jobs:
           echo "[INFO] Notify ID '${{ env.NOTIFY_ID }}'"
           echo "[INFO] Software Name '${{ env.SOFTWARE_NAME }}'"
           echo "[INFO] Software Version '${{ env.SOFTWARE_VERSION }}'"
-          ve1/bin/pytest -n 4 tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
+          ve1/bin/pytest tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
 
       - name: (PR) check for release flow
         id: check_if_release_pr

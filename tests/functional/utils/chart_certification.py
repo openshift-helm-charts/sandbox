@@ -3,10 +3,8 @@
 
 import os
 import json
-from datetime import datetime
 import pathlib
 import shutil
-import time
 import logging
 import uuid
 from tempfile import TemporaryDirectory
@@ -382,9 +380,9 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         # use unique vendor id to avoid collision between tests
         self.secrets.vendor = self.get_unique_vendor(vendor)
         self.secrets.vendor_type = vendor_type
-        base_branch_without_time = "-".join(self.secrets.base_branch.split("-")[:-1])
+        base_branch_without_uuid = "-".join(self.secrets.base_branch.split("-")[:-1])
         vendor_without_suffix = self.secrets.vendor.split("-")[0]
-        self.secrets.base_branch = f'{base_branch_without_time}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_name}-{self.secrets.chart_version}'
+        self.secrets.base_branch = f'{base_branch_without_uuid}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_name}-{self.secrets.chart_version}'
         self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
         self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
 
