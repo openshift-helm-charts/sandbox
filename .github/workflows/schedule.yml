@@ -156,7 +156,7 @@ jobs:
           printf "[INFO] Notify ID: '%s'\n" "${{ env.NOTIFY_ID }}"
           printf "[INFO] Software Name: '%s'\n" "${{ env.SOFTWARE_NAME }}"
           printf "[INFO] Software Version: '%s'\n" "${{ env.SOFTWARE_VERSION }}"
-          ve1/bin/pytest -n 4 tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
+          ve1/bin/pytest tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
 
       - name: (Schedule) Run tests on existing charts
         if: |
@@ -178,7 +178,7 @@ jobs:
           printf "[INFO] Notify ID: '%s'\n" "${{ env.NOTIFY_ID }}"
           printf "[INFO] Software Name: '%s'\n" "${{ env.SOFTWARE_NAME }}"
           printf "[INFO] Software Version: '%s'\n" "${{ env.SOFTWARE_VERSION }}"
-          ve1/bin/pytest -n 4 tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
+          ve1/bin/pytest tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
 
   check-chart-verifier:
     name: Check Chart Verifier Version
@@ -302,7 +302,7 @@ jobs:
           printf "[INFO] Notify ID: '%s'\n" "${{ env.NOTIFY_ID }}"
           printf "[INFO] Software Name: '%s'\n" "${{ env.SOFTWARE_NAME }}"
           printf "[INFO] Software Version: '%s'\n" "${{ env.SOFTWARE_VERSION }}"
-          ve1/bin/pytest -n 4 tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
+          ve1/bin/pytest tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
 
       - name: (Schedule) Run tests on existing charts
         if: |
@@ -324,4 +324,4 @@ jobs:
           printf "[INFO] Notify ID: '%s'\n" "${{ env.NOTIFY_ID }}"
           printf "[INFO] Software Name: '%s'\n" "${{ env.SOFTWARE_NAME }}"
           printf "[INFO] Software Version: '%s'\n" "${{ env.SOFTWARE_VERSION }}"
-          ve1/bin/pytest -n 4 tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
+          ve1/bin/pytest tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
