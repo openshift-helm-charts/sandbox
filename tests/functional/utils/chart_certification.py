@@ -440,7 +440,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 # Unzip files into temporary directory for PR submission
                 extract_chart_tgz(self.secrets.test_chart, f'{self.chart_directory}/{self.secrets.chart_version}', self.secrets, logging)
 
-    def process_report(self):
+    def process_report(self, update_chart_sha=False):
         with SetDirectory(Path(self.temp_dir.name)):
             # Copy report to temporary location and push to test_repo:pr_branch
             logging.info(
@@ -449,8 +449,27 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             values = {'repository': self.secrets.test_repo,
                     'branch': self.secrets.base_branch}
             content = Template(tmpl).substitute(values)
-            with open(f'{self.chart_directory}/{self.secrets.chart_version}/report.yaml', 'w') as fd:
+            report_path = f'{self.chart_directory}/{self.secrets.chart_version}/report.yaml'
+            with open(report_path, 'w') as fd:
                 fd.write(content)
+            
+            #For updating the report.yaml, for chart sha mismatch scenario
+            if update_chart_sha:
+                new_sha_value = 'sha256:5b85ae00b9ca2e61b2d70a59f98fd72136453b1a185676b29d4eb862981c1xyz'
+                with open(report_path, 'r') as fd:
+                    try:
+                        report = yaml.safe_load(fd)
+                    except yaml.YAMLError as err:
+                        pytest.fail(f"error parsing '{report_path}': {err}")
+                logging.info(f"Current SHA Value in report: {report['metadata']['tool']['digests']['chart']}")
+                report['metadata']['tool']['digests']['chart'] = new_sha_value
+                with open(report_path, 'w') as fd:
+                    try:
+                        fd.write(yaml.dump(report))
+                        logging.info(f"Updated SHA value in report: {new_sha_value}")
+                    except Exception as e:
+                        pytest.fail("Failed to update report yaml with SHA value")
+            
             self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/report.yaml')
             self.temp_repo.git.commit(
                 '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} report")
