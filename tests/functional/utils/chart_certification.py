@@ -457,13 +457,22 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                         f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
 
-    def push_chart(self, is_tarball: bool):
+    def add_non_chart_related_file(self):
+        with SetDirectory(Path(self.temp_dir.name)):
+            path = f'{self.chart_directory}/Notes.txt'
+            with open(path, 'w') as fd:
+                fd.write("This is a test file")
+
+    def push_chart(self, is_tarball: bool, add_non_chart_file=False):
         # Push chart to test_repo:pr_branch
         if is_tarball:
             chart_tar = self.secrets.test_chart.split('/')[-1]
             self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/{chart_tar}')
         else:
-            self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/src')
+            if add_non_chart_file:
+                self.temp_repo.git.add(f'{self.chart_directory}/')
+            else:
+                self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/src')
         self.temp_repo.git.commit(
             '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} chart")
 
