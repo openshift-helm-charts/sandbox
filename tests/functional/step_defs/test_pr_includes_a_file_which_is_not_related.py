@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Chart verifier comes back with a failure
-Partners, redhat or community user submit charts which does not contain README file
+PR includes a non chart related file
+Partners, redhat or community user submit charts which includes a file which is not part of the chart
 """
 import pytest
 from pytest_bdd import (
