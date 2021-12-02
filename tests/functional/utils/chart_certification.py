@@ -52,6 +52,7 @@ vendor:
         email (str): git email to set
         """
         git_path = repo.git.rev_parse("--show-toplevel")
+        logging.info(f">>>>>>>>>>>>>>>> {git_path}")
         # make sure only one process is modifying the git config
         if not pathlib.Path(f'{git_path}/.git/config.lock').exists():
             repo.config_writer().set_value("user", "name", username).release()
@@ -345,7 +346,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         try:
             self.repo.git.branch('-D', current_branch)
         except git.exc.GitCommandError:
-            logging.info(f"Local '{current_branch}' does not exist")
+            logging.info(f">>>>>>>> Local '{current_branch}' does not exist")
 
     def update_test_chart(self, test_chart):
         if test_chart != self.test_chart:
