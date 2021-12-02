@@ -344,7 +344,6 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
         logging.info(f"Delete local '{current_branch}'")
         try:
-            self.repo.git.checkout('main')
             self.repo.git.branch('-D', current_branch)
         except git.exc.GitCommandError:
             logging.info(f">>>>>>>> Local '{current_branch}' does not exist")
