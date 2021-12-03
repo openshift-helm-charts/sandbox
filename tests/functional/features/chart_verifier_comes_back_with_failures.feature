@@ -3,7 +3,7 @@ Feature: Chart verifier comes back with a failure
 
   Examples:
       | chart_path                     |
-      | tests/data/vault-0.13.0.tgz    |
+      | tests/data/vault-0.17.0.tgz    |
 
   Scenario Outline: A partner or community user submits a chart which does not contain a readme file
     Given the vendor <vendor> has a valid identity as <vendor_type>

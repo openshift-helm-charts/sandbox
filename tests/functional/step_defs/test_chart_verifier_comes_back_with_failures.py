@@ -17,7 +17,7 @@ from functional.utils.chart_certification import ChartCertificationE2ETestSingle
 @pytest.fixture
 def workflow_test():
     test_name = 'Test Chart Submission Without Readme'
-    test_chart = 'tests/data/vault-0.13.0.tgz'
+    test_chart = 'tests/data/vault-0.17.0.tgz'
     workflow_test = ChartCertificationE2ETestSingle(test_name=test_name, test_chart=test_chart)
     yield workflow_test
     workflow_test.cleanup()
