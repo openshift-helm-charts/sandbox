@@ -5,7 +5,7 @@ Feature: Chart verifier comes back with a failure
       | chart_path                     |
       | tests/data/vault-0.13.0.tgz    |
 
-  Scenario Outline: A partner user submits a chart which does not contain a readme file
+  Scenario Outline: A partner or community user submits a chart which does not contain a readme file
     Given the vendor <vendor> has a valid identity as <vendor_type>
     And an error-free chart source is used in <chart_path>
     And README file is missing in the chart
@@ -14,8 +14,9 @@ Feature: Chart verifier comes back with a failure
     And user gets the <message> in the pull request comment
 
     Examples:
-        | vendor_type  | vendor    | message                      |
-        | partners     | hashicorp | Chart does not have a README |
+        | vendor_type  | vendor    | message                                  |
+        | partners     | hashicorp | Chart does not have a README             |
+        | community    | redhat    | submitted chart has failed certification |
 
   Scenario Outline: A redhat user submits a chart which does not contain a readme file
     Given the vendor <vendor> has a valid identity as <vendor_type>
@@ -30,14 +31,3 @@ Feature: Chart verifier comes back with a failure
         | vendor_type  | vendor    |
         | redhat       | redhat    |
 
-  Scenario Outline: A community user submits a chart which does not contain a readme file
-    Given the vendor <vendor> has a valid identity as <vendor_type>
-    And an error-free chart source is used in <chart_path>
-    And README file is missing in the chart
-    When the user sends a pull request with the chart
-    Then the pull request is not merged
-    And user gets the <message> in the pull request comment
-
-    Examples:
-        | vendor_type  | vendor    | message                                  |
-        | community    | redhat    | submitted chart has failed certification |

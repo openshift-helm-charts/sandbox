@@ -22,17 +22,13 @@ def workflow_test():
     yield workflow_test
     workflow_test.cleanup()
 
-@scenario('../features/chart_verifier_comes_back_with_failures.feature', "A partner user submits a chart which does not contain a readme file")
-def test_partner_user_submits_chart_without_readme():
-    """A partner user submits a chart which does not contain a readme file"""
+@scenario('../features/chart_verifier_comes_back_with_failures.feature', "A partner or community user submits a chart which does not contain a readme file")
+def test_partner_or_community_user_submits_chart_without_readme():
+    """A partner or community user submits a chart which does not contain a readme file"""
 
 @scenario('../features/chart_verifier_comes_back_with_failures.feature', "A redhat user submits a chart which does not contain a readme file")
 def test_redhat_user_submits_chart_without_readme():
     """A redhat user submits a chart which does not contain a readme file"""
-
-@scenario('../features/chart_verifier_comes_back_with_failures.feature', "A community user submits a chart which does not contain a readme file")
-def test_community_user_submits_chart_without_readme():
-    """A community user submits a chart which does not contain a readme file"""
 
 @given(parsers.parse("the vendor <vendor> has a valid identity as <vendor_type>"))
 def user_has_valid_identity(workflow_test, vendor, vendor_type):
