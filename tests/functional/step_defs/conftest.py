@@ -1,12 +1,11 @@
 from pytest_bdd import (
     given,
-    scenario,
     then,
     when,
     parsers
 )
 
-########### GIVENS ####################
+########### GIVEN ####################
 
 @given(parsers.parse("the vendor <vendor> has a valid identity as <vendor_type>"))
 def user_has_valid_identity(workflow_test, vendor, vendor_type):
@@ -37,6 +36,31 @@ def user_has_created_error_free_chart_src(workflow_test, chart_path):
     workflow_test.process_owners_file()
     workflow_test.process_chart(is_tarball=False)
     workflow_test.push_chart(is_tarball=False)
+
+@given(parsers.parse("an error-free chart tarball is used in <chart_path> and report in <report_path>"))
+def user_has_created_error_free_chart_tarball_and_report(workflow_test, chart_path, report_path):
+    """an error-free chart tarball is used in <chart_path> and report in <report_path>."""
+    workflow_test.update_test_chart(chart_path)
+    workflow_test.update_test_report(report_path)
+
+    workflow_test.setup_git_context()
+    workflow_test.setup_gh_pages_branch()
+    workflow_test.setup_temp_dir()
+    workflow_test.process_owners_file()
+    workflow_test.process_chart(is_tarball=True)
+    workflow_test.process_report()
+    workflow_test.push_chart(is_tarball=True)
+
+@given(parsers.parse("an error-free chart tarball is used in <chart_path>"))
+def user_has_created_error_free_chart_tarball(workflow_test, chart_path):
+    """an error-free chart tarball is used in <chart_path>."""
+    workflow_test.update_test_chart(chart_path)
+    workflow_test.setup_git_context()
+    workflow_test.setup_gh_pages_branch()
+    workflow_test.setup_temp_dir()
+    workflow_test.process_owners_file()
+    workflow_test.process_chart(is_tarball=True)
+    workflow_test.push_chart(is_tarball=True)
 
 ############### WHEN ####################
 
