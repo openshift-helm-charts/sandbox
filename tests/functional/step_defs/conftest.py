@@ -35,6 +35,7 @@ def user_has_created_error_free_chart_src(workflow_test, chart_path):
     workflow_test.setup_gh_pages_branch()
     workflow_test.setup_temp_dir()
     workflow_test.process_owners_file()
+    workflow_test.process_chart(is_tarball=False)
     workflow_test.push_chart(is_tarball=False)
 
 ############### WHEN ####################
