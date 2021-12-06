@@ -6,6 +6,24 @@ from pytest_bdd import (
 )
 
 ########### GIVEN ####################
+@given(parsers.parse("A <user> wants to submit a chart in <chart_path>"))
+def user_wants_to_submit_a_chart(workflow_test, user, chart_path):
+    """A <user> wants to submit a chart in <chart_path>."""
+    workflow_test.update_test_chart(chart_path)
+    logging.info(f"User: {user}")
+    workflow_test.secrets.bot_name = user
+
+@given(parsers.parse("<vendor> of <vendor_type> wants to submit <chart> of <version>"))
+def vendor_of_vendor_type_wants_to_submit_chart_of_version(workflow_test, vendor, vendor_type, chart, version):
+    """<vendor> of <vendor_type> wants to submit <chart> of <version>"""
+    workflow_test.set_vendor(vendor, vendor_type)
+    workflow_test.chart_name, workflow_test.chart_version = chart, version
+
+@given(parsers.parse("Chart.yaml specifies a <bad_version>"))
+def chart_yaml_specifies_bad_version(workflow_test, bad_version):
+    """ Chart.yaml specifies a <bad_version> """
+    if bad_version != '':
+        workflow_test.secrets.bad_version = bad_version
 
 @given(parsers.parse("the vendor <vendor> has a valid identity as <vendor_type>"))
 def user_has_valid_identity(workflow_test, vendor, vendor_type):
@@ -62,8 +80,30 @@ def user_has_created_error_free_chart_tarball(workflow_test, chart_path):
     workflow_test.process_chart(is_tarball=True)
     workflow_test.push_chart(is_tarball=True)
 
-############### WHEN ####################
+@given(parsers.parse("an error-free report is used in <report_path>"))
+def user_has_created_error_free_report(workflow_test, report_path):
+    """an error-free report is used in <report_path>."""
+    workflow_test.update_test_report(report_path)
+    workflow_test.setup_git_context()
+    workflow_test.setup_gh_pages_branch()
+    workflow_test.setup_temp_dir()
+    workflow_test.process_owners_file()
+    workflow_test.process_report()
 
+@given("the user creates a branch to add a new chart version")
+def the_user_creates_a_branch_to_add_a_new_chart_version(workflow_test):
+    """the user creates a branch to add a new chart version."""
+    workflow_test.setup_git_context()
+    workflow_test.setup_gh_pages_branch()
+    workflow_test.setup_temp_dir()
+    workflow_test.process_owners_file()
+    workflow_test.process_chart(is_tarball=False)
+    if workflow_test.secrets.bad_version:
+        workflow_test.update_chart_version_in_chart_yaml(workflow_test.secrets.bad_version)
+    workflow_test.push_chart(is_tarball=False)
+    
+############### WHEN ####################
+@when("the user sends a pull request with the report")
 @when("the user sends a pull request with the chart")
 @when("the user sends a pull request with the chart and report")
 def user_sends_pull_request_with_chart_src_and_report(workflow_test):
