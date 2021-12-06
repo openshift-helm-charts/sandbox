@@ -10,7 +10,6 @@ from pytest_bdd import (
 def user_wants_to_submit_a_chart(workflow_test, user, chart_path):
     """A <user> wants to submit a chart in <chart_path>."""
     workflow_test.update_test_chart(chart_path)
-    logging.info(f"User: {user}")
     workflow_test.secrets.bot_name = user
 
 @given(parsers.parse("<vendor> of <vendor_type> wants to submit <chart> of <version>"))
