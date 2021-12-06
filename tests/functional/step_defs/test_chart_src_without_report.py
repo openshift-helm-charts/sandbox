@@ -5,13 +5,8 @@ Partners, redhat and community users can publish their chart by submitting
 error-free chart in source format without a report.
 """
 import pytest
-from pytest_bdd import (
-    given,
-    scenario,
-    then,
-    when,
-    parsers
-)
+from pytest_bdd import scenario
+
 
 from functional.utils.chart_certification import ChartCertificationE2ETestSingle
 

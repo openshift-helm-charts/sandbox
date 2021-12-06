@@ -1,3 +1,11 @@
+from pytest_bdd import (
+    given,
+    scenario,
+    then,
+    when,
+    parsers
+)
+
 ########### GIVENS ####################
 
 @given(parsers.parse("the vendor <vendor> has a valid identity as <vendor_type>"))
