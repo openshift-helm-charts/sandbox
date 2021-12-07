@@ -10,6 +10,8 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+sys.path.append('../')
+from report import verifier_report
 
 ALLOW_CI_CHANGES = "allow/ci-changes"
 TYPE_MATCH_EXPRESSION = "(partners|redhat|community)"
@@ -50,8 +52,14 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                 none_chart_files[file_name] = file_path
             else:
                 if reportpattern.match(file_path):
-                    print("[INFO] Report found")
-                    print("::set-output name=report-exists::true")
+                    print(f"[INFO] Report found: {file_path}")
+                    report_path = file_path
+                    report_valid,message = report.verifier_report.validate(file_path)
+                    if report_valid:
+                        print("::set-output name=report-exists::true")
+                    else:
+                        print(f"::set-output name=sanity-error-message::{msg}")
+                        sys.exit(1)
                 if not match_found:
                     pattern_match = match
                     match_found = True
@@ -87,6 +95,14 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                 
         sys.exit(1)
 
+    if report_path:
+        report_valid,message = report.verifier_report.validate(report_path)
+        if report_valid:
+            print("::set-output name=report-exists::true")
+        else:
+            msg = f"Chart Verifier Report is not valid : {message}"
+            print(f"::set-output name=sanity-error-message::{msg}}")
+            sys.exit(1)
 
     if match_found:
         category, organization, chart, version = pattern_match.groups()
