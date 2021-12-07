@@ -18,6 +18,7 @@ except ImportError:
 
 sys.path.append('../')
 from report import report_info
+from report import verifier_report
 
 def write_error_log(directory, *msg):
     with open(os.path.join(directory, "errors"), "w") as fd:
@@ -356,6 +357,17 @@ def main():
     verify_user(args.directory, args.username, category, organization, chart)
     check_owners_file_against_directory_structure(args.directory, args.username, category, organization, chart)
     submitted_report_path = os.path.join("charts", category, organization, chart, version, "report.yaml")
+
+    if os.path.exists(submitted_report_path):
+        report_valid, message = verifier_report.validate(submitted_report_path)
+        if not report_valid:
+            msg = f"Submitted report is not valid: {message}"
+            print(f"[ERROR] {msg}")
+            write_error_log(args.directory, msg)
+            sys.exit(1)
+        else:
+            print("[INFO] Submitted report passed validity check!")
+
     generate_verify_report(args.directory, category, organization, chart, version)
     if os.path.exists(submitted_report_path):
         print("[INFO] Report exists: ", submitted_report_path)
