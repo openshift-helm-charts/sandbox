@@ -48,9 +48,12 @@ def user_has_created_a_chart_tarball_and_report(workflow_test, chart_path, repor
     workflow_test.process_chart(is_tarball=True)
     
 
-@given("the sha value of chart in report does not match the chart sha value")
-def sha_value_does_not_match(workflow_test):
-    workflow_test.process_report(update_chart_sha=True)
+@given(parsers.parse("the report contains an <error>"))
+def sha_value_does_not_match(workflow_test, error):
+    if error == 'sha_mismatch':
+        workflow_test.process_report(update_chart_sha=True)
+    else:
+        pytest.fail(f"This {error} handling is not implemented yet")
 
 @when("the user sends a pull request with the chart and report")
 def user_sends_pull_request_with_chart_tarball_and_report(workflow_test):
