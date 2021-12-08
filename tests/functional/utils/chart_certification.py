@@ -52,10 +52,16 @@ vendor:
         email (str): git email to set
         """
         git_path = repo.git.rev_parse("--show-toplevel")
-        # make sure only one process is modifying the git config
-        if not pathlib.Path(f'{git_path}/.git/config.lock').exists():
+        logging.info(f'{git_path}/.git/config.lock')
+        # if pathlib.Path(f'{git_path}/.git/config.lock').exists():
+        #     os.remove(f'{git_path}/.git/config.lock')
+        try:
             repo.config_writer().set_value("user", "name", username).release()
             repo.config_writer().set_value("user", "email", email).release()
+        except OSError:
+            # contention of .git/config.lock, we don't need to edit in this case
+            # because the configuration is already done by other processes
+            pass
 
     def get_bot_name_and_token(self):
         bot_name = os.environ.get("BOT_NAME")
