@@ -12,3 +12,5 @@ PROD_BRANCH = 'main'
 CERTIFICATION_CI_NAME = 'CI'
 # GitHub actions bot email for git email
 GITHUB_ACTIONS_BOT_EMAIL = '41898282+github-actions[bot]@users.noreply.github.com'
+
+MODE=test
