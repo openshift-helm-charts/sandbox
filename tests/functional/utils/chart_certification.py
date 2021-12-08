@@ -51,11 +51,11 @@ vendor:
         username (str): git username to set
         email (str): git email to set
         """
-        git_path = repo.git.rev_parse("--show-toplevel")
+        git_path = self.repo.git.rev_parse("--show-toplevel")
         # make sure only one process is modifying the git config
         if not pathlib.Path(f'{git_path}/.git/config.lock').exists():
-            repo.config_writer().set_value("user", "name", username).release()
-            repo.config_writer().set_value("user", "email", email).release()
+            self.repo.config_writer().set_value("user", "name", username).release()
+            self.repo.config_writer().set_value("user", "email", email).release()
 
     def get_bot_name_and_token(self):
         bot_name = os.environ.get("BOT_NAME")
