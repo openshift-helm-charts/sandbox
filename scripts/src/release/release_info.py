@@ -2,7 +2,7 @@
 Used by github actions,specifically as part of the charts auto release process defined in
 .github/workflow/release.yml. Encapsulates the release_info.json file.
 
-Provides get functions for all data in the release_info.json file.
+Provides get functions for all data attributes in the release_info.json file.
 """
 import json
 import os
