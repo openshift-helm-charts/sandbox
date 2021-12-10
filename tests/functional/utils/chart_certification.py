@@ -456,7 +456,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 # Unzip files into temporary directory for PR submission
                 extract_chart_tgz(self.secrets.test_chart, f'{self.chart_directory}/{self.secrets.chart_version}', self.secrets, logging)
 
-    def process_report(self, update_chart_sha=False):
+    def process_report(self, update_chart_sha=False, update_url=False, url=None):
+
         with SetDirectory(Path(self.temp_dir.name)):
             # Copy report to temporary location and push to test_repo:pr_branch
             logging.info(
@@ -485,6 +486,23 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                         logging.info(f"Updated SHA value in report: {new_sha_value}")
                     except Exception as e:
                         pytest.fail("Failed to update report yaml with SHA value")
+            
+            #For updating the report.yaml, for invalid_url sceanrio
+            if update_chart_sha:
+                with open(report_path, 'r') as fd:
+                    try:
+                        report = yaml.safe_load(fd)
+                    except yaml.YAMLError as err:
+                        pytest.fail(f"error parsing '{report_path}': {err}")
+                logging.info(f"Current chart-uri in report: {report['metadata']['tool']['chart-uri']}")
+                report['metadata']['tool']['chart-uri'] = url
+                with open(report_path, 'w') as fd:
+                    try:
+                        fd.write(yaml.dump(report))
+                        logging.info(f"Updated chart-uri value in report: {url}")
+                    except Exception as e:
+                        pytest.fail("Failed to update report yaml with chart-uri")
+
             
             self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/report.yaml')
             self.temp_repo.git.commit(
