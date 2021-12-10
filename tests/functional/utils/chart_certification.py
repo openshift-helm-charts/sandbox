@@ -472,7 +472,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                         pytest.fail("Failed to update report yaml with SHA value")
             
             #For updating the report.yaml, for invalid_url sceanrio
-            if update_chart_sha:
+            if update_url:
                 with open(report_path, 'r') as fd:
                     try:
                         report = yaml.safe_load(fd)
