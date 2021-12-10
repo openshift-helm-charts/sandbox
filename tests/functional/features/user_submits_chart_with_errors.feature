@@ -20,7 +20,7 @@ Feature: Chart submission with errors
       | is not allowed to submit the chart on behalf of  | unauthorized |
 
   Scenario Outline: An authorized user submits a chart with incorrect version
-    Given A <user> wants to submit a chart in <chart_path>
+    Given An authorized user wants to submit a chart in <chart_path>
     And <vendor> of <vendor_type> wants to submit <chart> of <version>
     And Chart.yaml specifies a <bad_version>
     And the user creates a branch to add a new chart version
@@ -29,5 +29,5 @@ Feature: Chart submission with errors
     And user gets the <message> with steps to follow for resolving the issue in the pull request
 
     Examples:
-      | message                               | bad_version | user                      |
-      | doesn't match the directory structure | 9.9.9       | openshift-helm-charts-bot |
+      | message                               | bad_version | 
+      | doesn't match the directory structure | 9.9.9       |
