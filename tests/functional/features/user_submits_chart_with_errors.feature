@@ -11,9 +11,9 @@ Feature: Chart submission with errors
     Given A <user> wants to submit a chart in <chart_path>
     And <vendor> of <vendor_type> wants to submit <chart> of <version>
     And the user creates a branch to add a new chart version
-    When the user sends a pull request with chart
+    When the user sends a pull request with the chart
     Then the pull request is not merged
-    And user gets the <message> with steps to follow for resolving the issue in the pull request
+    And user gets the <message> in the pull request comment
 
     Examples:
       | message                                          | user         |
@@ -24,9 +24,9 @@ Feature: Chart submission with errors
     And <vendor> of <vendor_type> wants to submit <chart> of <version>
     And Chart.yaml specifies a <bad_version>
     And the user creates a branch to add a new chart version
-    When the user sends a pull request with chart
+    When the user sends a pull request with the chart
     Then the pull request is not merged
-    And user gets the <message> with steps to follow for resolving the issue in the pull request
+    And user gets the <message> in the pull request comment
 
     Examples:
       | message                               | bad_version | user                      |
