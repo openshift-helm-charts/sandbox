@@ -12,6 +12,11 @@ def user_wants_to_submit_a_chart(workflow_test, user, chart_path):
     workflow_test.update_test_chart(chart_path)
     workflow_test.secrets.bot_name = user
 
+@given(parsers.parse("An authorized user wants to submit a chart in <chart_path>"))
+def authorized_user_wants_to_submit_a_chart(workflow_test, chart_path):
+    """A <user> wants to submit a chart in <chart_path>."""
+    workflow_test.update_test_chart(chart_path)
+
 @given(parsers.parse("<vendor> of <vendor_type> wants to submit <chart> of <version>"))
 def vendor_of_vendor_type_wants_to_submit_chart_of_version(workflow_test, vendor, vendor_type, chart, version):
     """<vendor> of <vendor_type> wants to submit <chart> of <version>"""
