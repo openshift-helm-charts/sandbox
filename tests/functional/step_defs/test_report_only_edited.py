@@ -1,5 +1,5 @@
 from pytest_bdd import (
-    scenario
+    scenario,
     given,
     parsers
 )
