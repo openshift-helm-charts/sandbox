@@ -10,7 +10,7 @@ Feature: SHA value in the report does not match
         Given the vendor <vendor> has a valid identity as <vendor_type>
         And a chart tarball is used in <chart_path> and report in <report_path>
         And the report contains an <error>
-        When the user sends a pull request with the chart and report
+        When the user sends a pull request with the chart tar and report
         Then the pull request is not merged
         And user gets the <message> in the pull request comment
 

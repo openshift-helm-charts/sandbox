@@ -7,9 +7,9 @@ Feature: Chart verifier comes back with a failure
 
   Scenario Outline: A partner or community user submits a chart which does not contain a readme file
     Given the vendor <vendor> has a valid identity as <vendor_type>
-    And an error-free chart source is used in <chart_path>
+    And chart source is used in <chart_path>
     And README file is missing in the chart
-    When the user sends a pull request with the chart
+    When the user pushed the chart and created pull request
     Then the pull request is not merged
     And user gets the <message> in the pull request comment
 
@@ -20,11 +20,11 @@ Feature: Chart verifier comes back with a failure
 
   Scenario Outline: A redhat user submits a chart which does not contain a readme file
     Given the vendor <vendor> has a valid identity as <vendor_type>
-    And an error-free chart source is used in <chart_path>
+    And chart source is used in <chart_path>
     And README file is missing in the chart
-    When the user sends a pull request with the chart
+    When the user pushed the chart and created pull request
     Then the user sees the pull request is merged
-    And the index.yaml file is updated with an entry for the submitted chart
+    And the index.yaml file is updated with an entry for the submitted chart with correct providerType
     And a release is published with corresponding report and chart tarball
   
     Examples:
