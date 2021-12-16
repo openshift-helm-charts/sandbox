@@ -95,7 +95,7 @@ def user_has_created_error_free_report(workflow_test, report_path):
     workflow_test.process_owners_file()
     workflow_test.process_report()
 
-@given(parsers.parse("a <report-path> is provided"))
+@given(parsers.parse("a <report_path> is provided"))
 def user_generated_a_report(workflow_test, report_path):
     """report used in <report_path>"""
     workflow_test.update_test_report(report_path)
