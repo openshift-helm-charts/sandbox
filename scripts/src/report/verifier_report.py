@@ -155,7 +155,7 @@ def validate(report_path):
                     if v1_0_profile:
                         return True,""
                     else:
-                        return False,f'Kube Version {chart[KUBE_VERSION_ATTRIBUTE]} does translate to an invalid OCP version range {kube_supported_ocp_versions_string}'
+                        return False,f'Kube Version {chart[KUBE_VERSION_ATTRIBUTE]} translates to an invalid OCP version range {kube_supported_ocp_versions_string}'
             else:
                 if v1_0_profile:
                     return True,""
@@ -180,7 +180,7 @@ def validate(report_path):
                     return False,f"Tested OpenShift version {str(tested_version)} not within supported versions : {supported_versions_string}"
 
                 if supported_versions_string and supported_versions_string != str(kube_supported_versions):
-                     return False,f'Kube Version {chart[KUBE_VERSION_ATTRIBUTE]} -> {str(kube_supported_versions)} does not match supported supportedOpenShiftVersions: {supported_versions_string}'
+                     return False,f'Kube Version {chart[KUBE_VERSION_ATTRIBUTE]} -> {str(kube_supported_versions)} does not match supportedOpenShiftVersions: {supported_versions_string}'
     else:
         print("[INFO] Chart testing failed so skip report checking")
 
