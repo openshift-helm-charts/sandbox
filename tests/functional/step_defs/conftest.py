@@ -1,3 +1,4 @@
+import pytest
 from pytest_bdd import (
     given,
     then,
@@ -94,6 +95,15 @@ def user_has_created_error_free_report(workflow_test, report_path):
     workflow_test.process_owners_file()
     workflow_test.process_report()
 
+@given(parsers.parse("report used in <report_path>"))
+def user_generated_a_report(workflow_test, report_path):
+    """report used in <report_path>"""
+    workflow_test.update_test_report(report_path)
+    workflow_test.setup_git_context()
+    workflow_test.setup_gh_pages_branch()
+    workflow_test.setup_temp_dir()
+    workflow_test.process_owners_file()
+
 @given("the user creates a branch to add a new chart version")
 def the_user_creates_a_branch_to_add_a_new_chart_version(workflow_test):
     """the user creates a branch to add a new chart version."""
@@ -105,13 +115,75 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(workflow_test):
     if workflow_test.secrets.bad_version:
         workflow_test.update_chart_version_in_chart_yaml(workflow_test.secrets.bad_version)
     workflow_test.push_chart(is_tarball=False)
-    
+
+@given(parsers.parse("chart source is used in <chart_path>"))
+def user_has_used_chart_src(workflow_test, chart_path):
+    """chart source is used in <chart_path>."""
+    workflow_test.update_test_chart(chart_path)
+    workflow_test.setup_git_context()
+    workflow_test.setup_gh_pages_branch()
+    workflow_test.setup_temp_dir()
+    workflow_test.process_owners_file()
+    workflow_test.process_chart(is_tarball=False)
+
+@given(parsers.parse("a chart tarball is used in <chart_path> and report in <report_path>"))
+def user_has_created_a_chart_tarball_and_report(workflow_test, chart_path, report_path):
+    """an error-free chart tarball is used in <chart_path> and report in <report_path>."""
+    workflow_test.update_test_chart(chart_path)
+    workflow_test.update_test_report(report_path)
+
+    workflow_test.setup_git_context()
+    workflow_test.setup_gh_pages_branch()
+    workflow_test.setup_temp_dir()
+    workflow_test.process_owners_file()
+    workflow_test.process_chart(is_tarball=True)
+
+@given("README file is missing in the chart")
+def readme_file_is_missing(workflow_test):
+    """README file is missing in the chart"""
+    workflow_test.remove_readme_file()
+
+@given(parsers.parse("the report contains an <invalid_url>"))
+def sha_value_does_not_match(workflow_test, invalid_url):
+    workflow_test.process_report(update_url=True, url=invalid_url)
+
+@given("user adds a non chart related file")
+def user_adds_a_non_chart_related_file(workflow_test):
+    """user adds a non chart related file"""
+    workflow_test.add_non_chart_related_file()
+
+@given(parsers.parse("the report contains an <error>"))
+def sha_value_does_not_match(workflow_test, error):
+    if error == 'sha_mismatch':
+        workflow_test.process_report(update_chart_sha=True)
+    else:
+        pytest.fail(f"This {error} handling is not implemented yet")
+
 ############### WHEN ####################
 @when("the user sends a pull request with the report")
 @when("the user sends a pull request with the chart")
 @when("the user sends a pull request with the chart and report")
 def user_sends_pull_request_with_chart_src_and_report(workflow_test):
     """the user sends a pull request with the chart and report."""
+    workflow_test.send_pull_request()
+
+
+@when("the user pushed the chart and created pull request")
+def user_pushed_the_chart_and_created_pull_request_with_chart_src(workflow_test):
+    """the user pushed the chart and created pull request"""
+    workflow_test.push_chart(is_tarball=False)
+    workflow_test.send_pull_request()
+
+@when("the user sends a pull request with both chart and non related file")
+def user_sends_pull_request_with_chart_and_non_related_file(workflow_test):
+    """the user sends a pull request with both chart and non related file"""
+    workflow_test.push_chart(is_tarball=False, add_non_chart_file=True)
+    workflow_test.send_pull_request()
+
+@when("the user sends a pull request with the chart tar and report")
+def user_sends_pull_request_with_chart_tarball_and_report(workflow_test):
+    """the user sends a pull request with the chart and report."""
+    workflow_test.push_chart(is_tarball=True)
     workflow_test.send_pull_request()
 
 ################ THEN ################
@@ -132,6 +204,10 @@ def index_yaml_is_updated_with_new_entry(workflow_test):
     """the index.yaml file is updated with an entry for the submitted chart."""
     workflow_test.check_index_yaml()
 
+@then("the index.yaml file is updated with an entry for the submitted chart with correct providerType")
+def index_yaml_is_updated_with_new_entry_with_correct_provider_type(workflow_test):
+    """the index.yaml file is updated with an entry for the submitted chart with correct providerType"""
+    workflow_test.check_index_yaml(check_provider_type=True)
 
 @then("a release is published with corresponding report and chart tarball")
 def release_is_published(workflow_test):
