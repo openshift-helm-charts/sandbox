@@ -16,7 +16,7 @@ def workflow_test():
     workflow_test.cleanup()
 
 
-@scenario('../features/report_without_chart.feature', "A partner or redhat associate submits an edited report")
+@scenario('../features/report_only_edited.feature', "A partner or redhat associate submits an edited report")
 def test_partner_or_redhat_user_submits_edited_report():
     """A partner or redhat associate submits an edited report."""
 
