@@ -22,7 +22,7 @@ def test_partner_or_redhat_user_submits_edited_report():
 
 
 @given(parsers.parse("the report includes <tested> and <supported> OpenshiftVersion values and chart <kubeversion> value"))
-def report_includes_specied_versions(tested,supported,kubeversion):
+def report_includes_specied_versions(workflow_test,tested,supported,kubeversion):
     workflow_test.process_report(update_versions=True,supported_versions=supported,tested_version=tested,kube_version=kubeversion)
 
 
