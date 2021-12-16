@@ -20,7 +20,7 @@ A tampered report is only determined if the chart-testing check has passed:
     - supportedOpenShiftVersions is consistent the kubeVersion specified in the chart
     - testOpenShiftVersion is within the supportedOpenShiftVersions
 
-These are not comprehensive lists - other certification checks will preform further checks
+These are not comprehensive lists - other certification checks will perform further checks.
 """
 
 import sys
