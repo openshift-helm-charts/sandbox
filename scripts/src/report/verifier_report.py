@@ -172,7 +172,7 @@ def validate(report_path):
                     try:
                         supported_versions = semantic_version.NpmSpec(supported_versions_string)
                     except ValueError:
-                         return False,f"Value error with {SUPPORTED_VERSIONS_ANNOTATION} annotation value: {supported_versions_string}"
+                         return False,f"{SUPPORTED_VERSIONS_ANNOTATION}: {supported_versions_string} is not a valid semantic version."
                 else:
                     return False,f"Missing annotation in report: {SUPPORTED_VERSIONS_ANNOTATION}"
 
