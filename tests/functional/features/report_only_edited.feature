@@ -17,7 +17,7 @@ Feature: Edited report only submission
 
     Examples:
       | tested | supported | kubeversion | message                                             |
-      | 4.9    | N/A       | >=1.20.0    | is not a valid semantic version                     |
+      | 4.9    | 4.6-4.9   | >=1.20.0    | is not a valid semantic version                     |
       | 4.0    | >=4.7     | >=1.20.0    | is not a supported OpenShift version                |
-      | 4.6    | >=4.7     | >=1.20.0    | not within specified kube-versions                       |
-      | 4.6    | >=4.7     | >=1.21.0    | does not match supported supportedOpenShiftVersions |
+      | 4.6    | >=4.7     | >=1.20.0    | not within specified kube-versions                  |
+      | 4.8    | >=4.7     | >=1.21.0    | does not match supported supportedOpenShiftVersions |
