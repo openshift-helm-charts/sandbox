@@ -144,8 +144,12 @@ def readme_file_is_missing(workflow_test):
     workflow_test.remove_readme_file()
 
 @given(parsers.parse("the report contains an <invalid_url>"))
-def sha_value_does_not_match(workflow_test, invalid_url):
+def report_contains_an_invalid_url(workflow_test, invalid_url):
     workflow_test.process_report(update_url=True, url=invalid_url)
+
+@given(parsers.parse("the report has a <check> missing"))
+def report_has_a_check_missing(workflow_test, check):
+    workflow_test.process_report(missing_check=check)
 
 @given("user adds a non chart related file")
 def user_adds_a_non_chart_related_file(workflow_test):

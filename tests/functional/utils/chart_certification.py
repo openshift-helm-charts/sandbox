@@ -456,7 +456,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 # Unzip files into temporary directory for PR submission
                 extract_chart_tgz(self.secrets.test_chart, f'{self.chart_directory}/{self.secrets.chart_version}', self.secrets, logging)
 
-    def process_report(self, update_chart_sha=False, update_url=False, url=None):
+    def process_report(self, update_chart_sha=False, update_url=False, url=None, missing_check=None):
 
         with SetDirectory(Path(self.temp_dir.name)):
             # Copy report to temporary location and push to test_repo:pr_branch
@@ -502,6 +502,16 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                         logging.info(f"Updated chart-uri value in report: {url}")
                     except Exception as e:
                         pytest.fail("Failed to update report yaml with chart-uri")
+            
+            #For removing the check for missing check scenario
+            if missing_check:
+                logging.info(f">>>>>>>>>> Updating report with {missing_check}")
+                with open(report_path, 'r+') as fd:
+                    report_content = yaml.safe_load(fd)
+                    report_content["results"].remove("v1.0/helm-lint")
+                    fd.seek(0)
+                    yaml.dump(report_content, fd)
+                    fd.truncate()
 
             
             self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/report.yaml')
