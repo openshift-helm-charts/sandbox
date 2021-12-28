@@ -85,6 +85,7 @@ def user_has_created_error_free_chart_tarball(workflow_test, chart_path):
     workflow_test.process_chart(is_tarball=True)
     workflow_test.push_chart(is_tarball=True)
 
+@given(parsers.parse("report is used in <report_path>"))
 @given(parsers.parse("an error-free report is used in <report_path>"))
 def user_has_created_error_free_report(workflow_test, report_path):
     """an error-free report is used in <report_path>."""
