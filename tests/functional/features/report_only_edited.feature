@@ -6,6 +6,7 @@ Feature: Edited report only submission
   | vendor_type  | vendor    | report_path               |
   | partners     | hashicorp | tests/data/report.yaml    |
   | redhat       | redhat    | tests/data/report.yaml    |
+  | community    | redhat    | tests/data/report.yaml    |
 
   Scenario Outline: A partner or redhat associate submits an edited report
     Given the vendor <vendor> has a valid identity as <vendor_type>
