@@ -36,6 +36,7 @@ except ImportError:
 sys.path.append('../')
 from chartrepomanager import indexannotations
 from report import report_info
+from profiles import profile
 
 MIN_SUPPORTED_OPENSHIFT_VERSION = semantic_version.SimpleSpec(">=4.1.0")
 TESTED_VERSION_ANNOTATION = "charts.openshift.io/testedOpenShiftVersion"
@@ -75,6 +76,22 @@ def get_profile_version(report_data):
         pass
     return profile_version
 
+def get_profile_type(report_data):
+    profile_type = "partner"
+    try:
+        profile_type = report_data["metadata"]["tool"]["profile"]["VendorType"]
+    except Exception:
+        pass
+    return profile_type
+
+def get_verifier_version(report_data):
+    verifier_version = "1.0"
+    try:
+        verifier_version = report_data["metadata"]["tool"]["verifier-version"]
+    except Exception:
+        pass
+    return verifier_version
+
 def report_is_valid(report_data):
     outcome = True
 
@@ -97,6 +114,29 @@ def report_is_valid(report_data):
             outcome = False
 
     return outcome
+
+def all_mandatory_checks_present(report_data):
+
+    outcome,profile_checks = profile.get_mandatory_checks(get_verifier_version(report_data),get_profile_type(report_data),get_profile_version(report_data))
+
+    if not outcome:
+        return outcome,profile_checks
+    
+    for profile_check in profile_checks:
+
+        print(f"[INFO] look for mandatory check {profile_check}")
+
+        found = False
+        for report_check in report_data["results"]:
+            if report_check["check"] == profile_check and report_check["type"]=="Mandatory":
+                found = True
+                break
+
+        if not found:
+            return False,f"Missing mandatory check: {profile_check}"
+
+    return True,""
+
 
 
 def validate(report_path):
@@ -183,5 +223,7 @@ def validate(report_path):
                      return False,f'Kube Version {chart[KUBE_VERSION_ATTRIBUTE]} -> {str(kube_supported_versions)} does not match supportedOpenShiftVersions: {supported_versions_string}'
     else:
         print("[INFO] Chart testing failed so skip report checking")
+
+    return all_mandatory_checks_present(report_data)
 
     return True,""
