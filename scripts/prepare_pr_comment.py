@@ -1,7 +1,7 @@
 import os
 import sys
 
-def prepare_failure_comment(repository, issue_number, vendor_label, chart_name):
+def prepare_failure_comment(issue_number, vendor_label, chart_name):
     msg = f"""\
 Thank you for submitting pull request #{issue_number} for Helm Chart Certification!
 
@@ -26,6 +26,7 @@ and ensure all mandatory checks pass.
 
 For support, connect with our [Technology Partner Success Desk](https://redhat-connect.gitbook.io/red-hat-partner-connect-general-guide/managing-your-account/getting-help/technology-partner-success-desk).
 """
+    msg += get_information_link()
     return msg
 
 def prepare_success_comment(issue_number, vendor_label, chart_name):
@@ -43,7 +44,30 @@ def prepare_sanity_failure_comment(issue_number, vendor_label, chart_name):
         msg += f"{sanity_error_msg}\n\n"
     if owners_error_msg:
         msg += f"{owners_error_msg}\n\n"
+    msg += get_information_link()
     msg += f'/metadata {{"vendor_label": "{vendor_label}", "chart_name": "{chart_name}"}}\n\n'
+    return msg
+
+def prepare_community_comment(issue_number, vendor_label, chart_name):
+    msg = f"Thank you for submitting PR #{issue_number} for Helm Chart Certification!\n\n"
+    msg += f"Community charts require maintainer review and approval, a review will be conducted shortly\n\n"
+    if os.path.exists("./pr/errors"):
+        errors = open("./pr/errors").read()
+        msg += "However, please note that one or more errors were found while building and verifying your pull request:\n\n"
+        msg += f"{errors}/n/n"
+    msg += get_information_link()
+    msg += f'/metadata {{"vendor_label": "{vendor_label}", "chart_name": "{chart_name}"}}\n\n'
+    return msg
+
+def prepare_oc_install_fail_comment(issue_number, vendor_label, chart_name):
+    msg = f"Thank you for submitting PR #{issue_number} for Helm Chart Certification!\n\n"
+    msg += "Unfortunately the certification process failed to install OpenShit and could not complete.\n\n"
+    msg += "This problem will be addressed by maintainers and no further action is required from the submitter at this time.\n\n"
+    msg += f'/metadata {{"vendor_label": "{vendor_label}", "chart_name": "{chart_name}"}}\n\n'
+
+def get_information_link():
+    msg = "For information on the certification process see:\n"
+    msg += "- [Red Hat certification requirements and process for Kubernetes applications that are deployed using Helm charts.](https://redhat-connect.gitbook.io/partner-guide-for-red-hat-openshift-and-container/helm-chart-certification/overview)\n\n"
     return msg
 
 def main():
@@ -56,7 +80,14 @@ def main():
     if sanity_result == "failure":
         msg = prepare_sanity_failure_comment(issue_number, vendor_label, chart_name)
     elif verify_result == "failure":
-        msg = prepare_failure_comment(repository, issue_number, vendor_label, chart_name)
+        community_manual_review = os.environ.get("COMMUNITY_MANUAL_REVIEW",False)
+        oc_install_fail = os.environ.get("OC_INSTALL_FAIL", False)
+        if community_manual_review:
+            msg = prepare_community_comment(issue_number, vendor_label, chart_name)
+        elif oc_install_fail:
+            msg = prepare_oc_install_fail_comment(issue_number, vendor_label, chart_name)
+        else:
+            msg = prepare_failure_comment(issue_number, vendor_label, chart_name)
     else:
         msg = prepare_success_comment(issue_number, vendor_label, chart_name)
 
