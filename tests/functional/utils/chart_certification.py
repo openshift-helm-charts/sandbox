@@ -510,7 +510,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                     report_content = yaml.safe_load(fd)
                     results = report_content["results"]
                     new_results = filter(lambda x: x['check'] != missing_check, results)
-                    report_content["results"] = new_results
+                    report_content["results"] = list(new_results)
                     fd.seek(0)
                     yaml.dump(report_content, fd)
                     fd.truncate()
