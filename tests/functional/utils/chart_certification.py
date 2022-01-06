@@ -509,11 +509,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 with open(report_path, 'r+') as fd:
                     report_content = yaml.safe_load(fd)
                     results = report_content["results"]
-                    new_results = []
-                    for result in results:
-                        if result['check'] == missing_check:
-                            continue
-                        new_results.append(result)
+                    new_results = filter(lambda x: x['check'] != missing_check, results)
                     report_content["results"] = new_results
                     fd.seek(0)
                     yaml.dump(report_content, fd)
