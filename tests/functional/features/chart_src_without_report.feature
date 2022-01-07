@@ -6,6 +6,7 @@ Feature: Chart source submission without report
         | chart_path                   |
         | tests/data/vault-0.17.0.tgz  |
 
+    @bvt
     Scenario Outline: A partner or redhat associate submits an error-free chart source
         Given the vendor <vendor> has a valid identity as <vendor_type>
         And an error-free chart source is used in <chart_path>
