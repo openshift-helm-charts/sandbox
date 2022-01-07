@@ -7,7 +7,7 @@ Feature: Report does not include a check
     
     Scenario Outline: A user submits a report with missing checks
         Given the vendor <vendor> has a valid identity as <vendor_type>
-        And report used in <report_path>
+        And a <report_path> is provided
         And the report has a <check> missing
         When the user sends a pull request with the report
         Then the pull request is not merged
