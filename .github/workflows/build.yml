@@ -167,7 +167,7 @@ jobs:
           echo "::set-output name=install-oc::true"
           curl -sLO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
           tar zxvf openshift-client-linux.tar.gz oc
-          echo "::set-output name=oc-installed::true"
+          echo "::set-output name=oc-installed::false"
 
       - name: Check oc installed
         id: check_oc_installed
