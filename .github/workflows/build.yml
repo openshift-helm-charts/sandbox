@@ -164,9 +164,18 @@ jobs:
         id: install-oc
         if: ${{ steps.sanity_check_pr_content.outputs.report-exists != 'true' && steps.cache.outputs.cache-hit != 'true' && steps.check_build_required.outputs.run-build == 'true' }}
         run: |
+          echo "::set-output name=install-oc::true"
           curl -sLO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
           tar zxvf openshift-client-linux.tar.gz oc
           echo "::set-output name=oc-installed::true"
+
+      - name: Check oc installed
+        id: check_oc_installed
+        if: ${{ steps.install-oc.outputs.install-oc == 'true' && steps.install-oc.outputs.oc-installed != 'true' }}
+        run: |
+          # oc install failed so create failure
+          echo "::set-output name=oc-installed_failed::true"
+          exit 1
 
       - name: Get Repository
         if: ${{ steps.sanity_check_pr_content.outputs.report-exists != 'true' && steps.check_build_required.outputs.run-build == 'true' }}
@@ -218,6 +227,8 @@ jobs:
         env:
           SANITY_ERROR_MESSAGE: ${{ steps.sanity_check_pr_content.outputs.sanity-error-message }}
           OWNERS_ERROR_MESSAGE: ${{ steps.sanity_check_pr_content.outputs.owners-error-message }}
+          COMMUNITY_MANUAL_REVIEW: ${{ steps.verify_pr.outputs.community_manual_review_required }}
+          OC_INSTALL_FAIL: ${{ steps.check_oc_installed.outputs.oc-installed_failed }}
         run: |
           python3 scripts/prepare_pr_comment.py ${{ steps.sanity_check_pr_content.outcome }} ${{ steps.verify_pr.conclusion }} ${{ github.repository }}
 
