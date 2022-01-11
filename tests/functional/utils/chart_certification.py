@@ -468,7 +468,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             values = {'repository': self.secrets.test_repo,
                     'branch': self.secrets.base_branch}
             content = Template(tmpl).substitute(values)
-            report_path = f'{self.chart_directory}/{self.secrets.chart_version}/report.yaml'
+
+            report_path = f'{self.chart_directory}/{self.secrets.chart_version}/' + self.secrets.test_report.split('/')[-1]
 
             with open(report_path, 'w') as fd:
                 fd.write(content)
@@ -507,8 +508,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                         fd.write(yaml.dump(report))
                         logging.info("Report updated with new values")
                     except Exception as e:
-                        pytest.fail("Failed to update report yaml with new values")
-            
+                        pytest.fail("Failed to update report yaml with new values")            
+
             #For removing the check for missing check scenario
             if missing_check:
                 logging.info(f"Updating report with {missing_check}")
@@ -521,7 +522,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                     yaml.dump(report_content, fd)
                     fd.truncate()
 
-        self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/report.yaml')
+        self.temp_repo.git.add(report_path)
         self.temp_repo.git.commit(
                 '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} report")
         self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
