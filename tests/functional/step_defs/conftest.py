@@ -96,7 +96,7 @@ def user_has_created_error_free_report(workflow_test, report_path):
     workflow_test.process_owners_file()
     workflow_test.process_report()
 
-@given(parsers.parse("report used in <report_path>"))
+@given(parsers.parse("a <report_path> is provided"))
 def user_generated_a_report(workflow_test, report_path):
     """report used in <report_path>"""
     workflow_test.update_test_report(report_path)
@@ -104,6 +104,7 @@ def user_generated_a_report(workflow_test, report_path):
     workflow_test.setup_gh_pages_branch()
     workflow_test.setup_temp_dir()
     workflow_test.process_owners_file()
+
 
 @given("the user creates a branch to add a new chart version")
 def the_user_creates_a_branch_to_add_a_new_chart_version(workflow_test):

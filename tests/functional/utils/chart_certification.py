@@ -456,7 +456,9 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 # Unzip files into temporary directory for PR submission
                 extract_chart_tgz(self.secrets.test_chart, f'{self.chart_directory}/{self.secrets.chart_version}', self.secrets, logging)
 
-    def process_report(self, update_chart_sha=False, update_url=False, url=None):
+
+    def process_report(self, update_chart_sha=False, update_url=False, url=None,
+                       update_versions=False,supported_versions=None,tested_version=None,kube_version=None, missing_check=None):
 
         with SetDirectory(Path(self.temp_dir.name)):
             # Copy report to temporary location and push to test_repo:pr_branch
@@ -466,49 +468,65 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             values = {'repository': self.secrets.test_repo,
                     'branch': self.secrets.base_branch}
             content = Template(tmpl).substitute(values)
+
             report_path = f'{self.chart_directory}/{self.secrets.chart_version}/' + self.secrets.test_report.split('/')[-1]
+
             with open(report_path, 'w') as fd:
                 fd.write(content)
-            
-            #For updating the report.yaml, for chart sha mismatch scenario
-            if update_chart_sha:
-                new_sha_value = 'sha256:5b85ae00b9ca2e61b2d70a59f98fd72136453b1a185676b29d4eb862981c1xyz'
-                with open(report_path, 'r') as fd:
-                    try:
-                        report = yaml.safe_load(fd)
-                    except yaml.YAMLError as err:
-                        pytest.fail(f"error parsing '{report_path}': {err}")
-                logging.info(f"Current SHA Value in report: {report['metadata']['tool']['digests']['chart']}")
-                report['metadata']['tool']['digests']['chart'] = new_sha_value
-                with open(report_path, 'w') as fd:
-                    try:
-                        fd.write(yaml.dump(report))
-                        logging.info(f"Updated SHA value in report: {new_sha_value}")
-                    except Exception as e:
-                        pytest.fail("Failed to update report yaml with SHA value")
-            
-            #For updating the report.yaml, for invalid_url sceanrio
-            if update_url:
-                with open(report_path, 'r') as fd:
-                    try:
-                        report = yaml.safe_load(fd)
-                    except yaml.YAMLError as err:
-                        pytest.fail(f"error parsing '{report_path}': {err}")
-                logging.info(f"Current chart-uri in report: {report['metadata']['tool']['chart-uri']}")
-                report['metadata']['tool']['chart-uri'] = url
-                with open(report_path, 'w') as fd:
-                    try:
-                        fd.write(yaml.dump(report))
-                        logging.info(f"Updated chart-uri value in report: {url}")
-                    except Exception as e:
-                        pytest.fail("Failed to update report yaml with chart-uri")
 
-            
-            self.temp_repo.git.add(report_path)
-            self.temp_repo.git.commit(
+            if update_chart_sha or update_url or update_versions:
+
+                with open(report_path, 'r') as fd:
+                    try:
+                        report = yaml.safe_load(fd)
+                    except yaml.YAMLError as err:
+                        pytest.fail(f"error parsing '{report_path}': {err}")
+
+                #For updating the report.yaml, for chart sha mismatch scenario
+                if update_chart_sha:
+                    new_sha_value = 'sha256:5b85ae00b9ca2e61b2d70a59f98fd72136453b1a185676b29d4eb862981c1xyz'
+                    logging.info(f"Current SHA Value in report: {report['metadata']['tool']['digests']['chart']}")
+                    report['metadata']['tool']['digests']['chart'] = new_sha_value
+                    logging.info(f"Updated sha value in report: {new_sha_value}")
+
+                #For updating the report.yaml, for invalid_url sceanrio
+                if update_url:
+                    logging.info(f"Current chart-uri in report: {report['metadata']['tool']['chart-uri']}")
+                    report['metadata']['tool']['chart-uri'] = url
+                    logging.info(f"Updated chart-uri value in report: {url}")
+
+                if update_versions:
+                    report['metadata']['tool']['testedOpenShiftVersion'] = tested_version
+                    report['metadata']['tool']['supportedOpenShiftVersions'] = supported_versions
+                    report['metadata']['chart']['kubeversion'] = kube_version
+                    logging.info(f"Updated testedOpenShiftVersion value in report: {tested_version}")
+                    logging.info(f"Updated supportedOpenShiftVersions value in report: {supported_versions}")
+                    logging.info(f"Updated kubeversion value in report: {kube_version}")
+
+                with open(report_path, 'w') as fd:
+                    try:
+                        fd.write(yaml.dump(report))
+                        logging.info("Report updated with new values")
+                    except Exception as e:
+                        pytest.fail("Failed to update report yaml with new values")            
+
+            #For removing the check for missing check scenario
+            if missing_check:
+                logging.info(f"Updating report with {missing_check}")
+                with open(report_path, 'r+') as fd:
+                    report_content = yaml.safe_load(fd)
+                    results = report_content["results"]
+                    new_results = filter(lambda x: x['check'] != missing_check, results)
+                    report_content["results"] = list(new_results)
+                    fd.seek(0)
+                    yaml.dump(report_content, fd)
+                    fd.truncate()
+
+        self.temp_repo.git.add(report_path)
+        self.temp_repo.git.commit(
                 '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} report")
-            self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
-                        f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
+        self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
+                f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
 
     def add_non_chart_related_file(self):
         with SetDirectory(Path(self.temp_dir.name)):
