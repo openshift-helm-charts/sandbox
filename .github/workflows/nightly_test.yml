@@ -1,0 +1,34 @@
+name: Run Nightly Test
+
+on:
+  schedule:
+    - cron: '30 3 * * *'  
+
+jobs:
+  nightly-test:
+    name: Nightly Test
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.x Part 1
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - name: Set up Python 3.x Part 2
+        run: |
+          # set up python requirements and scripts
+          python3 -m venv ve1
+          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
+          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+
+      - name: Run All Tests
+        env:
+          GITHUB_TOKEN: ${{ GITHUB_TOKEN }}
+          BOT_NAME: ${{ BOT_NAME }}
+          BOT_TOKEN: ${{ BOT_TOKEN }}
+          PR_BODY: "Test triggered by nightly run."
+        run: |
+          ve1/bin/pytest tests/ --log-cli-level=WARNING --ignore=tests/functional/step_defs/test_submitted_charts.py --tb=short
