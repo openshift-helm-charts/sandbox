@@ -67,7 +67,7 @@ def main():
     vendor_label = open("./pr/vendor").read().strip()
     chart_name = open("./pr/chart").read().strip()
     msg = get_comment_header(issue_number)
-    oc_install_fail = os.environ.get("OC_INSTALL_FAIL", False)
+    oc_install_result = os.environ.get("OC_INSTALL_RESULT", False)
     if sanity_result == "failure":
         msg += prepare_sanity_failure_comment()
     elif verify_result == "failure":
@@ -76,7 +76,7 @@ def main():
             msg += prepare_community_comment()
         else:
             msg += prepare_failure_comment()
-    elif oc_install_fail:
+    elif oc_install_result == "failure":
         msg += prepare_oc_install_fail_comment()
     else:
         msg += prepare_success_comment()

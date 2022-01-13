@@ -310,7 +310,7 @@ def generate_verify_report(directory, category, organization, chart, version):
         sys.exit(1)
     if not os.path.exists(report_path):
         if not src_exists and not tar_exists:
-            msg = '[ERROR] One of these must be modified: report, chart source, or a tarball created with "helm package"'
+            msg = '[ERROR] One of these must be modified: report, chart source, or tarball"'
             write_error_log(directory, msg)
             sys.exit(1)
     kubeconfig = os.environ.get("KUBECONFIG")
