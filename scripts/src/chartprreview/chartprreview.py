@@ -263,12 +263,14 @@ def check_report_success(directory, api_url, report_path, version):
         if vendor_type == "redhat":
             print(f"::set-output name=redhat_to_community::True")
         if vendor_type != "redhat" and "force-publish" not in label_names:
+            if vendor_type == "community":
+                # requires manual review and approval
+                print(f"::set-output name=community_manual_review_required::True")
             sys.exit(1)
-        
+
     if vendor_type == "community" and "force-publish" not in label_names:
         # requires manual review and approval
-        msg = "[INFO] Community charts require manual review and approval from maintainers"
-        write_error_log(directory, msg)
+        print(f"::set-output name=community_manual_review_required::True")
         sys.exit(1)
 
     if failures_in_report or vendor_type == "community":
@@ -308,7 +310,7 @@ def generate_verify_report(directory, category, organization, chart, version):
         sys.exit(1)
     if not os.path.exists(report_path):
         if not src_exists and not tar_exists:
-            msg = "[ERROR] One of these must be modified: report, chart source, or tarball"
+            msg = '[ERROR] One of these must be modified: report, chart source, or tarball"'
             write_error_log(directory, msg)
             sys.exit(1)
     kubeconfig = os.environ.get("KUBECONFIG")
