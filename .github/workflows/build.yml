@@ -8,8 +8,6 @@ jobs:
   chart-certification:
     name: Chart Certification
     runs-on: ubuntu-20.04
-    env:
-      VERIFIER_IMAGE: quay.io/redhat-certification/chart-verifier:main
     if: |
       github.event.pull_request.draft == false &&
       (github.event.action != 'labeled' || github.event.label.name == 'force-publish')
@@ -162,6 +160,18 @@ jobs:
           curl -sLO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
           tar zxvf openshift-client-linux.tar.gz oc
 
+      - name: Install chart-verifier
+        id: install-chart-verifier
+        if: ${{ steps.check_build_required.outputs.run-build == 'true' }}
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          # Search through these projects' GitHub releases, instead of the OpenShift Mirror.
+          # https://docs.github.com/en/actions/reference/authentication-in-a-workflow
+          source: "github"
+          # Using GitHub token from the github context
+          github_pat: ${{ secrets.GITHUB_TOKEN }}
+          chart-verifier: "latest"
+
       - name: Get Repository
         if: ${{ steps.sanity_check_pr_content.outputs.report-exists != 'true' && steps.check_build_required.outputs.run-build == 'true' }}
         id: get-repository
@@ -176,11 +186,9 @@ jobs:
         env:
           KUBECONFIG: /tmp/ci-kubeconfig
           VENDOR_TYPE: ${{ steps.sanity_check_pr_content.outputs.category }}
+          OPENSHIFT_TOOLS_INSTALLER_OUTPUT: ${{ steps.install-chart-verifier.outputs.installed }}
         run: |
           API_SERVER=$( echo -n ${{ secrets.API_SERVER }} | base64 -d)
-          gpg --version
-          docker pull ${{ env.VERIFIER_IMAGE }}
-          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
           if [ "${{steps.sanity_check_pr_content.outputs.report-exists}}" != "true" ]; then
             if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
               ./oc login --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER}
