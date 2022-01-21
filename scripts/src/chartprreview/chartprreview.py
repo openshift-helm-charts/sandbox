@@ -319,22 +319,28 @@ def generate_verify_report(directory, category, organization, chart, version):
         write_error_log(directory, msg)
         sys.exit(1)
     vendor_type = get_vendor_type(directory)
+    openshift_tools_installer_output = json.loads(os.environ.get("OPENSHIFT_TOOLS_INSTALLER_OUTPUT"))
+    if "chart-verifier" not in openshift_tools_installer_output:
+        msg = "[ERROR] chartprereview: missing OPENSHIFT_TOOLS_INSTALLER_OUTPUT"
+        write_error_log(directory, msg)
+        sys.exit(1)
+    chart_verifier_binary_path = openshift_tools_installer_output['chart-verifier'].get("installedPath", None)
+    if not chart_verifier_binary_path:
+        msg = "[ERROR] chartprereview: missing 'chart-verifier' binary"
+        write_error_log(directory, msg)
+        sys.exit(1)
     if src_exists:
         if os.path.exists(report_path):
-            out = subprocess.run(["docker", "run", "-v", src+":/charts:z", "-v", kubeconfig+":/kubeconfig", "-e", "KUBECONFIG=/kubeconfig", "--rm",
-                                 os.environ.get("VERIFIER_IMAGE"), "verify", "--set", f"profile.vendortype={vendor_type}", "-e", "has-readme", "/charts"], capture_output=True)
+            out = subprocess.run([chart_verifier_binary_path, "verify", "--set", f"profile.vendortype={vendor_type}", "-e", "has-readme", src], capture_output=True)
         else:
-            out = subprocess.run(["docker", "run", "-v", src+":/charts:z", "-v", kubeconfig+":/kubeconfig", "-e", "KUBECONFIG=/kubeconfig", "--rm",
-                                 os.environ.get("VERIFIER_IMAGE"), "verify", "--set", f"profile.vendortype={vendor_type}", "/charts"], capture_output=True)
+            out = subprocess.run([chart_verifier_binary_path, "verify", "--set", f"profile.vendortype={vendor_type}", src], capture_output=True)
     elif tar_exists:
         dn = os.path.join(os.getcwd(), "charts", category,
                           organization, chart, version)
         if os.path.exists(report_path):
-            out = subprocess.run(["docker", "run", "-v", dn+":/charts:z", "-v", kubeconfig+":/kubeconfig", "-e", "KUBECONFIG=/kubeconfig", "--rm", os.environ.get("VERIFIER_IMAGE"),
-                                 "verify", "--set", f"profile.vendortype={vendor_type}", "-e", "has-readme", f"/charts/{chart}-{version}.tgz"], capture_output=True)
+            out = subprocess.run([chart_verifier_binary_path, "verify", "--set", f"profile.vendortype={vendor_type}", "-e", "has-readme", f"{src}/{chart}-{version}.tgz"], capture_output=True)
         else:
-            out = subprocess.run(["docker", "run", "-v", dn+":/charts:z", "-v", kubeconfig+":/kubeconfig", "-e", "KUBECONFIG=/kubeconfig", "--rm",
-                                 os.environ.get("VERIFIER_IMAGE"), "verify", "--set", f"profile.vendortype={vendor_type}", f"/charts/{chart}-{version}.tgz"], capture_output=True)
+            out = subprocess.run([chart_verifier_binary_path, "verify", "--set", f"profile.vendortype={vendor_type}", f"{src}/{chart}-{version}.tgz"], capture_output=True)
     else:
         return
 
