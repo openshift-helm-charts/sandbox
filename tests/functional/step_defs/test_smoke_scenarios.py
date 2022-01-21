@@ -56,10 +56,6 @@ def test_report_submission_with_invalid_url():
 def test_user_submits_chart_with_non_related_file():
     """A user submits a chart with non chart related file"""
 
-@scenario('../features/smoke/report_in_json_format.feature', "An user submits an report in json format")
-def an_user_submits_report_in_json_format():
-    """An user submits an report in json format."""
-
 @scenario('../features/smoke/report_only_edited.feature', "A partner or redhat associate submits an edited report")
 def test_partner_or_redhat_user_submits_edited_report():
     """A partner or redhat associate submits an edited report."""
@@ -67,10 +63,6 @@ def test_partner_or_redhat_user_submits_edited_report():
 @scenario('../features/smoke/report_with_missing_checks.feature', "A user submits a report with missing checks")
 def test_report_submission_with_missing_checks():
     """A user submits a report with missing checks."""
-
-@scenario('../features/smoke/sha_value_does_not_match.feature', "A user submits a chart tarball with report")
-def test_chart_submission_with_report():
-    """A user submits a chart tarball with report."""
 
 @scenario('../features/smoke/user_submits_chart_with_errors.feature', "An unauthorized user submits a chart")
 def test_chart_submission_by_unauthorized_user():
