@@ -1,8 +1,8 @@
 
 import os
 import sys
-import docker
 import json
+import subprocess
 
 REPORT_ANNOTATIONS = "annotations"
 REPORT_RESULTS = "results"
@@ -10,8 +10,16 @@ REPORT_DIGESTS = "digests"
 REPORT_METADATA = "metadata"
 
 def _get_report_info(report_path, info_type, profile_type, profile_version):
+    openshift_tools_installer_output = json.loads(os.environ.get("OPENSHIFT_TOOLS_INSTALLER_OUTPUT"))
+    if "chart-verifier" not in openshift_tools_installer_output:
+        print("[ERROR] report_info: missing OPENSHIFT_TOOLS_INSTALLER_OUTPUT")
+        sys.exit(1)
+    chart_verifier_binary_path = openshift_tools_installer_output['chart-verifier'].get("installedPath", None)
+    if not chart_verifier_binary_path:
+        print("[ERROR] report_info: missing 'chart-verifier' binary")
+        sys.exit(1)
 
-    docker_command = "report " + info_type + " /charts/"+os.path.basename(report_path)
+    command = [chart_verifier_binary_path, "report", info_type, report_path]
 
     set_values = ""
     if profile_type:
@@ -23,13 +31,15 @@ def _get_report_info(report_path, info_type, profile_type, profile_version):
             set_values = "profile.version=%s" % profile_version
 
     if set_values:
-        docker_command = "%s --set %s" % (docker_command, set_values)
+        command.extend(["--set", set_values])
 
-    client = docker.from_env()
-    report_directory = os.path.dirname(os.path.abspath(report_path))
-    print(f'Call docker using imcge: {os.environ.get("VERIFIER_IMAGE")}, docker command: {docker_command}, report directory: {report_directory}')
-    output = client.containers.run(os.environ.get("VERIFIER_IMAGE"),docker_command,stdin_open=True,tty=True,stdout=True,volumes={report_directory: {'bind': '/charts/', 'mode': 'rw'}})
-    report_out = json.loads(output)
+    print(f'[INFO] calling chart-verifier: {command}, report path: {report_path}')
+    output = subprocess.run(command, capture_output=True)
+
+    # XXX
+    print(f'[INFO] [STDOUT] {output.stdout.decode("utf-8")} [STDERR] {output.stderr.decode("utf-8")}')
+
+    report_out = json.loads(output.stdout.decode("utf-8"))
 
     if not info_type in report_out:
         print(f"Error extracting {info_type} from the report:", report_out.strip())
