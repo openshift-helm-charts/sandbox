@@ -338,11 +338,11 @@ def generate_verify_report(directory, category, organization, chart, version):
     else:
         return
 
-    stderr = out.stderr.decode("utf-8")
+    stdout = out.stdout.decode("utf-8")
     report_path = "report.yaml"
-    print("[INFO] report:\n", stderr)
+    print("[INFO] report:\n", stdout)
     with open(report_path, "w") as fd:
-        fd.write(stderr)
+        fd.write(stdout)
 
 
 def main():
