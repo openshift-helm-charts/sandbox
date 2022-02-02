@@ -25,6 +25,7 @@ jobs:
           cd scripts && ../ve1/bin/python3 setup.py install && cd ..
 
       - name: Run All Tests
+        id: run_all_tests
         env:
           GITHUB_TOKEN: ${{ GITHUB_TOKEN }}
           BOT_NAME: ${{ BOT_NAME }}
@@ -32,3 +33,15 @@ jobs:
           PR_BODY: "Test triggered by nightly run."
         run: |
           ve1/bin/pytest tests/ --log-cli-level=WARNING --ignore=tests/functional/step_defs/test_smoke_scenarios.py --ignore=tests/functional/step_defs/test_submitted_charts.py --tb=short
+
+      - name: Send message to slack channel
+        id: notify
+        if: always()
+        uses: archive/github-actions-slack@v2.0.0
+        with:
+          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
+          slack-channel: C02979BDUPL
+          slack-text: ${{ steps.run_all_tests.conclusion }}! Nightly test for certification flow. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
+      
+      - name: Result from "Send Message to slack channel"
+        run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
