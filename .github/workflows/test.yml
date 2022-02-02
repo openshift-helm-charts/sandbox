@@ -76,13 +76,23 @@ jobs:
         if: |
           github.event_name == 'pull_request_target' && steps.check_request.outputs.run-tests == 'true'
         env:
+          GITHUB_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BOT_NAME: ${{ secrets.BOT_NAME }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BODY: "Test triggered by ${{ github.event.pull_request.html_url }}."
         run: |
-          ve1/bin/pytest tests/functional/step_defs/test_smoke_scenarios.py --log-cli-level=WARNING --tb=short
+          if [ ${GITHUB_REPO} == 'openshift-helm-charts/charts' ]; then
+            echo "Charts repo is targetted, so running full tests"
+            ve1/bin/pytest tests/ --log-cli-level=WARNING --ignore=tests/functional/step_defs/test_smoke_scenarios.py --ignore=tests/functional/step_defs/test_submitted_charts.py --tb=short
+          elif [ ${GITHUB_REPO} == 'openshift-helm-charts/development' ]; then
+            echo "Developement repo is targetted, so running only smoke tests"
+            ve1/bin/pytest tests/functional/step_defs/test_smoke_scenarios.py --log-cli-level=WARNING --tb=short
+          else
+            echo "Unexpected condition: exiting"
+            exit 1
+          fi
 
       - name: (Manual) Test CI Workflow
         if: |
