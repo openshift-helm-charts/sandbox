@@ -132,19 +132,11 @@ jobs:
           BOT_NAME: ${{ secrets.BOT_NAME }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          # sync the repositories
-          # mitigate unmatched quote error in bash
-          dev_pr_body=$(cat <<EOF | xargs -0 printf '%q'
-          ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}
-          EOF
-          )
-          echo "pr body before : ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}"
-          echo "pr body after : ${pr_body}"
-          ./ve1/bin/releaser --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}\
+         ./ve1/bin/releaser --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}\
                              --pr_dir="./pr-branch" \
                              --development_dir="./dev-repo" \
                              --charts_dir="./charts-repo" \
-                             --dev_pr_body="${dev_pr_body}" \
+                             --dev_pr_body="${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}" \
                              --target_branch="${{ github.event.pull_request.base.ref }}" \
                              --target_repository="${{ github.event.pull_request.base.repo.full_name }}"
 
