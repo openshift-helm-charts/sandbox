@@ -43,15 +43,10 @@ jobs:
           BOT_NAME: ${{ secrets.BOT_NAME }}
         run: |
           # check if PR was created as part of release processing
-          # mitigate unmatched quote error in bash
-          pr_body=$(cat <<EOF | xargs -0 printf '%q'
-          ${{ github.event.pull_request.body }}
-          EOF
-          )
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
                                     --sender='${{ github.event.sender.login }}' \
                                     --pr_branch='${{ github.event.pull_request.head.ref }}' \
-                                    --pr_body="${pr_body}" \
+                                    --pr_body="${{ github.event.pull_request.body }}" \
                                     --pr_base_repo='${{ github.event.pull_request.base.repo.full_name }}' \
                                     --pr_head_repo='${{ github.event.pull_request.head.repo.full_name }}'
 
@@ -65,15 +60,15 @@ jobs:
           CHARTS_PR_FOR_RELEASE: ${{ steps.check_created_release_pr.outputs.charts_release_branch }}
         run: |
           # exit if build not required
-          if [ ${RUN_TESTS} == "true" ] || [ ${NOT_CI_AUTHORIZED} == "true" ]; then
+          if [ "${RUN_TESTS}" == "true" ] || [ "${NOT_CI_AUTHORIZED}" == "true" ]; then
             echo "The PR is workflow changes only - do not continue."
             exit 0
-          elif [ ${NO_CODE_TO_BUILD} == "true" ]; then
+          elif [ "${NO_CODE_TO_BUILD}" == "true" ]; then
             echo "The PR does not contain changes which need build or test."
             exit 0
-          elif [ ${DEV_PR_FOR_RELEASE} == "true" ]; then
+          elif [ "${DEV_PR_FOR_RELEASE}" == "true" ]; then
             echo "The PR is part of release processing for the development repository - do not continue."
-          elif [ ${CHART_PR_FOR_RELEASE} == "true" ]; then
+          elif [ "${CHART_PR_FOR_RELEASE}" == "true" ]; then
             echo "The PR is part of release processing for the charts repository - do not continue."
           else
             echo "::set-output name=run-build::true"
