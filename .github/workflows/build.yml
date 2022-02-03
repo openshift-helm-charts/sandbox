@@ -48,6 +48,8 @@ jobs:
           ${{ github.event.pull_request.body }}
           EOF
           )
+          echo "prev pr body was : ${{ github.event.pull_request.body }}"
+          echo "new pr body is : ${pr_body}"
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
                                     --sender='${{ github.event.sender.login }}' \
                                     --pr_branch='${{ github.event.pull_request.head.ref }}' \
