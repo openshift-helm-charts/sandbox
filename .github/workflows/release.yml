@@ -138,6 +138,8 @@ jobs:
           ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}
           EOF
           )
+          echo "pr body before : ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}"
+          echo "pr body after : ${pr_body}"
           ./ve1/bin/releaser --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}\
                              --pr_dir="./pr-branch" \
                              --development_dir="./dev-repo" \
