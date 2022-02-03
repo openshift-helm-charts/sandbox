@@ -144,23 +144,23 @@ jobs:
         run: |
           # determine what should be done next
           # mitigate unmatched quote error in bash
-         if [ -z "${REPOSITORIES_SYNCED}" ] && [ ${REPOSITORIES_SYNCED} == 'true' ]; then
-              if [ -z "${CHART_PR_ERROR}" ] && [ ${CHART_PR_ERROR} == 'true' ]; then
+          if [ ! -z "${REPOSITORIES_SYNCED}" ] && [ ${REPOSITORIES_SYNCED} == 'true' ]; then
+              if [ ! -z "${CHART_PR_ERROR}" ] && [ ${CHART_PR_ERROR} == 'true' ]; then
                   echo "Error creating charts pull request"
                   exit 1
-              elif [ -z "${DEV_PR_ERROR}" ] && [ ${DEV_PR_ERROR} == 'true' ]; then
+              elif [ ! -z "${DEV_PR_ERROR}" ] && [ ${DEV_PR_ERROR} == 'true' ]; then
                   echo "Error creating development pull request"
                   exit 1
               else
                   echo "At least one PR was created - merge this one"
                   echo '::set-output name=merge::true'
               fi
-              if [ -z "${DEV_PR_NOT_NEEDED}" ] && [ ${DEV_PR_NOT_NEEDED} == 'true' ]; then
+              if [ ! -z "${DEV_PR_NOT_NEEDED}" ] && [ ${DEV_PR_NOT_NEEDED} == 'true' ]; then
                   echo "No dev PR so create release"
                   echo "::set-output name=release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}"
                   echo "::set-output name=release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}"
               fi
-          elif [ -z "${DEV_PR_FOR_RELEASE}" ] && [ ${DEV_PR_FOR_RELEASE} == 'true' ]; then
+          elif [ ! -z "${DEV_PR_FOR_RELEASE}" ] && [ ${DEV_PR_FOR_RELEASE} == 'true' ]; then
               echo "Dev PR so create release"
               echo '::set-output name=merge::true'
               echo "::set-output name=release_body::${pr_body}"
