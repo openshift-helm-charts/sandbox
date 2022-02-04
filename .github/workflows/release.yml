@@ -53,15 +53,10 @@ jobs:
           BOT_NAME: ${{ secrets.BOT_NAME }}
         run: |
           # check if PR was created as part of release processing
-          # mitigate unmatched quote error in bash
-          pr_body=$(cat <<EOF | xargs -0 printf '%q'
-          ${{ github.event.pull_request.body }}
-          EOF
-          )
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
                                   --sender='${{ github.event.sender.login }}' \
                                   --pr_branch='${{ github.event.pull_request.head.ref }}' \
-                                  --pr_body="${pr_body}" \
+                                  --pr_body="${{ github.event.pull_request.body }}" \
                                   --pr_base_repo='${{ github.event.pull_request.base.repo.full_name }}' \
                                   --pr_head_repo='${{ github.event.pull_request.head.repo.full_name }}'
 
@@ -73,13 +68,13 @@ jobs:
           DEV_PR_FOR_RELEASE: ${{ steps.check_created_release_pr.outputs.dev_release_branch }}
         run: |
           # Determine if and how processing should continue'
-          if [ ${NOT_AUTHORIZED} == 'true' ]; then
+          if [ "${NOT_AUTHORIZED}" == 'true' ]; then
               echo "Unauthorized Request"
               exit 1
-          elif [ ${RELEASE_INFO_ONLY} == 'true' ]; then
+          elif [ "${RELEASE_INFO_ONLY}" == 'true' ]; then
              echo "PR contains only release_info file"
              echo '::set-output name=create_pull_requests::true'
-          elif [ ${DEV_PR_FOR_RELEASE} != 'true' ]; then
+          elif [ "${DEV_PR_FOR_RELEASE}" != 'true' ]; then
              echo "No release work to do"
              exit
           fi
@@ -130,17 +125,11 @@ jobs:
           BOT_NAME: ${{ secrets.BOT_NAME }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          # sync the repositories
-          # mitigate unmatched quote error in bash
-          dev_pr_body=$(cat <<EOF | xargs -0 printf '%q'
-          ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}
-          EOF
-          )
-          ./ve1/bin/releaser --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}\
+         ./ve1/bin/releaser --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}\
                              --pr_dir="./pr-branch" \
                              --development_dir="./dev-repo" \
                              --charts_dir="./charts-repo" \
-                             --dev_pr_body="${dev_pr_body}" \
+                             --dev_pr_body="${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}" \
                              --target_branch="${{ github.event.pull_request.base.ref }}" \
                              --target_repository="${{ github.event.pull_request.base.repo.full_name }}"
 
@@ -155,35 +144,27 @@ jobs:
         run: |
           # determine what should be done next
           # mitigate unmatched quote error in bash
-          dev_pr_body=$(cat <<EOF | xargs -0 printf '%q'
-          ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}
-          EOF
-          )
-          pr_body=$(cat <<EOF | xargs -0 printf '%q'
-          ${{ github.event.pull_request.body }}
-          EOF
-          )
-          if [ ${REPOSITORIES_SYNCED} == 'true' ]; then
-              if [ ${CHART_PR_ERROR} == 'true' ]; then
+          if [ "${REPOSITORIES_SYNCED}" == 'true' ]; then
+              if [ "${CHART_PR_ERROR}" == 'true' ]; then
                   echo "Error creating charts pull request"
                   exit 1
-              elif [ ${DEV_PR_ERROR} == 'true' ]; then
+              elif [ "${DEV_PR_ERROR}" == 'true' ]; then
                   echo "Error creating development pull request"
                   exit 1
               else
                   echo "At least one PR was created - merge this one"
                   echo '::set-output name=merge::true'
               fi
-              if [ ${DEV_PR_NOT_NEEDED} == 'true' ]; then
+              if [ "${DEV_PR_NOT_NEEDED}" == 'true' ]; then
                   echo "No dev PR so create release"
-                  echo "::set-output name=release_body::${dev_pr_body}"
-                  echo '::set-output name=release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}'
+                  echo "::set-output name=release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}"
+                  echo "::set-output name=release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}"
               fi
-          elif [ ${DEV_PR_FOR_RELEASE} == 'true' ]; then
+          elif [ "${DEV_PR_FOR_RELEASE}" == 'true' ]; then
               echo "Dev PR so create release"
               echo '::set-output name=merge::true'
-              echo "::set-output name=release_body::${pr_body}"
-              echo '::set-output name=release_tag::${{ steps.check_created_release_pr.outputs.PR_version }}'
+              echo "::set-output name=release_body::${{ github.event.pull_request.body }}"
+              echo "::set-output name=release_tag::${{ steps.check_created_release_pr.outputs.PR_version }}"
           fi
 
       - name: Approve PR

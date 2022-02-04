@@ -126,9 +126,11 @@ vendor:
         r = github_api(
             'post', f'repos/{remote_repo}/pulls', bot_token, json=data)
         j = json.loads(r.text)
+        if not 'number' in j:
+            pytest.fail(f"error sending pull request, response was: {r.text}")
         return j['number']
 
-    def create_and_push_owners_file(self, chart_directory, base_branch, vendor_name, vendor_type, chart_name):
+    def create_and_push_owners_file(self, chart_directory, base_branch, vendor_name, vendor_type, chart_name,):
         with SetDirectory(Path(self.temp_dir.name)):
             # Create the OWNERS file from the string template
             values = {'bot_name': self.secrets.bot_name,
