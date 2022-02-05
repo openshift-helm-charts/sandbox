@@ -1,0 +1,21 @@
+name: Scheduled Metrics
+on:
+  schedule:
+  # * is a special character in YAML so you have to quote this string
+  - cron:  '0 0 * * *'
+
+jobs:
+  metrics:
+    name: Collect and Send Metrics
+    runs-on: ubuntu-20.04
+    env:
+      SEGMENT_WRITE_KEY: ${{ secrets.SEGMENT_WRITE_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python 3.x Part 1
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Release Metrics
+        run: python3 scripts/src/metrics/metrics.py
