@@ -12,7 +12,7 @@ An invalid valid report:
 A tampered report is only determined if the chart-testing check has passed:
 - certifiedOpenShiftVersions or testOpenShiftVersion contain valid semantic versions.
 - certifiedOpenShiftVersions or testOpenShiftVersion specify an OCP version with helm support  (>=4.1.0)
-- if the has-kubeversion check has also passed
+- if the has-kubeversion check has also passed:
   - v1.0 profile:
     - if a valid kubeVersion is specified in the chart it must include the certifiedOpenShiftVersions
   - v1.1 profile and later
