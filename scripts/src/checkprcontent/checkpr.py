@@ -10,9 +10,64 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+sys.path.append('../')
+from owners import owners_file
+from report import verifier_report
 
 ALLOW_CI_CHANGES = "allow/ci-changes"
 TYPE_MATCH_EXPRESSION = "(partners|redhat|community)"
+
+def check_provider_delivery(report_in_pr,chart_file_in_pr,report_file_path):
+    category, organization, chart, _ = report_file_path.groups()
+
+    print(f"read owners file : {category}/{organization}/{chart}" )
+    found_owners,owner_data = owners_file.get_owner_data(category, organization, chart)
+
+    if found_owners:
+        owner_provider_delivery = owners_file.get_provider_delivery(owner_data)
+    else:
+        msg = "[ERROR] OWNERS file was not found."
+        print(msg)
+        print(f"::set-output name=owners-error-message::{msg}")
+        sys.exit(1)
+
+    if report_in_pr:
+
+        print(f"read report file : {report_file_path}" )
+        found_report,report_data = verifier_report.get_report_data(report_file_path)
+
+        if found_report:
+            report_provider_delivery = verifier_report.get_provider_delivery(owner_data)
+        else:
+            msg = f"[ERROR] Failed tp open report: {report_file_path}."
+            print(msg)
+            print(f"::set-output name=pr-content-error-message::{msg}")
+            sys.exit(1)
+
+    if report_in_pr and chart_file_in_pr:
+        if report_provider_delivery or owner_provider_delivery:
+            msg = f"[ERROR] OWNERS file and/or report indicate provider controlled delivery but pull request is not report only."
+            print(msg)
+            print(f"::set-output name=pr-content-error-message::{msg}")
+            sys.exit(1)
+    elif report_in_pr:
+        if report_provider_delivery and owner_provider_delivery:
+            print(f"::set-output name=providerDelivery::True")
+        elif report_provider_delivery:
+            msg = f"[ERROR] Report indicates provider controlled delivery but OWNERS file does not."
+            print(msg)
+            print(f"::set-output name=pr-content-error-message::{msg}")
+            sys.exit(1)
+        elif owner_provider_delivery:
+            msg = f"[ERROR] Report indicates provider controlled delivery but OWNERS file does not."
+            print(msg)
+            print(f"::set-output name=pr-content-error-message::{msg}")
+            sys.exit(1)
+        else:
+            print(f"::set-output name=providerDelivery::False")
+
+
+
 
 def ensure_only_chart_is_modified(api_url, repository, branch):
     # api_url https://api.github.com/repos/<organization-name>/<repository-name>/pulls/1
@@ -29,6 +84,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
     page_number = 1
     max_page_size,page_size = 100,100
     match_found = False
+    report_found = False
     none_chart_files = {}
     file_count = 0
 
@@ -52,13 +108,15 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                 if reportpattern.match(file_path):
                     print("[INFO] Report found")
                     print("::set-output name=report-exists::true")
+                    report_match = match
+                    report_found = True
                 if not match_found:
                     pattern_match = match
                     match_found = True
                 elif pattern_match.groups() != match.groups():
                     msg = f"[ERROR] PR must only include one chart"
                     print(msg)
-                    print(f"::set-output name=sanity-error-message::{msg}")
+                    print(f"::set-output name=pr-content-error-message::{msg}")
                     sys.exit(1)
     
     if none_chart_files:
@@ -66,7 +124,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             example_file = list(none_chart_files.values())[0]
             msg = f"[ERROR] PR includes one or more files not related to charts, e.g., {example_file}"
             print(msg)
-            print(f"::set-output name=sanity-error-message::{msg}")
+            print(f"::set-output name=pr-content-error-message::{msg}")
 
         if "OWNERS" in none_chart_files:
             file_path = none_chart_files["OWNERS"]
@@ -87,6 +145,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                 
         sys.exit(1)
 
+    check_provider_delivery(report_found,match_found,report_match)
 
     if match_found:
         category, organization, chart, version = pattern_match.groups()
@@ -107,7 +166,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             if v["version"] == version:
                 msg = f"[ERROR] Helm chart release already exists in the index.yaml: {version}"
                 print(msg)
-                print(f"::set-output name=sanity-error-message::{msg}")
+                print(f"::set-output name=pr-content-error-message::{msg}")
                 sys.exit(1)
 
         tag_name = f"{organization}-{chart}-{version}"
@@ -119,7 +178,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
         if r.status_code == 200:
             msg = f"[ERROR] Helm chart release already exists in the GitHub Release/Tag: {tag_name}"
             print(msg)
-            print(f"::set-output name=sanity-error-message::{msg}")
+            print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
 
 def main():

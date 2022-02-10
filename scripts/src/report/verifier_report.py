@@ -75,6 +75,14 @@ def get_profile_version(report_data):
         pass
     return profile_version
 
+def get_provider_delivery(report_data):
+    provider_delivery = False
+    try:
+        provider_delivery = report_data["metadata"]["tool"]["providerControlledDelivery"]
+    except Exception:
+        pass
+    return provider_delivery
+
 def report_is_valid(report_data):
     outcome = True
 
