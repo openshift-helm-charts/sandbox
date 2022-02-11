@@ -16,6 +16,6 @@
       "docs",
       "tests"
     ],
-    "ignore" : [".github/workflows/release.yml"]
+    "ignore" : [".github/workflows/release.yml", ".github/workflows/nightly_test.yml"]
   }
 }
