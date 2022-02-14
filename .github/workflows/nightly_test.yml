@@ -7,6 +7,7 @@ on:
 jobs:
   nightly-test:
     name: Nightly Test
+    if: github.repository == 'openshift-helm-charts/development'
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
