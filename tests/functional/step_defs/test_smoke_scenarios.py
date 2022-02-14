@@ -72,6 +72,10 @@ def test_chart_submission_by_unauthorized_user():
 def test_chart_submission_with_incorrect_version():
     """ An authorized user submits a chart with incorrect version """
 
+@scenario('../features/smoke/provider_delivery_control.feature', "A partner associate submits an error-free report with provider controlled delivery")
+def test_partners_submits_error_free_report_for_provider_controlled_delivery():
+    """A partner submits an error-free report for provider controlled delivery."""
+
 
 @given(parsers.parse("the report has a <check> missing"))
 def report_has_a_check_missing(workflow_test, check):
