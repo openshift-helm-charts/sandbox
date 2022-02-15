@@ -18,12 +18,14 @@ def check_if_ci_only_is_modified(api_url):
     headers = {'Accept': 'application/vnd.github.v3+json'}
 
     workflow_files = [re.compile(r".github/workflows/.*"),re.compile(r"scripts/.*"),re.compile(r"tests/.*")]
+    full_test_feature = re.compile(r"tests/functional/features/.*.feature")
     skip_build_files = [re.compile(r"release/release_info.json"),re.compile(r"README.md"),re.compile(r"docs/([\w-]+)\.md")]
     page_number = 1
     max_page_size,page_size = 100,100
 
     workflow_found = False
     others_found = False
+    full_tests_included = False
 
     while (page_size == max_page_size):
 
@@ -37,13 +39,20 @@ def check_if_ci_only_is_modified(api_url):
             filename = f["filename"]
             if any([pattern.match(filename) for pattern in workflow_files]):
                 workflow_found = True
+                print(f"[INFO] workflow file found: {filename}")
+                if full_test_feature.match(filename):
+                    print(f"[INFO] ille test file found: {filename}")
+                    full_tests_included = True
             elif any([pattern.match(filename) for pattern in skip_build_files]):
                 others_found = True
             else:
                 return False
 
     if others_found and not workflow_found:
-        print(f"::set-output name=do-not-build::true")
+        print("::set-output name=do-not-build::true")
+    elif full_tests_included:
+        print(f"[INFO] set full_tests_in_pr to true")
+        print("::set-output name=full_tests_in_pr::true")
 
     return workflow_found
 
