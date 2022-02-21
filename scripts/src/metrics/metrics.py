@@ -25,8 +25,8 @@ def get_metrics():
     for i in itertools.count(start=1):
         response = requests.get(
             f'https://api.github.com/repos/openshift-helm-charts/charts/releases?per_page=100&page={i}')
-        if response.status_code != 200:
-            logging.error(f"expect reponse 200, got {response.status_code}")
+        if response.status_code >= 200 and response.status_code < 300:
+            logging.error(f"expected response 2xx, got {response.status_code}")
             sys.exit(1)
         response_json = response.json()
         if len(response_json) == 0:
