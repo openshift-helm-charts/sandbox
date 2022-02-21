@@ -25,8 +25,8 @@ def get_metrics():
     for i in itertools.count(start=1):
         response = requests.get(
             f'https://api.github.com/repos/openshift-helm-charts/charts/releases?per_page=100&page={i}')
-        if response.status_code != 200:
-            logging.error(f"expect reponse 200, got {response.status_code}")
+        if not 200 <= response.status_code < 300:
+            logging.error(f"unexpected response getting release data : {response.status_code} : {response.reason}")
             sys.exit(1)
         response_json = response.json()
         if len(response_json) == 0:
@@ -46,8 +46,8 @@ def send_metrics(metrics: dict):
         }
         response = requests.post(
             url='https://api.segment.io/v1/track', headers=headers, json=json)
-        if response.status_code != 200:
-            logging.error(f"expect reponse 200, got {response.status_code}")
+        if not 200 <= response.status_code < 300:
+            logging.error(f"unexpected response sending data to segment : {response.status_code} : {response.reason}")
             sys.exit(1)
         logging.info(f'POST {json["userId"]}\nRESPONSE {response}')
 
