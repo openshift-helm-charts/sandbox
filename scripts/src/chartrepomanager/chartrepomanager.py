@@ -332,6 +332,8 @@ def main():
     indexdir = create_worktree_for_index(branch)
 
     print(f'[INFO] os.environ["PROVIDER_DELIVERY"] {os.environ["PROVIDER_DELIVERY"]}')
+    print(f'[INFO] os.environ["PROVIDER_DELIVERY"] == "True" : {os.environ["PROVIDER_DELIVERY"] == "True"}')
+    print(f'[INFO] os.environ["PROVIDER_DELIVERY"] == True :  {os.environ["PROVIDER_DELIVERY"]} == True')
     if os.environ["PROVIDER_DELIVERY"] and os.environ["PROVIDER_DELIVERY"] == True:
         indexfile = "unpublished-certified-charts.yaml"
     else:
