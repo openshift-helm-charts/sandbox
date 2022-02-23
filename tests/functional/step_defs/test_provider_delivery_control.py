@@ -56,3 +56,4 @@ def provider_delivery_control_set_in_report(workflow_test,provider_control_repor
 @then(parsers.parse("the <index_file> is updated with an entry for the submitted chart"))
 def index_file_is_updated(workflow_test,index_file):
     workflow_test.secrets.index_file = index_file
+    workflow_test.check_index_yaml(True)
