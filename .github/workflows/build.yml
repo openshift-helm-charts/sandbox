@@ -194,7 +194,7 @@ jobs:
           cd ..
 
       - name: Delete Namespace
-        if: ${{ steps.install-oc.outputs.oc-installed == 'true' }}
+        if: ${{ always() && steps.check_build_required.outputs.run-build == 'true' }}
         env:
           KUBECONFIG: /tmp/ci-kubeconfig
         run: |
