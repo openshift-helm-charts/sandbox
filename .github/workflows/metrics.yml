@@ -1,0 +1,32 @@
+name: Scheduled Metrics
+on:
+  schedule:
+  # * is a special character in YAML so you have to quote this string
+  - cron:  '0 0 * * *'
+
+jobs:
+  metrics:
+    name: Collect and Send Metrics
+    if: github.repository == 'openshift-helm-charts/development'
+    runs-on: ubuntu-20.04
+    env:
+      SEGMENT_WRITE_KEY: ${{ secrets.SEGMENT_WRITE_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python 3.x Part 1
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Release Metrics
+        id: release_metrics
+        run: python3 scripts/src/metrics/metrics.py
+      - name: Send message to slack channel
+        id: notify
+        if: always()
+        uses: archive/github-actions-slack@v2.0.0
+        with:
+          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
+          slack-channel: C02979BDUPL
+          slack-text: ${{ steps.release_metrics.conclusion }}! Nightly collection of metrics. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
+
