@@ -14,13 +14,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Set up Python 3.x Part 1
         uses: actions/setup-python@v2
         with:
           python-version: "3.9"
+
+      - name: Set up Python 3.x Part 2
+        run: |
+            # set up python
+            python3 -m venv ve1
+            cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
+            cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+
       - name: Release Metrics
         id: release_metrics
-        run: python3 scripts/src/metrics/metrics.py
+        run: ve1/bin/metrics
+
       - name: Send message to slack channel
         id: notify
         if: always()
