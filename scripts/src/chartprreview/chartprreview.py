@@ -108,13 +108,12 @@ def verify_signature(directory, category, organization, chart, version):
     print("[INFO]", out.stdout.decode("utf-8"))
     print("[WARNING]", out.stderr.decode("utf-8"))
 
-def match_checksum(directory, category, organization, chart, version):
+def match_checksum(directory,generated_report_path,category, organization, chart, version):
     print("[INFO] Check digests match. %s, %s, %s" % (organization, chart, version))
     submitted_report_path = os.path.join("charts", category, organization, chart, version, "report.yaml")
     submitted_digests = report_info.get_report_digests(submitted_report_path)
     submitted_digest = submitted_digests["chart"]
 
-    generated_report_path = "report.yaml"
     generated_digests = report_info.get_report_digests(generated_report_path)
     generated_digest = generated_digests["chart"]
 
@@ -293,60 +292,6 @@ def check_report_success(directory, api_url, report_path, version):
             sys.exit(1)
 
 
-def generate_verify_report(directory, category, organization, chart, version):
-    print("[INFO] Generate verify report. %s, %s, %s" % (organization,chart,version))
-    src = os.path.join(os.getcwd(), "charts", category, organization, chart, version, "src")
-    report_path = os.path.join("charts", category, organization, chart, version, "report.yaml")
-    src_exists = False
-    tar_exists = False
-    if os.path.exists(src):
-        src_exists = True
-    tar = os.path.join("charts", category, organization, chart, version, f"{chart}-{version}.tgz")
-    if os.path.exists(tar):
-        tar_exists = True
-    if src_exists and tar_exists:
-        msg = "[ERROR] Both chart source directory and tarball should not exist"
-        write_error_log(directory, msg)
-        sys.exit(1)
-    if not os.path.exists(report_path):
-        if not src_exists and not tar_exists:
-            msg = '[ERROR] One of these must be modified: report, chart source, or tarball"'
-            write_error_log(directory, msg)
-            sys.exit(1)
-    kubeconfig = os.environ.get("KUBECONFIG")
-    if not kubeconfig:
-        msg = "[ERROR] missing 'KUBECONFIG' environment variable"
-        write_error_log(directory, msg)
-        sys.exit(1)
-    vendor_type = get_vendor_type(directory)
-    if src_exists:
-        if os.path.exists(report_path):
-            out = subprocess.run(["docker", "run", "-v", src+":/charts:z", "-v", kubeconfig+":/kubeconfig", "-e", "KUBECONFIG=/kubeconfig", "--rm",
-                                 os.environ.get("VERIFIER_IMAGE"), "verify", "--set", f"profile.vendortype={vendor_type}", "-e", "has-readme", "/charts"], capture_output=True)
-        else:
-            out = subprocess.run(["docker", "run", "-v", src+":/charts:z", "-v", kubeconfig+":/kubeconfig", "-e", "KUBECONFIG=/kubeconfig", "--rm",
-                                 os.environ.get("VERIFIER_IMAGE"), "verify", "--set", f"profile.vendortype={vendor_type}", "/charts"], capture_output=True)
-    elif tar_exists:
-        dn = os.path.join(os.getcwd(), "charts", category,
-                          organization, chart, version)
-        if os.path.exists(report_path):
-            out = subprocess.run(["docker", "run", "-v", dn+":/charts:z", "-v", kubeconfig+":/kubeconfig", "-e", "KUBECONFIG=/kubeconfig", "--rm", os.environ.get("VERIFIER_IMAGE"),
-                                 "verify", "--set", f"profile.vendortype={vendor_type}", "-e", "has-readme", f"/charts/{chart}-{version}.tgz"], capture_output=True)
-        else:
-            out = subprocess.run(["docker", "run", "-v", dn+":/charts:z", "-v", kubeconfig+":/kubeconfig", "-e", "KUBECONFIG=/kubeconfig", "--rm",
-                                 os.environ.get("VERIFIER_IMAGE"), "verify", "--set", f"profile.vendortype={vendor_type}", f"/charts/{chart}-{version}.tgz"], capture_output=True)
-    else:
-        return
-
-    stdout = out.stdout.decode("utf-8")
-    report_path = "report.yaml"
-    with open(report_path, "w") as fd:
-        fd.write(stdout)
-
-    if len(out.stderr) >0 :
-        print(f'[WARNING] Errors creating report:\n{out.stderr.decode("utf-8")}')
-
-
 
 
 def main():
@@ -374,19 +319,21 @@ def main():
         else:
             print("[INFO] Submitted report passed validity check!")
 
-    generate_verify_report(args.directory, category, organization, chart, version)
+
+    report_generated = os.environ.get("REPORT_GENERATED")
+    generated_report_path = os.environ.get("GENERATED_REPORT_PATH")
 
     if os.path.exists(submitted_report_path):
         print("[INFO] Report exists: ", submitted_report_path)
         verify_signature(args.directory, category, organization, chart, version)
         report_path = submitted_report_path
-        if os.path.exists("report.yaml"):
-            match_checksum(args.directory, category, organization, chart, version)
+        if report_generated:
+            match_checksum(args.directory,generated_report_path, category, organization, chart, version)
         else:
             check_url(args.directory, report_path)
     else:
         print("[INFO] Report does not exist: ", submitted_report_path)
-        report_path = "report.yaml"
+        report_path = generated_report_path
 
     match_name_and_version(args.directory, category, organization, chart, version)
     check_report_success(args.directory, args.api_url, report_path, version)
