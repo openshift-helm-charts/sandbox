@@ -375,6 +375,7 @@ def main():
             print("[INFO] Submitted report passed validity check!")
 
     generate_verify_report(args.directory, category, organization, chart, version)
+
     if os.path.exists(submitted_report_path):
         print("[INFO] Report exists: ", submitted_report_path)
         verify_signature(args.directory, category, organization, chart, version)
