@@ -1,11 +1,11 @@
 name: CI
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened, edited, ready_for_review, labeled]
+    pull_request_target:
+      types: [opened, synchronize, reopened, edited, ready_for_review, labeled]
 
 jobs:
-  chart-certification:
+    chart-certification:
     name: Chart Certification
     runs-on: ubuntu-20.04
     env:
@@ -140,6 +140,11 @@ jobs:
               issue_number: Number(issue_number),
               name: 'authorized-request'
             })
+
+	  - name: Install chart verifier
+	  	id: cv-install
+	  	run: |
+	  	  #to be completed when cv action release is created.
 
       - name: determine verify requirements
         if: ${{ steps.check_build_required.outputs.run-build == 'true' }}
