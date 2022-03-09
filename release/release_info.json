@@ -1,9 +1,9 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "info" : [
-      "Updates required for Chart Verifier Version 1.5.0 (#96).",
-      "Improve messages in error situations (#93).",
-      "Test improvements."
+      "Add support for provider delivery control (#110).",
+      "Ensure delete namespace is called (#113).",
+      "Test and workflow improvements."
   ],
   "charts" : {
     "merge": ["charts"]
