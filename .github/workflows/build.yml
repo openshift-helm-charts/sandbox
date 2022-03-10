@@ -209,6 +209,7 @@ jobs:
           ve1/bin/pr-artifact --directory=./pr --pr-number=${{ github.event.number }} --api-url=${{ github.event.pull_request._links.self.href }}
 
       - name: Prepare PR comment
+        id: prepare_comment
         if: ${{ always() && steps.check_build_required.outputs.run-build == 'true' }}
         env:
           PR_CONTENT_ERROR_MESSAGE: ${{ steps.check_pr_content.outputs.pr-content-error-message }}
@@ -315,3 +316,17 @@ jobs:
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add metrics
+        if: always() && steps.check_build_required.outputs.run-build == 'true'
+        run: |
+          if [ "${{job.status}}" == "success" ]; then
+            ve1/bin/metrics --metric-type=pull_request \
+                            --chart=${{ steps.check_pr_content.outputs.chart-name-with-version }} \
+                            --partner=${{ steps.check_pr_content.outputs.organization }}
+          else
+            ve1/bin/metrics --metric-type=pull_request \
+                            --chart=${{ steps.check_pr_content.outputs.chart-name-with-version }} \
+                            --partner=${{ steps.check_pr_content.outputs.organization }} \
+                            --message=${{ steps.prepare_comment.outputs.error-message }}
+          fi

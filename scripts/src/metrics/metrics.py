@@ -1,12 +1,13 @@
-import os
-import re
-import requests
-import logging
-import sys
+
+import argparse
 import itertools
+import logging
+import requests
+import sys
+import analytics
+import os
 
 logging.basicConfig(level=logging.INFO)
-
 
 def parse_response(response):
     result = []
@@ -20,7 +21,7 @@ def parse_response(response):
     return result
 
 
-def get_metrics():
+def get_release_metrics():
     result = []
     for i in itertools.count(start=1):
         response = requests.get(
@@ -35,25 +36,59 @@ def get_metrics():
     return parse_response(result)
 
 
-def send_metrics(metrics: dict):
+def send_release_metrics(metrics: dict):
     for release in metrics:
-        headers = {
-            'Authorization': os.getenv('SEGMENT_WRITE_KEY')}
-        json = {
-            "userId": release['name'],
-            "event": "Chart Certification Metrics",
-            "properties": dict(release['assets']),
-        }
-        response = requests.post(
-            url='https://api.segment.io/v1/track', headers=headers, json=json)
-        if not 200 <= response.status_code < 300:
-            logging.error(f"unexpected response sending data to segment : {response.status_code} : {response.reason}")
-            sys.exit(1)
-        logging.info(f'POST {json["userId"]}\nRESPONSE {response}')
+        send_metric_(release['name'],"Chart downloads", dict(release['assets']))
+
+
+def send_fail_metric(partner,chart,message):
+
+    properties = { "chart" : chart, "message" : message }
+
+    send_metric(partner,"PR run Failed",properties)
+
+def send_pass_metric(partner,chart):
+
+    properties = { "chart" : chart }
+
+    send_metric(partner,"PR Success",properties)
+
+
+def on_error(error,items):
+    print("An error occurred creating metrics:", error)
+    print("error with ietms:",items)
+    sys.exit(1)
+
+
+def send_metric(user,event,properties):
+
+    analytics.write_key = os.getenv('SEGMENT_WRITE_KEY')
+    analytics.on_error = on_error
+
+    analytics.track(user, event, properties)
+
+    logging.info(f'Add track:\nuser: {user}\nevent:{event}\nproperties:{properties}')
 
 
 def main():
-    send_metrics(get_metrics())
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--metric-type", dest="type", type=str, required=True,
+                        help="metric type, releases or pull_request")
+    parser.add_argument("-c", "--chart", dest="chart", type=str, required=False,
+                        help="chart name for metric")
+    parser.add_argument("-p", "--partner", dest="partner", type=str, required=False,
+                        help="name of partner")
+    parser.add_argument("-m", "--message", dest="message", type=str, required=False,
+                        help="message for metric")
+    args = parser.parse_args()
+
+    if args.type == "pull_request":
+        if args.message:
+            send_fail_metric(args.partner,args.chart,args.message)
+        else:
+            send_pass_metric(args.partner,args.chart)
+    else:
+        send_release_metrics(get_release_metrics())
 
 
 if __name__ == '__main__':

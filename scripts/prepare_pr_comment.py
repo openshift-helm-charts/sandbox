@@ -18,6 +18,7 @@ Please run the [chart-verifier](https://github.com/redhat-certification/chart-ve
 and ensure all mandatory checks pass.
 
 """
+    print(f"::set-output name=error-message::{errors}")
     return msg
 
 def prepare_success_comment():
@@ -29,8 +30,10 @@ def prepare_pr_content_failure_comment():
     pr_content_error_msg = os.environ.get("PR_CONTENT_ERROR_MESSAGE", "")
     owners_error_msg = os.environ.get("OWNERS_ERROR_MESSAGE", "")
     if pr_content_error_msg:
+        print(f"::set-output name=error-message::{pr_content_error_msg}")
         msg += f"{pr_content_error_msg}\n\n"
     if owners_error_msg:
+        print(f"::set-output name=error-message::{owners_error_msg}")
         msg += f"{owners_error_msg}\n\n"
     return msg
 

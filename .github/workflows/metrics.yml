@@ -30,7 +30,7 @@ jobs:
 
       - name: Release Metrics
         id: release_metrics
-        run: ve1/bin/metrics
+        run: ve1/bin/metrics --metric-type=release
 
       - name: Send message to slack channel
         id: notify
