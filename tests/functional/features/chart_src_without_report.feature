@@ -5,8 +5,8 @@ Feature: Chart source submission without report
     Examples:
         | chart_path                   |
         | tests/data/vault-0.17.0.tgz  |
-
-    Scenario Outline: A partner or redhat associate submits an error-free chart source
+    
+    Scenario Outline: [HC-001] A partner or redhat associate submits an error-free chart source
         Given the vendor <vendor> has a valid identity as <vendor_type>
         And an error-free chart source is used in <chart_path>
         When the user sends a pull request with the chart
@@ -18,8 +18,8 @@ Feature: Chart source submission without report
             | vendor_type  | vendor    |
             | partners     | hashicorp |
             | redhat       | redhat    |
-    
-    Scenario Outline: A community user submits an error-free chart source without report
+
+    Scenario Outline: [HC-002] A community user submits an error-free chart source without report
         Given the vendor <vendor> has a valid identity as <vendor_type>
         And an error-free chart source is used in <chart_path>
         When the user sends a pull request with the chart
