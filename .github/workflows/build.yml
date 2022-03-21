@@ -219,6 +219,7 @@ jobs:
           python3 scripts/prepare_pr_comment.py ${{ steps.check_pr_content.outcome }} ${{ steps.verify_pr.conclusion }} ${{ github.repository }}
 
       - name: Comment on PR
+        id: pr_comment
         if: ${{ always() && steps.check_build_required.outputs.run-build == 'true' }}
         uses: actions/github-script@v3
         with:
@@ -315,3 +316,28 @@ jobs:
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add metrics
+        if: always() && steps.check_build_required.outputs.run-build == 'true'
+        run: |
+          if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
+              WRITE_KEY = ${{ secrets.SEGMENT_WRITE_KEY }}
+              echo "Use segment production write key"
+          else
+              WRITE_KEY = ${{ secrets.SEGMENT_TEST_WRITE_KEY }}
+              echo "Use segment test write key"
+          fi
+          if [ "${{steps.pr_comment.outputs.pr_passed}}" == "true" ]; then
+            echo "add PR run passed metric"
+            #ve1/bin/metrics --write_key=${WRITE_KEY} \
+            #                --metric-type=pull_request \
+            #                --chart=${{ steps.check_pr_content.outputs.chart-name-with-version }} \
+            #                --partner=${{ steps.check_pr_content.outputs.organization }}
+          else
+            echo "add PR run failed metric"
+            #ve1/bin/metrics --write_key=${WRITE_KEY} \
+            #                --metric-type=pull_request \
+            #                --chart=${{ steps.check_pr_content.outputs.chart-name-with-version }} \
+            #                --partner=${{ steps.check_pr_content.outputs.organization }} \
+            #                --message=${{ steps.prepare_comment.outputs.error-message }}
+          fi

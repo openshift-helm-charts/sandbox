@@ -70,15 +70,20 @@ def main():
     oc_install_result = os.environ.get("OC_INSTALL_RESULT", False)
     if pr_content_result == "failure":
         msg += prepare_pr_content_failure_comment()
+        print(f"::set-output name=pr_passed::false")
     elif verify_result == "failure":
         community_manual_review = os.environ.get("COMMUNITY_MANUAL_REVIEW",False)
         if community_manual_review:
             msg += prepare_community_comment()
+            print(f"::set-output name=pr_passed::true")
         else:
             msg += prepare_failure_comment()
+            print(f"::set-output name=pr_passed::false")
     elif oc_install_result == "failure":
         msg += prepare_oc_install_fail_comment()
+        print(f"::set-output name=pr_passed::false")
     else:
+        print(f"::set-output name=pr_passed::true")
         msg += prepare_success_comment()
 
     msg += get_comment_footer(vendor_label, chart_name)
