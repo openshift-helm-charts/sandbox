@@ -38,23 +38,23 @@ def get_release_metrics():
     return parse_response(result)
 
 
-def send_release_metrics(metrics):
+def send_release_metrics(write_key,metrics):
     for release in metrics:
         _,provider,chart,_ = index.get_chart_info(release.get('name'))
         if len(provider)>0:
-            send_metric(provider,f"{chart} downloads", release.get('asset'))
+            send_metric(write_key,provider,f"{chart} downloads", release.get('asset'))
 
-def send_fail_metric(partner,chart,message):
+def send_fail_metric(write_key,partner,chart,message):
 
     properties = { "chart" : chart, "message" : message }
 
-    send_metric(partner,"PR run Failed",properties)
+    send_metric(write_key,partner,"PR run Failed",properties)
 
-def send_pass_metric(partner,chart):
+def send_pass_metric(write_key,partner,chart):
 
     properties = { "chart" : chart }
 
-    send_metric(partner,"PR Success",properties)
+    send_metric(write_key,partner,"PR Success",properties)
 
 
 def on_error(error,items):
@@ -63,9 +63,9 @@ def on_error(error,items):
     sys.exit(1)
 
 
-def send_metric(partner,event,properties):
+def send_metric(write_key,partner,event,properties):
 
-    analytics.write_key = os.getenv('SEGMENT_WRITE_KEY')
+    analytics.write_key = write_key
     analytics.on_error = on_error
 
     analytics.track(partner, event, properties)
@@ -75,6 +75,8 @@ def send_metric(partner,event,properties):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-k", "--write-key", dest="write_key", type=str, required=True,
+                        help="segment write key")
     parser.add_argument("-t", "--metric-type", dest="type", type=str, required=True,
                         help="metric type, releases or pull_request")
     parser.add_argument("-c", "--chart", dest="chart", type=str, required=False,
@@ -85,17 +87,17 @@ def main():
                         help="message for metric")
     args = parser.parse_args()
 
-    if not os.getenv('SEGMENT_WRITE_KEY'):
-        print("Error SEGMENT_WRITE_KEY not found")
+    if not args.write_key:
+        print("Error SEGMENT_WRITE_KEY not set")
         sys.exit(1)
 
     if args.type == "pull_request":
         if args.message:
-            send_fail_metric(args.partner,args.chart,args.message)
+            send_fail_metric(args.write_key,args.partner,args.chart,args.message)
         else:
-            send_pass_metric(args.partner,args.chart)
+            send_pass_metric(args.write_key,args.partner,args.chart)
     else:
-        send_release_metrics(get_release_metrics())
+        send_release_metrics(args.write_key,get_release_metrics())
 
 
 if __name__ == '__main__':
