@@ -88,7 +88,7 @@ def main():
     args = parser.parse_args()
 
     if not args.write_key:
-        print("Error SEGMENT_WRITE_KEY not set")
+        print("Error: Segment write key not set")
         sys.exit(1)
 
     if args.type == "pull_request":
