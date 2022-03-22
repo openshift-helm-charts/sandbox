@@ -43,12 +43,13 @@ jobs:
               echo "Workflow dispatch using production write key"
               WRITE_KEY=${SEGMENT_WRITE_KEY}
           elif [[ "${{github.event_name}}" == "workflow_dispatch" ]]; then
-              echo "Workflow dispatch using production write key"
+              echo "Workflow dispatch using test write key"
               WRITE_KEY=${SEGMENT_TEST_WRITE_KEY}
           else
             echo "Scheduled dispatch using production write key"
             WRITE_KEY=${SEGMENT_WRITE_KEY}
           fi
+          echo "${WRITE_KEY}"
           #ve1/bin/metrics --write_key=${WRITE_KEY} --metric-type=release
 
       - name: Send message to slack channel
