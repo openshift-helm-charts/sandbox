@@ -68,7 +68,7 @@ def send_metric(write_key,partner,event,properties):
     analytics.write_key = write_key
     analytics.on_error = on_error
 
-    #analytics.track(partner, event, properties)
+    analytics.track(partner, event, properties)
 
     logging.info(f'Add track:  user: {partner},  event:{event},  properties:{properties}')
 
