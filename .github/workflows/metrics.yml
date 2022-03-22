@@ -51,7 +51,7 @@ jobs:
             echo "Scheduled dispatch using production write key"
             WRITE_KEY=${SEGMENT_WRITE_KEY}
           fi
-          #ve1/bin/metrics --write_key=${WRITE_KEY} --metric-type=release
+          ve1/bin/metrics --write_key=${WRITE_KEY} --metric-type=release
 
       - name: Send message to slack channel
         id: notify
