@@ -37,12 +37,24 @@ def get_release_metrics():
         result.extend(response_json)
     return parse_response(result)
 
-
-def send_release_metrics(write_key,metrics):
-    for release in metrics:
+def send_release_metrics(write_key, downloads):
+    metrics={}
+    for release in downloads:
         _,provider,chart,_ = index.get_chart_info(release.get('name'))
         if len(provider)>0:
-            send_metric(write_key,provider,f"{chart} downloads", release.get('asset'))
+            if provider not in metrics:
+                metrics[provider] = {}
+            if chart not in metrics[provider]:
+                metrics[provider][chart] = {}
+
+            for key in release.get('asset'):
+                metrics[provider][chart][key] = release.get('asset')[key]
+
+
+    for provider in metrics:
+        for chart in metrics[provider]:
+            send_metric(write_key,provider,f"{chart} downloads", metrics[provider][chart])
+
 
 def send_fail_metric(write_key,partner,chart,message):
 
@@ -68,9 +80,10 @@ def send_metric(write_key,partner,event,properties):
     analytics.write_key = write_key
     analytics.on_error = on_error
 
+    logging.info(f'Add track:  user: {partner},  event:{event},  properties:{properties}')
+
     #analytics.track(partner, event, properties)
 
-    logging.info(f'Add track:  user: {partner},  event:{event},  properties:{properties}')
 
 
 def main():
