@@ -1,3 +1,24 @@
+'''
+This script will help to list, create or update secrets of a repository
+
+Prerequsites:
+
+1. Before running this script, you have to set the GITHUB_TOKEN environment variable with as below:
+export GITHUB_TOKEN=<Github_token_value>
+
+Note: Github Token you are using needs to have correct authorization to list/create/update the secrets
+
+2. Install the "pynacl" module using : pip install pynacl==1.5.0
+
+Example Usage:
+
+1. To list the secret names of openshift-helm-charts/sandbox repository
+  python push_secrets.py -r openshift-helm-charts/sandbox -l
+
+2. To create or update the CLUSTER_TOKEN of openshift-helm-charts/sandbox repository
+  python push_secrets.py -r openshift-helm-charts/sandbox -s CLUSTER_TOKEN -v <cluster_token_value>
+
+'''
 from base64 import b64encode
 from nacl import encoding, public
 import logging
@@ -19,6 +40,7 @@ def encrypt(public_key: str, secret_value: str) -> str:
     return b64encode(encrypted).decode("utf-8")
 
 def get_repo_public_key(repo):
+    """Get the public key id and key of a github repository"""
     response = requests.get(f'https://api.github.com/repos/{repo}/actions/secrets/public-key', headers=headers)
     if response.status_code != 200:
         logging.error(f"unexpected response getting repo public key : {response.status_code} : {response.reason}")
@@ -27,6 +49,7 @@ def get_repo_public_key(repo):
     return response_json['key_id'], response_json['key']
 
 def get_repo_secrets(repo):
+    """Get the list of secret names of a github repository"""
     secret_names = []
     response = requests.get(f'https://api.github.com/repos/{repo}/actions/secrets', headers=headers)
     if response.status_code != 200:
@@ -38,16 +61,16 @@ def get_repo_secrets(repo):
     return secret_names
 
 def create_or_update_repo_secrets(repo, secret_name, key_id, encrypted_value):
+    """Create or update a github repository secret"""
     response = requests.put(f'https://api.github.com/repos/{repo}/actions/secrets/{secret_name}', json={'key_id': key_id, 'encrypted_value': encrypted_value}, headers=headers)
-    if response.status_code != 200 and response.status_code != 204:
+    if response.status_code != 201 and response.status_code != 204:
         logging.error(f"unexpected response during put request : {response.status_code} : {response.reason}")
         sys.exit(1)
     #response_json = response.json()
-    logging.info('Secret create or update successful')
+    logging.info(f'Secret {secret_name} create or update successful')
 
 def main():
-
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Script to list, create or update secrets of a repository')
     parser.add_argument("-r", "--repo", dest="repo", type=str, required=True,
                                         help="Github repo name in {org}/{repo_name} format")
     parser.add_argument("-l", "--list", dest="list", action='store_true', required=False,
