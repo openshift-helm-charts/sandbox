@@ -4,14 +4,21 @@ on:
   # * is a special character in YAML so you have to quote this string
   - cron:  '0 0 * * *'
   workflow_dispatch:
+    inputs:
+      # Production metrics require secret SEGMENT_WRITE_KEY
+      # Test metrics require secret SEGMENT_TEST_WRITE_KEY
+      production-data:
+        description: "Upload metrics to production data {true,false}"
+        required: true
+        default: "false"
 
 jobs:
   metrics:
     name: Collect and Send Metrics
-    if: github.repository == 'openshift-helm-charts/development'
     runs-on: ubuntu-20.04
     env:
       SEGMENT_WRITE_KEY: ${{ secrets.SEGMENT_WRITE_KEY }}
+      SEGMENT_TEST_WRITE_KEY: ${{ secrets.SEGMENT_TEST_WRITE_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -30,11 +37,38 @@ jobs:
 
       - name: Release Metrics
         id: release_metrics
-        run: ve1/bin/metrics --metric-type=release
+        run: |
+          if [[ "${{github.event_name}}" == "workflow_dispatch" ]]; then
+              if ${{github.event.inputs.production-data}}; then
+                  echo "Workflow dispatch using production write key"
+                  WRITE_KEY=${SEGMENT_WRITE_KEY}
+              else
+                  echo "Workflow dispatch using test write key"
+                  WRITE_KEY=${SEGMENT_TEST_WRITE_KEY}
+              fi
+          elif [[ "${{github.repository}}" == "openshift-helm-charts/development" ]]; then
+              echo "Scheduled dispatch using production write key"
+              WRITE_KEY=${SEGMENT_WRITE_KEY}
+              if [ "${SEGMENT_WRITE_KEY}" != "" ]; then
+                  WRITE_KEY=${SEGMENT_WRITE_KEY}
+              else
+                  echo "Error: Scheduled dispatch is missing write key"
+                  exit 1
+              fi
+          else
+              echo "Scheduled dispatch not on valid repo, do not set write key"
+              WRITE_KEY=""
+          fi
+
+          if [ "${WRITE_KEY}" != "" ]; then
+              ve1/bin/metrics --write-key=${WRITE_KEY} --metric-type=release
+          else
+              echo "Do not collect metrics, required segment write key is not set"
+          fi
 
       - name: Send message to slack channel
         id: notify
-        if: always()
+        if: always() && github.event_name == 'schedule' && github.repository == 'openshift-helm-charts/development'
         uses: archive/github-actions-slack@v2.0.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
