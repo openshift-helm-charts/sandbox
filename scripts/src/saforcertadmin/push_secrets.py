@@ -87,7 +87,7 @@ def main():
     elif args.secret and args.value:
         secret_name = args.secret
         secret_value = args.value
-        logging.info(f'Setting SECRET: {secret_name} with VALUE: {secret_value}')
+        logging.info(f'Setting SECRET: {secret_name}')
         key_id, public_key = get_repo_public_key(args.repo)
         encrypted_value = encrypt(public_key, secret_value)
         create_or_update_repo_secrets(args.repo, secret_name, key_id, encrypted_value)
