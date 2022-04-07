@@ -23,15 +23,15 @@ def workflow_test():
     workflow_test.cleanup()
 
 
-@scenario('../features/provider_delivery_control.feature', "A partner associate submits an error-free report with provider controlled delivery")
+@scenario('../features/HC-06_provider_delivery_control.feature', "[HC-06-001] A partner associate submits an error-free report with provider controlled delivery")
 def test_partners_submits_error_free_report_for_provider_controlled_delivery():
     """A partner submits an error-free report for provider controlled delivery."""
 
-@scenario('../features/provider_delivery_control.feature', "A partner associate submits an error-free report and chart with provider controlled delivery")
+@scenario('../features/HC-06_provider_delivery_control.feature', "[HC-06-002] A partner associate submits an error-free report and chart with provider controlled delivery")
 def test_partners_submits_error_free_report_and_chart_for_provider_controlled_delivery():
     """A partner submits an error-free report and chart for provider controlled delivery."""
 
-@scenario('../features/provider_delivery_control.feature', "A partner associate submits an error-free report with inconsistent provider controlled delivery setting")
+@scenario('../features/HC-06_provider_delivery_control.feature', "[HC-06-003] A partner associate submits an error-free report with inconsistent provider controlled delivery setting")
 def test_partners_submits_error_free_report_with_inconsistent_provider_controlled_delivery_settings():
     """A partner submits an error-free report with inconsistent settings for provider controlled delivery."""
 
