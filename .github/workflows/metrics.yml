@@ -39,7 +39,7 @@ jobs:
         id: release_metrics
         run: |
           if [[ "${{github.event_name}}" == "workflow_dispatch" ]]; then
-              if ${{github.event.inputs.production-data}}; then
+              if [[ "${{github.event.inputs.production-data}}" == "True" ]]; then
                   echo "Workflow dispatch using production write key"
                   WRITE_KEY=${SEGMENT_WRITE_KEY}
               else
