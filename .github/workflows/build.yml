@@ -196,7 +196,7 @@ jobs:
           echo "::set-output name=delete_namespace::true"
           echo $KUBECONFIG
 
-      - uses: redhat-actions/chart-verifier@v1.0.0
+      - uses: redhat-actions/chart-verifier@v1.1
         id: run-verifier
         if: ${{ steps.verify_requires.outputs.report_needed == 'true' }}
         with:
