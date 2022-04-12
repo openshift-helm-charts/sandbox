@@ -79,9 +79,11 @@ jobs:
           if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
             echo "::set-output name=insecure_skip_tls_verify::false"
             echo "::set-output name=verifier-action-image::latest"
+            echo "::set-output name=verifier-action-version::redhat-actions/chart-verifier@v1.1"
           else
             echo "::set-output name=insecure_skip_tls_verify::true"
             echo "::set-output name=verifier-action-image::0.1.0"
+            echo "::set-output name=verifier-action-version::redhat-actions/chart-verifier@v1"
           fi
 
       - name: Checkout
@@ -196,7 +198,7 @@ jobs:
           echo "::set-output name=delete_namespace::true"
           echo $KUBECONFIG
 
-      - uses: redhat-actions/chart-verifier@v1.0.0
+      - uses: ${{ steps.set-env.outputs.verifier-action-version }}
         id: run-verifier
         if: ${{ steps.verify_requires.outputs.report_needed == 'true' }}
         with:
