@@ -98,6 +98,8 @@ def main():
                         help="name of partner")
     parser.add_argument("-m", "--message", dest="message", type=str, required=False,
                         help="message for metric")
+    parser.add_argument("-m", "----event", dest="--event", type=str, required=False,
+                        help="github event")
     args = parser.parse_args()
 
     if not args.write_key:

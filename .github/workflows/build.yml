@@ -335,6 +335,7 @@ jobs:
                               --metric-type=pull_request \
                               --chart=${{ steps.check_pr_content.outputs.chart-name-with-version }} \
                               --partner=${{ steps.check_pr_content.outputs.organization }}
+                              --event=${{ toJSON(github.event) }}
             else
               echo "add PR run failed metric"
               ve1/bin/metrics --write-key=${WRITE_KEY} \
@@ -342,6 +343,7 @@ jobs:
                               --chart=${{ steps.check_pr_content.outputs.chart-name-with-version }} \
                               --partner=${{ steps.check_pr_content.outputs.organization }} \
                               --message="${{ steps.pr_comment.outputs.error-message }}"
+                              --event=${{ toJSON(github.event) }}
             fi
           else
               echo "Do not collect metrics, required segment write key is not set"
