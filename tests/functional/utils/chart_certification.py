@@ -477,17 +477,16 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
             report_path = f'{self.chart_directory}/{self.secrets.chart_version}/' + self.secrets.test_report.split('/')[-1]
 
-            with open(report_path, 'w') as fd:
-                fd.write(content)
+            try:
+                report = yaml.safe_load(content)
+            except yaml.YAMLError as err:
+                pytest.fail(f"error parsing '{report_path}': {err}")
+
+            if self.secrets.vendor_type != "partners":
+                report["metadata"]["tool"]["profile"]["VendorType"] = self.secrets.vendor_type
+                logging.info(f'VendorType set to {report["metadata"]["tool"]["profile"]["VendorType"]} in report.yaml')
 
             if update_chart_sha or update_url or update_versions or update_provider_delivery:
-
-                with open(report_path, 'r') as fd:
-                    try:
-                        report = yaml.safe_load(fd)
-                    except yaml.YAMLError as err:
-                        pytest.fail(f"error parsing '{report_path}': {err}")
-
                 #For updating the report.yaml, for chart sha mismatch scenario
                 if update_chart_sha:
                     new_sha_value = 'sha256:5b85ae00b9ca2e61b2d70a59f98fd72136453b1a185676b29d4eb862981c1xyz'
@@ -512,12 +511,12 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 if update_provider_delivery:
                     report['metadata']['tool']['providerControlledDelivery'] = provider_delivery
 
-                with open(report_path, 'w') as fd:
-                    try:
-                        fd.write(yaml.dump(report))
-                        logging.info("Report updated with new values")
-                    except Exception as e:
-                        pytest.fail("Failed to update report yaml with new values")            
+            with open(report_path, 'w') as fd:
+                try:
+                    fd.write(yaml.dump(report))
+                    logging.info("Report updated with new values")
+                except Exception as e:
+                    pytest.fail("Failed to update report yaml with new values")
 
             #For removing the check for missing check scenario
             if missing_check:
