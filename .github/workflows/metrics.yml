@@ -61,7 +61,7 @@ jobs:
           fi
 
           if [ "${WRITE_KEY}" != "" ]; then
-              ve1/bin/metrics --write-key=${WRITE_KEY} --metric-type=release
+              ve1/bin/metrics --write-key=${WRITE_KEY} --metric-type=nightly
           else
               echo "Do not collect metrics, required segment write key is not set"
           fi

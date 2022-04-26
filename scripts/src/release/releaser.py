@@ -27,7 +27,7 @@ import shutil
 from release import release_info
 
 sys.path.append('../')
-from github import gitutils
+from tools import gitutils
 
 SCHEDULE_YAML_FILE=".github/workflows/schedule.yml"
 BUILD_YAML_FILE=".github/workflows/build.yml"
