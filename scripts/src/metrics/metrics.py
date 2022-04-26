@@ -353,7 +353,7 @@ def send_metric(write_key,id,event,properties):
 
     print(f'[INFO] Add track:  id: {id},  event:{event},  properties:{properties}')
 
-    #analytics.track(id, event, properties)
+    analytics.track(id, event, properties)
 
 
 def main():
