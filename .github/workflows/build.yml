@@ -242,7 +242,7 @@ jobs:
           COMMUNITY_MANUAL_REVIEW: ${{ steps.check_report.outputs.community_manual_review_required }}
           OC_INSTALL_RESULT: ${{ steps.install-oc.conclusion }}
         run: |
-          python3 scripts/prepare_pr_comment.py ${{ steps.check_pr_content.outcome }} ${{ steps.check_report.conclusion }} ${{ github.repository }}
+          ve1/bin/pr-comment ${{ steps.check_pr_content.outcome }} ${{ steps.check_report.conclusion }} ${{ github.repository }}
 
       - name: Comment on PR
         if: ${{ always() && steps.check_build_required.outputs.run-build == 'true' }}
@@ -344,6 +344,8 @@ jobs:
 
       - name: Add metrics
         if: always() && steps.check_build_required.outputs.run-build == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
               WRITE_KEY=${{ secrets.SEGMENT_WRITE_KEY }}
@@ -354,20 +356,13 @@ jobs:
           fi
 
           if [ "${WRITE_KEY}" != "" ]; then
-            if [ "${{steps.pr_comment.outputs.pr_passed}}" == "true" ]; then
-              echo "add PR run passed metric"
-              ve1/bin/metrics --write-key=${WRITE_KEY} \
-                              --metric-type=pull_request \
-                              --chart=${{ steps.check_pr_content.outputs.chart-name-with-version }} \
-                              --partner=${{ steps.check_pr_content.outputs.organization }}
-            else
-              echo "add PR run failed metric"
-              ve1/bin/metrics --write-key=${WRITE_KEY} \
-                              --metric-type=pull_request \
-                              --chart=${{ steps.check_pr_content.outputs.chart-name-with-version }} \
-                              --partner=${{ steps.check_pr_content.outputs.organization }} \
-                              --message="${{ steps.pr_comment.outputs.error-message }}"
-            fi
+              echo "add PR run metric"
+              ve1/bin/metrics --write-key="${WRITE_KEY}" \
+                              --metric-type="pull_request" \
+                              --message-file="${{ steps.pr_comment.outputs.message-file }}" \
+                              --pr-number="${{ github.event.number }}" \
+                              --pr-action="${{ github.event.action }}" \
+                              --repository="${GITHUB_REPOSITORY}"
           else
               echo "Do not collect metrics, required segment write key is not set"
           fi
