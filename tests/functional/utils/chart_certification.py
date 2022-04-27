@@ -139,6 +139,7 @@ vendor:
                       "provider_delivery" : provider_delivery}
             content = Template(self.secrets.owners_file_content).substitute(values)
             with open(f'{chart_directory}/OWNERS', 'w') as fd:
+                logging.debug("[DEBUG] OWNERS CONTENT: {}".format(content))
                 fd.write(content)
 
             # Push OWNERS file to the test_repo
@@ -513,6 +514,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
             with open(report_path, 'w') as fd:
                 try:
+                    logging.debug("[DEBUG] REPORT CONTENT : {}".format(report))
                     fd.write(yaml.dump(report))
                     logging.info("Report updated with new values")
                 except Exception as e:
