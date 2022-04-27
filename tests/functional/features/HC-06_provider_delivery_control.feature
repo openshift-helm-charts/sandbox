@@ -11,7 +11,7 @@ Feature: Report only submission with provider control settings
   Scenario Outline: [HC-06-001] A partner associate submits an error-free report with provider controlled delivery
     Given the vendor <vendor> has a valid identity as <vendor_type>
     And provider delivery control is set to <provider_control_owners> in the OWNERS file
-    And an error-free report is used in <report_path>
+    And a <report_path> is provided
     And provider delivery control is set to <provider_control_report> in the report
     When the user sends a pull request with the report
     Then the user sees the pull request is merged
@@ -39,7 +39,7 @@ Feature: Report only submission with provider control settings
   Scenario Outline: [HC-06-003] A partner associate submits an error-free report with inconsistent provider controlled delivery setting
     Given the vendor <vendor> has a valid identity as <vendor_type>
     And provider delivery control is set to <provider_control_owners> in the OWNERS file
-    And an error-free report is used in <report_path>
+    And a <report_path> is provided
     And provider delivery control is set to <provider_control_report> in the report
     When the user sends a pull request with the report
     Then the pull request is not merged
