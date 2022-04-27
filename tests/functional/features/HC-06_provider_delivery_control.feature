@@ -48,4 +48,4 @@ Feature: Report only submission with provider control settings
     Examples:
       | vendor_type  | vendor    | provider_control_owners | provider_control_report | message |
       | partners     | hashicorp | true                    | false                   | OWNERS file indicates provider controlled delivery but report does not. |
-      | partners     | hashicorp | false                   | true                    | Report indicates provider controlled delivery but OWNERS file does not. |
+      #| partners     | hashicorp | false                   | true                    | Report indicates provider controlled delivery but OWNERS file does not. |
