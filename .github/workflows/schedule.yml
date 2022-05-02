@@ -205,10 +205,13 @@ jobs:
           echo "GITHUB_REPOSITORY : $GITHUB_REPOSITORY"
           if [ $GITHUB_EVENT_NAME == 'workflow_dispatch' ]; then
             echo '::set-output name=run-job::true'
+            echo "workflow_dispatch: set run-job to true"
           elif [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
             echo '::set-output name=run-job::true'
+            echo "charts repo: set run-job to true"
           else
             echo '::set-output name=run-job::false'
+            echo "set run-job to false"
           fi
 
       - name: Get current Chart Verifier version
