@@ -213,7 +213,7 @@ jobs:
 
       - name: Get current Chart Verifier version
         id: get_curr_cv_version
-        if: steps.check-repo.outputs.run-job == 'true'
+        if: steps.check_repo.outputs.run-job == 'true'
         run: |
           QUAY_API='https://quay.io/api/v1/repository/redhat-certification/chart-verifier/tag/'
           CV_DIGEST=$(curl ${QUAY_API} | jq '[.tags[] | select(.name == "latest")] | .[0].manifest_digest')
@@ -222,13 +222,13 @@ jobs:
         shell: bash
 
       - name: Checkout software-version branch
-        if: steps.check-repo.outputs.run-job == 'true'
+        if: steps.check_repo.outputs.run-job == 'true'
         uses: actions/checkout@v2
         with:
           ref: "software-version"
 
       - name: Read previous Chart Verifier digest
-        if: steps.check-repo.outputs.run-job == 'true'
+        if: steps.check_repo.outputs.run-job == 'true'
         id: get_prev_cv_digest
         uses: mikefarah/yq@master
         with:
