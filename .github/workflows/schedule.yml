@@ -66,6 +66,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: "software-version"
+          repository: "openshift-helm-charts/charts"
 
       - name: Read previous OpenShift version
         id: get_prev_ocp_version
@@ -229,6 +230,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: "software-version"
+          repository: "openshift-helm-charts/charts"
 
       - name: Read previous Chart Verifier digest
         if: steps.check_repo.outputs.run-job == 'true'
