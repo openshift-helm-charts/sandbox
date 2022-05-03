@@ -156,7 +156,9 @@ vendor:
         old_branch = self.repo.active_branch.name
         self.repo.git.fetch(f'https://github.com/{self.secrets.test_repo}.git',
                     '{0}:{0}'.format(f'{base_branch}-gh-pages'), '-f')
+
         print(f"Get {index_file} from branch {base_branch}-gh-pages")
+
         self.repo.git.checkout(f'{base_branch}-gh-pages')
 
 
@@ -805,7 +807,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             return
 
         # Check index.yaml is updated
-        if not super().check_index_yaml(base_branch, vendor_name, chart_name, chart_version, False, logging.warning):
+        if not super().check_index_yaml(base_branch, vendor_name, chart_name, chart_version, check_provider_type=False, logger=logging.warning):
             return
 
         # Check release is published
