@@ -237,7 +237,7 @@ vendor:
         # Check if PR merged
         r = github_api(
             'get', f'repos/{self.secrets.test_repo}/pulls/{pr_number}/merge', self.secrets.bot_token)
-        ptint(f"PR result status_code : {r.status_code}")
+        print(f"PR result status_code : {r.status_code}")
         if r.status_code == 204 and expect_merged:
             logging.info("PR merged sucessfully as expected")
             return True
