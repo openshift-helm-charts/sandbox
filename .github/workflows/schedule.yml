@@ -339,7 +339,7 @@ jobs:
           DRY_RUN: "true"
           VENDOR_TYPE: "all"
           NOTIFY_ID: ""
-          SOFTWARE_NAME: "OpenShift"
+          SOFTWARE_NAME: "Verifier"
           SOFTWARE_VERSION: ${{ steps.get_curr_cv_version.outputs.current_cv_digest }}
         run: |
           printf "[INFO] Dry run: '%s'\n" "${{ env.DRY_RUN }}"

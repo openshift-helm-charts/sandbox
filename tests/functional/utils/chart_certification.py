@@ -111,6 +111,8 @@ vendor:
         r = github_api(
             'post', f'repos/{remote_repo}/git/refs', bot_token, json=data)
 
+        print(f'gh-pages branch created: {base_branch}-gh-pages')
+
     def setup_git_context(self, repo: git.Repo):
         self.set_git_username_email(repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
         if os.environ.get('WORKFLOW_DEVELOPMENT'):
@@ -217,6 +219,7 @@ vendor:
             # Check workflow conclusion
             run_id = get_run_id(self.secrets, pr_number)
             conclusion = get_run_result(self.secrets, run_id)
+            print(f"PR{pr_number} workflow conclusion: {conclusion}")
             if conclusion == expect_result:
                 logging.info(f"Workflow run was '{expect_result}' which is expected")
             else:
@@ -760,6 +763,8 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
     def check_single_chart_result(self, vendor_type, vendor_name, chart_name, chart_version, pr_number, owners_table):
         base_branch = f'{self.secrets.software_name}-{self.secrets.software_version}-{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}'
 
+        print(f"Check result for chart: {vendor_type}/{vendor_name}/{chart_name}/{chart_version}")
+        print(f"Base branch is : {base_branch}")
         # Check workflow conclusion
         chart = f'{vendor_type} {vendor_name} {chart_name} {chart_version}'
         run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', logging.warning)
@@ -811,6 +816,8 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         base_branch = base_branch.replace(":","-")
         pr_branch = f'{base_branch}-pr-branch'
 
+        print(f"PR branch is : pr_branch")
+
         self.secrets.base_branches.append(base_branch)
         self.secrets.pr_branches.append(pr_branch)
         self.temp_repo.git.checkout('tmp')
@@ -851,6 +858,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         # Create PR from pr_branch to base_branch
         pr_number = super().send_pull_request(self.secrets.test_repo, base_branch, pr_branch, self.secrets.bot_token)
         pr_number_list.append((vendor_type, vendor_name, chart_name, chart_version, pr_number))
+        print(f"PR {pr_number} created in {self.secrets.test_repo} into {base_branch} from {pr_branch}")
 
         # Record expected release tags
         self.secrets.release_tags.append(f'{vendor_name}-{chart_name}-{chart_version}')
@@ -864,8 +872,11 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
 
         # Process test charts and send PRs from temporary directory
         with SetDirectory(Path(self.temp_dir.name)):
+            print(f"Process {len(self.secrets.submitted_charts)} charts")
             for vendor_type, vendor_name, chart_name, chart_version in self.secrets.submitted_charts:
+                print(f"Process chart: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
                 self.process_single_chart(vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table)
 
         for vendor_type, vendor_name, chart_name, chart_version, pr_number in pr_number_list:
+            print(f"Check result: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
             self.check_single_chart_result(vendor_type, vendor_name, chart_name, chart_version, pr_number, owners_table)
