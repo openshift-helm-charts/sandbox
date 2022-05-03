@@ -278,17 +278,6 @@ jobs:
           git commit -am "${COMMIT_MESSAGE}"
           git push
 
-      - name: Checkout main branch
-        if: |
-          steps.compare_cv_versions.outputs.run_tests == 'true'
-        uses: actions/checkout@v2
-        with:
-          ref: "main"
-          token: ${{ secrets.BOT_TOKEN }}
-          fetch-depth: 0
-          repository: "openshift-helm-charts/charts"
-          path: "charts-main"
-
       - name: Set up Python 3.x Part 1
         if: |
           steps.compare_cv_versions.outputs.run_tests == 'true'
@@ -297,7 +286,6 @@ jobs:
           python-version: "3.9"
 
       - name: Set up Python 3.x Part 2
-        working-directory: ./charts-main
         if: |
           steps.compare_cv_versions.outputs.run_tests == 'true'
         run: |
@@ -308,7 +296,6 @@ jobs:
           cd scripts && ../ve1/bin/python3 setup.py install && cd ..
 
       - name: (Manual) Run tests on existing charts
-        working-directory: ./charts-main
         if: |
           github.event_name == 'workflow_dispatch' && steps.compare_cv_versions.outputs.run_tests == 'true'
         env:
@@ -331,7 +318,6 @@ jobs:
           ve1/bin/pytest tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
 
       - name: (Schedule) Run tests on existing charts
-        working-directory: ./charts-main
         id: run-schedule-tests
         if: |
           github.event_name == 'schedule' && steps.compare_cv_versions.outputs.run_tests == 'true'
