@@ -806,7 +806,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
 
         chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
         base_branch = f'{self.secrets.software_name}-{self.secrets.software_version}-{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}'
-        base_branch.replace(":","-")
+        base_branch = base_branch.replace(":","-")
         pr_branch = f'{base_branch}-pr-branch'
 
         self.secrets.base_branches.append(base_branch)
