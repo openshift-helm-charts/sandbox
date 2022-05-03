@@ -716,11 +716,16 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             logging.info(f'Worktree directory: {self.temp_dir.name}')
             self.repo.git.worktree('add', '--detach', self.temp_dir.name, f'HEAD')
             self.temp_repo = git.Repo(self.temp_dir.name)
+            print(f"self.temp_dir.name : {self.temp_dir.name}")
+            print(f"self.temp_repo : {self.temp_repo}")
+            print(f"self.repo : {self.repo}")
+            print(f"cwd: {os.getcwd()}")
 
             # Run submission flow test with charts in PROD_REPO:PROD_BRANCH
             self.set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
-            self.temp_repo.git.fetch(
-                f'https://github.com/{PROD_REPO}.git', f'{PROD_BRANCH}:{PROD_BRANCH}', '-f')
+            if self.repo != PROD_REPO:
+                self.temp_repo.git.fetch(
+                    f'https://github.com/{PROD_REPO}.git', f'{PROD_BRANCH}:{PROD_BRANCH}', '-f')
             self.temp_repo.git.checkout(PROD_BRANCH, 'charts')
             self.temp_repo.git.restore('--staged', 'charts')
             self.secrets.submitted_charts = get_all_charts(
