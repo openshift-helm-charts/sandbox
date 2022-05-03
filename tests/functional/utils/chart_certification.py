@@ -798,6 +798,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
 
     def process_single_chart(self, vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table):
         # Get SHA from 'pr_base_branch' branch
+        print(f"Process chart: {vendor_type}/{vendor_name}/{chart_name}/{chart_version}")
         r = github_api(
             'get', f'repos/{self.secrets.test_repo}/git/ref/heads/{self.secrets.pr_base_branch}', self.secrets.bot_token)
         j = json.loads(r.text)
@@ -805,6 +806,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
 
         chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
         base_branch = f'{self.secrets.software_name}-{self.secrets.software_version}-{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}'
+        base_branch.replace(":","-")
         pr_branch = f'{base_branch}-pr-branch'
 
         self.secrets.base_branches.append(base_branch)
