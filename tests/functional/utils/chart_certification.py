@@ -164,8 +164,10 @@ vendor:
                 logger(f"error parsing index.yaml: {err}")
                 return False
 
+        print(f"Index.yaml content: {index}")
+
         entry = vendor + '-' + chart_name
-        if entry not in index['entries']:
+        if "entries" not in index or vendor not in index['entries']:
             logger(
                 f"{entry} not added in entries to {index_file}")
             return False
@@ -235,6 +237,7 @@ vendor:
         # Check if PR merged
         r = github_api(
             'get', f'repos/{self.secrets.test_repo}/pulls/{pr_number}/merge', self.secrets.bot_token)
+        ptint(f"PR result status_code : {r.status_code}")
         if r.status_code == 204 and expect_merged:
             logging.info("PR merged sucessfully as expected")
             return True
@@ -816,7 +819,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         base_branch = base_branch.replace(":","-")
         pr_branch = f'{base_branch}-pr-branch'
 
-        print(f"PR branch is : pr_branch")
+        print(f"PR branch is : {pr_branch}")
 
         self.secrets.base_branches.append(base_branch)
         self.secrets.pr_branches.append(pr_branch)
