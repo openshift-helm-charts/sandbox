@@ -156,7 +156,10 @@ vendor:
         old_branch = self.repo.active_branch.name
         self.repo.git.fetch(f'https://github.com/{self.secrets.test_repo}.git',
                     '{0}:{0}'.format(f'{base_branch}-gh-pages'), '-f')
+        print(f"Get {index_file} from branch {base_branch}-gh-pages")
         self.repo.git.checkout(f'{base_branch}-gh-pages')
+
+
         with open(index_file, 'r') as fd:
             try:
                 index = yaml.safe_load(fd)
@@ -166,30 +169,34 @@ vendor:
 
         print(f"Index.yaml content: {index}")
 
-        entry = vendor + '-' + chart_name
-        if "entries" not in index or vendor not in index['entries']:
-            logger(
-                f"{entry} not added in entries to {index_file}")
+        if index:
+            entry = vendor + '-' + chart_name
+            if "entries" not in index or vendor not in index['entries']:
+                logger(
+                    f"{entry} not added in entries to {index_file}")
+                return False
+
+            version_list = [release['version'] for release in index['entries'][entry]]
+            if chart_version not in version_list:
+                logger(
+                    f"{chart_version} not added to {index_file}")
+                return False
+
+            #This check is applicable for charts submitted in redhat path when one of the chart-verifier check fails
+            #Check whether providerType annotations is community in index.yaml when vendor_type is redhat
+            if check_provider_type and self.secrets.vendor_type == 'redhat':
+                provider_type_in_index_yaml = index['entries'][entry][0]['annotations']['charts.openshift.io/providerType']
+                if provider_type_in_index_yaml != 'community':
+                    logger(f"{provider_type_in_index_yaml} is not correct as providerType in index.yaml")
+
+
+            logging.info("Index updated correctly, cleaning up local branch")
+            self.repo.git.checkout(old_branch)
+            self.repo.git.branch('-D', f'{base_branch}-gh-pages')
+            return True
+        else:
+            print("Index file not found or empty")
             return False
-
-        version_list = [release['version'] for release in index['entries'][entry]]
-        if chart_version not in version_list:
-            logger(
-                f"{chart_version} not added to {index_file}")
-            return False
-
-        #This check is applicable for charts submitted in redhat path when one of the chart-verifier check fails
-        #Check whether providerType annotations is community in index.yaml when vendor_type is redhat
-        if check_provider_type and self.secrets.vendor_type == 'redhat':
-            provider_type_in_index_yaml = index['entries'][entry][0]['annotations']['charts.openshift.io/providerType']
-            if provider_type_in_index_yaml != 'community':
-                logger(f"{provider_type_in_index_yaml} is not correct as providerType in index.yaml")
-
-
-        logging.info("Index updated correctly, cleaning up local branch")
-        self.repo.git.checkout(old_branch)
-        self.repo.git.branch('-D', f'{base_branch}-gh-pages')
-        return True
 
     def check_release_result(self, vendor, chart_name, chart_version, chart_tgz, logger=pytest.fail):
         expected_tag = f'{vendor}-{chart_name}-{chart_version}'
