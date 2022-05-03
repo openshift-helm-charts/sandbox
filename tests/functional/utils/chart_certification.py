@@ -695,9 +695,11 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         if not software_name:
             raise Exception("SOFTWARE_NAME environment variable not defined")
 
-        software_version = os.environ.get("SOFTWARE_VERSION")
+        software_version = os.environ.get("SOFTWARE_VERSION").strip('\"')
         if not software_version:
             raise Exception("SOFTWARE_VERSION environment variable not defined")
+        elif software_version.startswith("sha256"):
+            software_version = software_version[-8:]
 
         return software_name, software_version
 
