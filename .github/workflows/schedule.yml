@@ -290,7 +290,6 @@ jobs:
           path: "charts-main"
 
       - name: Set up Python 3.x Part 1
-        working-directory: ./charts-main
         if: |
           steps.compare_cv_versions.outputs.run_tests == 'true'
         uses: actions/setup-python@v2
