@@ -283,7 +283,7 @@ jobs:
           steps.compare_cv_versions.outputs.run_tests == 'true'
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.workflow_dispatch.ref }}
+          ref: "main"
           token: ${{ secrets.BOT_TOKEN }}
           fetch-depth: 0
           repository: "openshift-helm-charts/charts"
@@ -300,6 +300,7 @@ jobs:
           steps.compare_cv_versions.outputs.run_tests == 'true'
         run: |
           # set up python
+          pwd
           python3 -m venv ve1
           cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
           cd scripts && ../ve1/bin/python3 setup.py install && cd ..
@@ -323,6 +324,7 @@ jobs:
           printf "[INFO] Notify ID: '%s'\n" "${{ env.NOTIFY_ID }}"
           printf "[INFO] Software Name: '%s'\n" "${{ env.SOFTWARE_NAME }}"
           printf "[INFO] Software Version: '%s'\n" "${{ env.SOFTWARE_VERSION }}"
+          pwd
           ve1/bin/pytest tests/functional/step_defs/test_submitted_charts.py --log-cli-level=WARNING --tb=short
 
       - name: (Schedule) Run tests on existing charts
