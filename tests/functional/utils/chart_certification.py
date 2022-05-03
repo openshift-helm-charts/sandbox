@@ -723,9 +723,6 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
 
             # Run submission flow test with charts in PROD_REPO:PROD_BRANCH
             self.set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
-            if self.repo != PROD_REPO:
-                self.temp_repo.git.fetch(
-                    f'https://github.com/{PROD_REPO}.git', f'{PROD_BRANCH}:{PROD_BRANCH}', '-f')
             self.temp_repo.git.checkout(PROD_BRANCH, 'charts')
             self.temp_repo.git.restore('--staged', 'charts')
             self.secrets.submitted_charts = get_all_charts(

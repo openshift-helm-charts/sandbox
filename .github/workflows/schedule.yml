@@ -9,7 +9,7 @@ on:
       # Can lift this input when we feel comfortable to run this workflow once
       # for each software version change and send notifications (no backdoor).
       dry-run:
-        description: "Run tests but do not create issues {true,false}"
+        description: "Dry Run? (Run tests but do not create issues) {true,false}"
         required: true
         default: "true"
       vendor-type:
