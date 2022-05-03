@@ -278,6 +278,17 @@ jobs:
           git commit -am "${COMMIT_MESSAGE}"
           git push
 
+      - name: Checkout charts main branch
+        if: |
+          steps.compare_cv_versions.outputs.run_tests == 'true'
+        uses: actions/checkout@v2
+        with:
+          ref: "main"
+          token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
+          repository: "openshift-helm-charts/charts"
+          path: "charts-main"
+
       - name: Set up Python 3.x Part 1
         if: |
           steps.compare_cv_versions.outputs.run_tests == 'true'
