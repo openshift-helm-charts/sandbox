@@ -888,10 +888,10 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         # Process test charts and send PRs from temporary directory
         with SetDirectory(Path(self.temp_dir.name)):
             for vendor_type, vendor_name, chart_name, chart_version in self.secrets.submitted_charts:
-                logging(f"Process chart: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
+                logging.info(f"Process chart: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
                 self.process_single_chart(vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table)
 
         for vendor_type, vendor_name, chart_name, chart_version, pr_number in pr_number_list:
-            logging(f"PR{pr_number} Check result: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
+            logging.info(f"PR{pr_number} Check result: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
             self.check_single_chart_result(vendor_type, vendor_name, chart_name, chart_version, pr_number, owners_table)
 
