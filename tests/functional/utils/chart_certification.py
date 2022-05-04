@@ -239,7 +239,7 @@ vendor:
             return run_id, conclusion
         except Exception as e:
             logger(e)
-            return run_id, conclusion
+            return run_id, None
 
     # expect_merged: boolean representing whether the PR should be merged
     def check_pull_request_result(self, pr_number, expect_merged: bool, logger=pytest.fail):
@@ -781,25 +781,31 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         chart = f'{vendor_type} {vendor_name} {chart_name} {chart_version}'
         run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', logging.warning)
 
-        # Send notification to owner through GitHub issues
-        if not self.secrets.dry_run and run_id and conclusion:
-            r = github_api(
-                'get', f'repos/{self.secrets.test_repo}/actions/runs/{run_id}', self.secrets.bot_token)
-            run = r.json()
-            run_html_url = run['html_url']
-            chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
-            chart_owners = owners_table[chart_directory]
-            pass_verification = conclusion == 'success'
-            os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
-            os.environ['GITHUB_REPO'] = PROD_REPO.split('/')[1]
-            os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
-            logging.info(
-                f"Send notification to '{chart_owners}' about verification result of '{chart}'")
-            create_verification_issue(chart_name, chart_owners, run_html_url, self.secrets.software_name,
-                                    self.secrets.software_version, pass_verification, self.secrets.bot_token)
+        if conclusion:
+            # Send notification to owner through GitHub issues
+            if not self.secrets.dry_run and run_id and conclusion != "success":
+                r = github_api(
+                    'get', f'repos/{self.secrets.test_repo}/actions/runs/{run_id}', self.secrets.bot_token)
+                run = r.json()
+                run_html_url = run['html_url']
+                chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
+                chart_owners = owners_table[chart_directory]
+                pass_verification = conclusion == 'success'
+                os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
+                os.environ['GITHUB_REPO'] = PROD_REPO.split('/')[1]
+                os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
+                logging.info(
+                    f"Send notification to '{chart_owners}' about verification result of '{chart}'")
+                create_verification_issue(chart_name, chart_owners, run_html_url, self.secrets.software_name,
+                                        self.secrets.software_version, pass_verification, self.secrets.bot_token)
+            if self.secrets.dry_run:
+                print(f"Dry run conclusion was: {conclusion}")
 
-        # Early return on workflow failures
-        if conclusion != 'success':
+            # Early return on workflow failures
+            if conclusion != 'success':
+                return
+        else:
+            print("No conclusion determined - must still be running.")
             return
 
         # Check PRs are merged
