@@ -768,32 +768,31 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         chart = f'{vendor_type} {vendor_name} {chart_name} {chart_version}'
         run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', logging.warning)
 
-        if conclusion:
+        if conclusion and run_id:
             # Send notification to owner through GitHub issues
-            if run_id and conclusion != "success":
-                r = github_api(
-                    'get', f'repos/{self.secrets.test_repo}/actions/runs/{run_id}', self.secrets.bot_token)
-                run = r.json()
-                run_html_url = run['html_url']
-                chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
-                chart_owners = owners_table[chart_directory]
-                pass_verification = conclusion == 'success'
+            r = github_api(
+                'get', f'repos/{self.secrets.test_repo}/actions/runs/{run_id}', self.secrets.bot_token)
+            run = r.json()
+            run_html_url = run['html_url']
+            chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
+            chart_owners = owners_table[chart_directory]
+            pass_verification = conclusion == 'success'
+            os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
+            os.environ['GITHUB_REPO'] = PROD_REPO.split('/')[1]
+            os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
+            if not self.secrets.dry_run:
+                logging.info(f"PR{pr_number} Send notification to '{chart_owners}' about verification result of '{chart}'")
+                create_verification_issue(chart_name, chart_owners, run_html_url, self.secrets.software_name,
+                                    self.secrets.software_version, pass_verification, self.secrets.bot_token)
+            else:
                 os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
-                os.environ['GITHUB_REPO'] = PROD_REPO.split('/')[1]
+                os.environ['GITHUB_REPO'] = "sandbox"
                 os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
-                if not self.secrets.dry_run:
-                    logging.info(f"PR{pr_number} Send notification to '{chart_owners}' about verification result of '{chart}'")
-                    create_verification_issue(chart_name, chart_owners, run_html_url, self.secrets.software_name,
-                                        self.secrets.software_version, pass_verification, self.secrets.bot_token)
-                else:
-                    os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
-                    os.environ['GITHUB_REPO'] = "sandbox"
-                    os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
-                    chart_owners = ["mmulholla"]
-                    logging.info(f"Send notification to '{chart_owners}' about verification result of '{chart}'")
-                    create_verification_issue(chart_name, chart_owners, run_html_url, self.secrets.software_name,
-                                              self.secrets.software_version, pass_verification, self.secrets.bot_token)
-                    logging.info(f"PR{pr_number} Dry Run - do not send  notification to '{chart_owners}' about verification result of '{chart}'")
+                chart_owners = ["mmulholla"]
+                logging.info(f"Send notification to '{chart_owners}' about verification result of '{chart}'")
+                create_verification_issue(chart_name, chart_owners, run_html_url, self.secrets.software_name,
+                                          self.secrets.software_version, pass_verification, self.secrets.bot_token)
+                logging.info(f"PR{pr_number} Dry Run - do not send  notification to '{chart_owners}' about verification result of '{chart}'")
             # Early return on workflow failures
             if conclusion != 'success':
                 logging.warning(f"PR{pr_number} workflow failed: {vendor_name}, {chart_name}, {chart_version}")
