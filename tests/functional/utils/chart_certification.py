@@ -111,7 +111,7 @@ vendor:
         r = github_api(
             'post', f'repos/{remote_repo}/git/refs', bot_token, json=data)
 
-        logging(f'gh-pages branch created: {base_branch}-gh-pages')
+        logging.info(f'gh-pages branch created: {base_branch}-gh-pages')
 
     def setup_git_context(self, repo: git.Repo):
         self.set_git_username_email(repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
@@ -239,7 +239,7 @@ vendor:
         # Check if PR merged
         r = github_api(
             'get', f'repos/{self.secrets.test_repo}/pulls/{pr_number}/merge', self.secrets.bot_token)
-        logging(f"PR{pr_number} result status_code : {r.status_code}")
+        logging.info(f"PR{pr_number} result status_code : {r.status_code}")
         if r.status_code == 204 and expect_merged:
             logging.info(f"PR{pr_number} merged sucessfully as expected")
             return True
@@ -568,7 +568,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
     def send_pull_request(self):
         self.secrets.pr_number = super().send_pull_request(self.secrets.test_repo, self.secrets.base_branch, self.secrets.pr_branch, self.secrets.bot_token)
-        logging(f"[INFO] PR number: {self.secrets.pr_number}")
+        logging.info(f"[INFO] PR number: {self.secrets.pr_number}")
 
     # expect_result: a string representation of expected result, e.g. 'success'
     def check_workflow_conclusion(self, expect_result: str):

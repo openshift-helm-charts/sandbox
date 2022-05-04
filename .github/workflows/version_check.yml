@@ -315,7 +315,7 @@ jobs:
           NOTIFY_ID: ${{ github.event.inputs.notify-id }}
           BOT_NAME: ${{ secrets.BOT_NAME }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          SOFTWARE_NAME: "Verifier"
+          SOFTWARE_NAME: "chart-verifier"
           SOFTWARE_VERSION: ${{ steps.get_curr_cv_version.outputs.current_cv_digest }}
         run: |
           printf "[INFO] Dry run: '%s'\n" "${{ env.DRY_RUN }}"
@@ -339,7 +339,7 @@ jobs:
           DRY_RUN: "true"
           VENDOR_TYPE: "all"
           NOTIFY_ID: ""
-          SOFTWARE_NAME: "Verifier"
+          SOFTWARE_NAME: "chart-verifier"
           SOFTWARE_VERSION: ${{ steps.get_curr_cv_version.outputs.current_cv_digest }}
         run: |
           printf "[INFO] Dry run: '%s'\n" "${{ env.DRY_RUN }}"
