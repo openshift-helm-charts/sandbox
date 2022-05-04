@@ -111,7 +111,7 @@ vendor:
         r = github_api(
             'post', f'repos/{remote_repo}/git/refs', bot_token, json=data)
 
-        print(f'gh-pages branch created: {base_branch}-gh-pages')
+        logging(f'gh-pages branch created: {base_branch}-gh-pages')
 
     def setup_git_context(self, repo: git.Repo):
         self.set_git_username_email(repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
@@ -167,16 +167,16 @@ vendor:
                 return False
 
         if index:
-            entry = vendor + '-' + chart_name
-            if "entries" not in index or vendor not in index['entries']:
+            entry = f"{vendor}-{chart_name}"
+            if "entries" not in index or entry not in index['entries']:
                 logger(f"{entry} not added in entries to {index_file}")
-                logger(f"Index.yaml content: {index}")
+                logger(f"Index.yaml entries: {index['entries']}")
                 return False
 
             version_list = [release['version'] for release in index['entries'][entry]]
             if chart_version not in version_list:
                 logger(f"{chart_version} not added to {index_file}")
-                logger(f"Index.yaml content: {index}")
+                logger(f"Index.yaml entry content: {index['entries'][entry]}")
                 return False
 
             #This check is applicable for charts submitted in redhat path when one of the chart-verifier check fails
@@ -224,7 +224,6 @@ vendor:
             # Check workflow conclusion
             run_id = get_run_id(self.secrets, pr_number)
             conclusion = get_run_result(self.secrets, run_id)
-            print(f"PR{pr_number} workflow conclusion: {conclusion}")
             if conclusion == expect_result:
                 logging.info(f"PR{pr_number} Workflow run was '{expect_result}' which is expected")
             else:
@@ -240,7 +239,7 @@ vendor:
         # Check if PR merged
         r = github_api(
             'get', f'repos/{self.secrets.test_repo}/pulls/{pr_number}/merge', self.secrets.bot_token)
-        print(f"PR result status_code : {r.status_code}")
+        logging(f"PR{pr_number} result status_code : {r.status_code}")
         if r.status_code == 204 and expect_merged:
             logging.info(f"PR{pr_number} merged sucessfully as expected")
             return True
@@ -569,7 +568,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
     def send_pull_request(self):
         self.secrets.pr_number = super().send_pull_request(self.secrets.test_repo, self.secrets.base_branch, self.secrets.pr_branch, self.secrets.bot_token)
-        print(f"[INFO] PR number: {self.secrets.pr_number}")
+        logging(f"[INFO] PR number: {self.secrets.pr_number}")
 
     # expect_result: a string representation of expected result, e.g. 'success'
     def check_workflow_conclusion(self, expect_result: str):
@@ -727,10 +726,6 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             logging.info(f'Worktree directory: {self.temp_dir.name}')
             self.repo.git.worktree('add', '--detach', self.temp_dir.name, f'HEAD')
             self.temp_repo = git.Repo(self.temp_dir.name)
-            print(f"self.temp_dir.name : {self.temp_dir.name}")
-            print(f"self.temp_repo : {self.temp_repo}")
-            print(f"self.repo : {self.repo}")
-            print(f"cwd: {os.getcwd()}")
 
             # Run submission flow test with charts in PROD_REPO:PROD_BRANCH
             self.set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
@@ -791,8 +786,8 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                     create_verification_issue(chart_name, chart_owners, run_html_url, self.secrets.software_name,
                                         self.secrets.software_version, pass_verification, self.secrets.bot_token)
                 else:
-                    os.environ['GITHUB_ORGANIZATION'] = "mmulholla"
-                    os.environ['GITHUB_REPO'] = "development"
+                    os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
+                    os.environ['GITHUB_REPO'] = "sandbox"
                     os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
                     chart_owners = ["mmulholla"]
                     logging.info(f"Send notification to '{chart_owners}' about verification result of '{chart}'")
@@ -805,7 +800,6 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                 return
         else:
             logging.warning(f"PR{pr_number} workflow did not complete: {vendor_name}, {chart_name}, {chart_version}")
-            print("No conclusion determined - must still be running.")
             return
         logging.info(f"PR{pr_number} workflow passed: {vendor_name}, {chart_name}, {chart_version}")
 
@@ -818,14 +812,12 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         # Check index.yaml is updated
         if not super().check_index_yaml(base_branch, vendor_name, chart_name, chart_version, check_provider_type=False, logger=logging.warning):
             logging.warning(f"PR{pr_number} - Chart was not found in Index file: {vendor_name}, {chart_name}, {chart_version}")
-            return
         logging.info(f"PR{pr_number} - Chart was found in Index file: {vendor_name}, {chart_name}, {chart_version}")
 
         # Check release is published
         chart_tgz = f'{chart_name}-{chart_version}.tgz'
         if not super().check_release_result(vendor_name, chart_name, chart_version, chart_tgz, logging.warning):
             logging.warning(f"PR{pr_number} - Release was not created: {vendor_name}, {chart_name}, {chart_version}")
-            return
         logging.info(f"PR{pr_number} - Release was created: {vendor_name}, {chart_name}, {chart_version}")
 
     def process_single_chart(self, vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table):
@@ -840,8 +832,6 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         base_branch = f'{self.secrets.software_name}-{self.secrets.software_version}-{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}'
         base_branch = base_branch.replace(":","-")
         pr_branch = f'{base_branch}-pr-branch'
-
-        print(f"PR branch is : {pr_branch}")
 
         self.secrets.base_branches.append(base_branch)
         self.secrets.pr_branches.append(pr_branch)
@@ -883,7 +873,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         # Create PR from pr_branch to base_branch
         pr_number = super().send_pull_request(self.secrets.test_repo, base_branch, pr_branch, self.secrets.bot_token)
         pr_number_list.append((vendor_type, vendor_name, chart_name, chart_version, pr_number))
-        logging.info(f"PR {pr_number} created in {self.secrets.test_repo} into {base_branch} from {pr_branch}")
+        logging.info(f"PR{pr_number} created in {self.secrets.test_repo} into {base_branch} from {pr_branch}")
 
         # Record expected release tags
         self.secrets.release_tags.append(f'{vendor_name}-{chart_name}-{chart_version}')
@@ -897,13 +887,11 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
 
         # Process test charts and send PRs from temporary directory
         with SetDirectory(Path(self.temp_dir.name)):
-            print(f"Process {len(self.secrets.submitted_charts)} charts")
             for vendor_type, vendor_name, chart_name, chart_version in self.secrets.submitted_charts:
-                print(f"Process chart: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
+                logging(f"Process chart: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
                 self.process_single_chart(vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table)
 
         for vendor_type, vendor_name, chart_name, chart_version, pr_number in pr_number_list:
-            print(f"PR{pr_number} Check result: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
+            logging(f"PR{pr_number} Check result: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
             self.check_single_chart_result(vendor_type, vendor_name, chart_name, chart_version, pr_number, owners_table)
 
-        raise Exception("Exit with error to get output")

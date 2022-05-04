@@ -91,7 +91,7 @@ def create_verification_issue(chart_name, chart_owners, report_url, software_nam
 
     title = f"Action needed for {chart_name} after a certification dependency change"
 
-    report_result = "some chart checks have failed. Consider submiting a new chart version with the appropiate corrections"
+    report_result = "some chart checks have failed. Consider submitting a new chart version with the appropriate corrections"
     if pass_verification:
         report_result = ("all chart checks have passed. With your approval, we could automatically "
                          "update your chart annotations in index.yaml. Use this issue to communicate "
