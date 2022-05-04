@@ -768,6 +768,8 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         chart = f'{vendor_type} {vendor_name} {chart_name} {chart_version}'
         run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', logging.warning)
 
+        
+
         if conclusion and run_id:
             # Send notification to owner through GitHub issues
             r = github_api(
@@ -800,6 +802,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         else:
             logging.warning(f"PR{pr_number} workflow did not complete: {vendor_name}, {chart_name}, {chart_version}")
             return
+
         logging.info(f"PR{pr_number} workflow passed: {vendor_name}, {chart_name}, {chart_version}")
 
         # Check PRs are merged
