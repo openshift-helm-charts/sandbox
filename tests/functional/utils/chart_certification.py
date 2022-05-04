@@ -794,12 +794,15 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                 os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
                 os.environ['GITHUB_REPO'] = PROD_REPO.split('/')[1]
                 os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
-                logging.info(
-                    f"Send notification to '{chart_owners}' about verification result of '{chart}'")
-                create_verification_issue(chart_name, chart_owners, run_html_url, self.secrets.software_name,
+                if not self.secrets.dry_run:
+                    logging.info(
+                        f"Send notification to '{chart_owners}' about verification result of '{chart}'")
+                    create_verification_issue(chart_name, chart_owners, run_html_url, self.secrets.software_name,
                                         self.secrets.software_version, pass_verification, self.secrets.bot_token)
-            if self.secrets.dry_run:
-                print(f"Dry run conclusion was: {conclusion}")
+                else:
+                    logging.info(
+                        f"Dry Run - do not send  notification to '{chart_owners}' about verification result of '{chart}'")
+
 
             # Early return on workflow failures
             if conclusion != 'success':
@@ -898,3 +901,5 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         for vendor_type, vendor_name, chart_name, chart_version, pr_number in pr_number_list:
             print(f"Check result: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
             self.check_single_chart_result(vendor_type, vendor_name, chart_name, chart_version, pr_number, owners_table)
+
+        raise Exception("Exit with error to get output")
