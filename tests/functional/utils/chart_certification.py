@@ -169,20 +169,22 @@ vendor:
                 logger(f"error parsing index.yaml: {err}")
                 return False
 
-        print(f"Index.yaml content: {index}")
-
         if index:
             entry = vendor + '-' + chart_name
             if "entries" not in index or vendor not in index['entries']:
                 logger(
                     f"{entry} not added in entries to {index_file}")
+                print(f"Index.yaml content: {index}")
                 return False
 
             version_list = [release['version'] for release in index['entries'][entry]]
             if chart_version not in version_list:
                 logger(
                     f"{chart_version} not added to {index_file}")
+                print(f"Index.yaml content: {index}")
                 return False
+
+            print(f"Entry found in index for {vendor} {chart_name} {chart_version}")
 
             #This check is applicable for charts submitted in redhat path when one of the chart-verifier check fails
             #Check whether providerType annotations is community in index.yaml when vendor_type is redhat
@@ -802,31 +804,38 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                 else:
                     logging.info(
                         f"Dry Run - do not send  notification to '{chart_owners}' about verification result of '{chart}'")
-
-
             # Early return on workflow failures
             if conclusion != 'success':
+                logging.warning(f"PR workflow failed: {vendor_name}, {chart_name}, {chart_version}")
                 return
         else:
+            logging.warning(f"PR{pr_number} workflow did not complete: {vendor_name}, {chart_name}, {chart_version}")
             print("No conclusion determined - must still be running.")
             return
+        logging.info(f"PR{pr_number} workflow passed: {vendor_name}, {chart_name}, {chart_version}")
 
         # Check PRs are merged
         if not super().check_pull_request_result(pr_number, True, logging.warning):
+            logging.warning(f"PR{pr_number} pull request was not merged: {vendor_name}, {chart_name}, {chart_version}")
             return
+        logging.info(f"PR{pr_number} pull request was merged: {vendor_name}, {chart_name}, {chart_version}")
 
         # Check index.yaml is updated
         if not super().check_index_yaml(base_branch, vendor_name, chart_name, chart_version, check_provider_type=False, logger=logging.warning):
+            logging.warning(f"PR{pr_number} - Chart was not found in Index file: {vendor_name}, {chart_name}, {chart_version}")
             return
+        logging.info(f"PR{pr_number} - Chart was found in Index file: {vendor_name}, {chart_name}, {chart_version}")
 
         # Check release is published
         chart_tgz = f'{chart_name}-{chart_version}.tgz'
         if not super().check_release_result(vendor_name, chart_name, chart_version, chart_tgz, logging.warning):
+            logging.warning(f"PR{pr_number} - Release was not created: {vendor_name}, {chart_name}, {chart_version}")
             return
+        logging.info(f"PR{pr_number} - Release was created: {vendor_name}, {chart_name}, {chart_version}")
 
     def process_single_chart(self, vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table):
         # Get SHA from 'pr_base_branch' branch
-        print(f"Process chart: {vendor_type}/{vendor_name}/{chart_name}/{chart_version}")
+        logging.info(f"Process chart: {vendor_type}/{vendor_name}/{chart_name}/{chart_version}")
         r = github_api(
             'get', f'repos/{self.secrets.test_repo}/git/ref/heads/{self.secrets.pr_base_branch}', self.secrets.bot_token)
         j = json.loads(r.text)
