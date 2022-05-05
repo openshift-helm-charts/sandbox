@@ -118,9 +118,8 @@ jobs:
           steps.compare_ocp_versions.outputs.run_tests == 'true'
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.workflow_dispatch.ref }}
+          ref: "main"
           token: ${{ secrets.BOT_TOKEN }}
-          repository: "openshift-helm-charts/charts"
           fetch-depth: 0
 
       - name: Set up Python 3.x Part 1
