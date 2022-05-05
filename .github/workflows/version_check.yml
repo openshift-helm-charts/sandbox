@@ -205,7 +205,7 @@ jobs:
           echo "GITHUB_EVENT_NAME : $GITHUB_EVENT_NAME"
           echo "GITHUB_REPOSITORY : $GITHUB_REPOSITORY"
           if [ $GITHUB_EVENT_NAME == 'workflow_dispatch' ]; then
-            echo '::set-output name=run-job::true'
+            echo '::set-output name=run-job::false'
             echo "workflow_dispatch: set run-job to true"
           elif [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
             echo '::set-output name=run-job::true'
