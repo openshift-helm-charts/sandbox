@@ -1,32 +1,50 @@
 import os
 import sys
 
+def get_success_coment():
+    return "Congratulations! Your chart has been certified and will be published shortly."
+
+def get_content_failure_message():
+    return "One or more errors were found with the pull request:"
+
+def get_community_review_message():
+    return "Community charts require maintainer review and approval, a review will be conducted shortly."
+
+def get_failure_comment():
+    return "There were one or more errors while building and verifying your pull request."
+
+def get_verifier_errors_comment():
+    return "[ERROR] The submitted chart has failed certification. Reason(s):"
+
+def get_verifier_errors_trailer():
+    return "Please run the [chart-verifier](https://github.com/redhat-certification/chart-verifier) \
+and ensure all mandatory checks pass."
+
 def prepare_failure_comment():
     msg = f"""\
-There were one or more errors while building and verifying your pull request.
+{get_failure_comment()}
 To see the console output with the error messages, click the "Details"
 link next to "CI / Chart Certification" job status towards the end of this page.
 """
     if os.path.exists("./pr/errors"):
         errors = open("./pr/errors").read()
         msg += f"""
-[ERROR] The submitted chart has failed certification. Reason(s):
+{get_verifier_errors_comment()}
 
 {errors}
 
-Please run the [chart-verifier](https://github.com/redhat-certification/chart-verifier) \
-and ensure all mandatory checks pass.
+{get_verifier_errors_trailer()}
 
 """
     print(f"::set-output name=error-message::{errors}")
     return msg
 
 def prepare_success_comment():
-    msg = f"Congratulations! Your chart has been certified and will be published shortly.\n\n"
+    msg = f"{get_success_coment()}.\n\n"
     return msg
 
 def prepare_pr_content_failure_comment():
-    msg = f"One or more errors were found with the pull request: \n"
+    msg = f"{get_content_failure_message()} \n"
     pr_content_error_msg = os.environ.get("PR_CONTENT_ERROR_MESSAGE", "")
     owners_error_msg = os.environ.get("OWNERS_ERROR_MESSAGE", "")
     if pr_content_error_msg:
@@ -38,7 +56,7 @@ def prepare_pr_content_failure_comment():
     return msg
 
 def prepare_community_comment():
-    msg = f"Community charts require maintainer review and approval, a review will be conducted shortly.\n\n"
+    msg = f"{get_community_review_message()}\n\n"
     if os.path.exists("./pr/errors"):
         errors = open("./pr/errors").read()
         msg += "However, please note that one or more errors were found while building and verifying your pull request:\n\n"
@@ -93,6 +111,7 @@ def main():
 
     with open("./pr/comment", "w") as fd:
         fd.write(msg)
+        print(f"::set-output name=message-file::{fd.name}")
 
 if __name__ == "__main__":
     main()
