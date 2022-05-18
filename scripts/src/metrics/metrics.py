@@ -88,6 +88,8 @@ def send_pull_request_metrics(write_key,repo):
             else:
                 charts_in_progress +=1
 
+        check_rate_limit(g)
+
     print(f"[INFO] abandoned PRS: {abandoned}")
     send_summary_metric(write_key,chart_submissions,charts_merged,charts_abandoned,charts_in_progress,len(partners),len(partner_charts))
 
@@ -356,6 +358,12 @@ def send_metric(write_key,id,event,properties):
     analytics.track(id, event, properties)
 
 
+def check_rate_limit(g):
+    rate_limit = g.get_rate_limit()
+    print(f"core current: {rate_limit.core.used}, limit {rate_limit.core.limit}, time to refresh: {rate_limit.core.reset.timetuple()}")
+    print(f"search current: {rate_limit.search.used} limit {rate_limit.search.limit}, time to refresh: {rate_limit.search.reset.timetuple()}")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-k", "--write-key", dest="write_key", type=str, required=True,
@@ -391,7 +399,9 @@ def main():
         process_pr(args.write_key,repo_current,args.message_file,args.pr_number,args.pr_action)
     else:
         repo_charts = g.get_repo("openshift-helm-charts/charts")
+        check_rate_limit(g)
         send_release_metrics(args.write_key,get_release_metrics())
+        check_rate_limit(g)
         send_pull_request_metrics(args.write_key,repo_charts)
 
 if __name__ == '__main__':
