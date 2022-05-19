@@ -38,7 +38,7 @@ jobs:
       - name: Release Metrics
         id: release_metrics
         env:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github_token: ${{secrets.GITHUB_TOKEN}}
         run: |
           if [[ "${{github.event_name}}" == "workflow_dispatch" ]]; then
               if [[ "${{github.event.inputs.production-data}}" == "true" ]]; then
