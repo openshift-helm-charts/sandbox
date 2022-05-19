@@ -59,7 +59,7 @@ def send_release_metrics(write_key, downloads):
         for chart in metrics[provider]:
             send_metric(write_key,provider,f"{chart} downloads", metrics[provider][chart])
 
-def send_pull_request_metrics(write_key,repo):
+def send_pull_request_metrics(write_key,g):
 
     chart_submissions = 0
     partners = []
@@ -68,7 +68,7 @@ def send_pull_request_metrics(write_key,repo):
     charts_abandoned = 0
     charts_in_progress = 0
     abandoned = []
-
+    repo = g.get_repo("openshift-helm-charts/charts")
     pull_requests = repo.get_pulls(state='all')
     for pr in pull_requests:
         pr_content,type,provider,chart,version = check_and_get_pr_content(pr,repo)
@@ -87,6 +87,8 @@ def send_pull_request_metrics(write_key,repo):
                         partner_charts.append(chart)
             else:
                 charts_in_progress +=1
+
+        check_rate_limit(g,False)
 
     print(f"[INFO] abandoned PRS: {abandoned}")
     send_summary_metric(write_key,chart_submissions,charts_merged,charts_abandoned,charts_in_progress,len(partners),len(partner_charts))
@@ -356,6 +358,13 @@ def send_metric(write_key,id,event,properties):
     analytics.track(id, event, properties)
 
 
+def check_rate_limit(g,force):
+    rate_limit = g.get_rate_limit()
+    if force or rate_limit.core.remaining < 10:
+        print(f"[INFO] rate limit info: {rate_limit.core}")
+
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-k", "--write-key", dest="write_key", type=str, required=True,
@@ -384,15 +393,17 @@ def main():
         print("Error: Segment write key not set")
         sys.exit(1)
 
-    g = Github(os.environ.get("GITHUB_TOKEN"))
+    g = Github(os.environ.get("github_token"))
 
     if args.type == "pull_request":
         repo_current = g.get_repo(args.repository)
         process_pr(args.write_key,repo_current,args.message_file,args.pr_number,args.pr_action)
     else:
-        repo_charts = g.get_repo("openshift-helm-charts/charts")
+        check_rate_limit(g,True)
         send_release_metrics(args.write_key,get_release_metrics())
-        send_pull_request_metrics(args.write_key,repo_charts)
+        check_rate_limit(g,True)
+        send_pull_request_metrics(args.write_key,g)
+        check_rate_limit(g,True)
 
 if __name__ == '__main__':
     main()
