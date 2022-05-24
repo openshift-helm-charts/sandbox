@@ -780,7 +780,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                 os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
                 os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
                 logging.info(f"PR{pr_number} Send notification to '{self.secrets.notify_id}' about verification result of '{chart}'")
-                create_verification_issue(chart_name, chart_owners, self.secrets.notify_id, run_html_url, self.secrets.software_name,
+                create_verification_issue(f"charts/{vendor_name}/{chart_name}/{chart_version}",  chart_owners, self.secrets.notify_id, run_html_url, self.secrets.software_name,
                                     self.secrets.software_version, pass_verification, self.secrets.bot_token, self.secrets.dry_run)
             else:
                 chart_owners = owners_table[chart_directory]
@@ -788,7 +788,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                 os.environ['GITHUB_REPO'] = "sandbox"
                 os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
                 logging.info(f"Send notification to '{self.secrets.notify_id}' about dry run verification result of '{chart}'")
-                create_verification_issue(chart_name, chart_owners, self.secrets.notify_id, run_html_url, self.secrets.software_name,
+                create_verification_issue(f"charts/{vendor_name}/{chart_name}/{chart_version}", chart_owners, self.secrets.notify_id, run_html_url, self.secrets.software_name,
                                       self.secrets.software_version, pass_verification, self.secrets.bot_token, self.secrets.dry_run)
                 logging.info(f"PR{pr_number} Dry Run - send sandbox notification to '{chart_owners}' about verification result of '{chart}'")
 
@@ -870,8 +870,8 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         self.push_chart(chart_directory, chart_name, chart_version, vendor_name, vendor_type, pr_branch)
 
         # Create PR from pr_branch to base_branch
-        logging.info("sleep for 5 seconds  to avoid secondary api limit")
-        time.sleep(5)
+        logging.info("sleep for 3 seconds to avoid secondary api limit")
+        time.sleep(3)
         pr_number = super().send_pull_request(self.secrets.test_repo, base_branch, pr_branch, self.secrets.bot_token)
         pr_number_list.append((vendor_type, vendor_name, chart_name, chart_version, pr_number))
         logging.info(f"PR{pr_number} created in {self.secrets.test_repo} into {base_branch} from {pr_branch}")
@@ -891,8 +891,8 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             for vendor_type, vendor_name, chart_name, chart_version in self.secrets.submitted_charts:
                 logging.info(f"Process chart: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
                 self.process_single_chart(vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table)
-                logging.info("sleep for 5 seconds  to avoid secondary api limit")
-                time.sleep(5)
+                logging.info("sleep for 3 seconds  to avoid secondary api limit")
+                time.sleep(3)
 
         for vendor_type, vendor_name, chart_name, chart_version, pr_number in pr_number_list:
             logging.info(f"PR{pr_number} Check result: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")

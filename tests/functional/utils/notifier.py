@@ -96,11 +96,11 @@ def create_verification_issue(chart_name, chart_owners, notify_developers, repor
             title = f"Dry Run: Chart {chart_name}"
 
         if not pass_verification:
-            title = f"{title} Chart {chart_name} has failures with {software_name} version {software_version}"
+            title = f"{title} has failures with {software_name} version {software_version}"
 
             report_result = "some chart checks have failed. Please review the failures and, if required, consider submitting a new chart version with the appropriate additions/corrections."
         else:
-            title = f"{title} {chart_name} passed with new {software_name} version {software_version}"
+            title = f"{title} passed with new {software_name} version {software_version}"
 
             report_result = (f"all chart checks have passed. If your chart does not already include support for {software_name} version {software_version},"
                          "with your approval, we could update your chart annotations in index.yaml. Please use this issue to communicate "
