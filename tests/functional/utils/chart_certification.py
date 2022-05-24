@@ -870,6 +870,8 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         self.push_chart(chart_directory, chart_name, chart_version, vendor_name, vendor_type, pr_branch)
 
         # Create PR from pr_branch to base_branch
+        logging.info("sleep for 5 seconds  to avoid secondary api limit")
+        time.sleep(5)
         pr_number = super().send_pull_request(self.secrets.test_repo, base_branch, pr_branch, self.secrets.bot_token)
         pr_number_list.append((vendor_type, vendor_name, chart_name, chart_version, pr_number))
         logging.info(f"PR{pr_number} created in {self.secrets.test_repo} into {base_branch} from {pr_branch}")
@@ -889,7 +891,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             for vendor_type, vendor_name, chart_name, chart_version in self.secrets.submitted_charts:
                 logging.info(f"Process chart: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
                 self.process_single_chart(vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table)
-                print("sleep for 5 seconds  to avoid secondary api limit")
+                logging.info("sleep for 5 seconds  to avoid secondary api limit")
                 time.sleep(5)
 
         for vendor_type, vendor_name, chart_name, chart_version, pr_number in pr_number_list:
