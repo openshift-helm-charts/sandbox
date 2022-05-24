@@ -6,6 +6,7 @@ import json
 import pathlib
 import shutil
 import logging
+import time
 import uuid
 from tempfile import TemporaryDirectory
 from dataclasses import dataclass
@@ -888,6 +889,8 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             for vendor_type, vendor_name, chart_name, chart_version in self.secrets.submitted_charts:
                 logging.info(f"Process chart: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
                 self.process_single_chart(vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table)
+                print("sleep for 5 seconds  to avoid secondary api limit")
+                time.sleep(5)
 
         for vendor_type, vendor_name, chart_name, chart_version, pr_number in pr_number_list:
             logging.info(f"PR{pr_number} Check result: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
