@@ -90,7 +90,7 @@ def create_verification_issue(chart_name, chart_owners, notify_developers, repor
     """
 
 
-    if not pass_verification or software_name is "OpenShift":
+    if not pass_verification or software_name == "OpenShift":
         title = f"Chart {chart_name}"
         if dry_run:
             title = f"Dry Run: Chart {chart_name}"

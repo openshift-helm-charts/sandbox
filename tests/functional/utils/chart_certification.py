@@ -743,7 +743,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                 owners = yaml.safe_load(fd)
                 # Pick owner ids for notification
                 owners_table[chart_directory] = [
-                    owner.get(['githubUsername'], '') for owner in owners['users']]
+                    owner.get('githubUsername', '') for owner in owners['users']]
             except yaml.YAMLError as err:
                 logging.warning(
                     f"Error parsing OWNERS of {chart_directory}: {err}")
