@@ -233,7 +233,7 @@ vendor:
             return run_id, conclusion
         except Exception as e:
             logger(e)
-            return run_id, None
+            return None, None
 
     # expect_merged: boolean representing whether the PR should be merged
     def check_pull_request_result(self, pr_number, expect_merged: bool, logger=pytest.fail):
