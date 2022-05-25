@@ -85,7 +85,7 @@ jobs:
             echo "::set-output name=run_tests::false"
           elif [ "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}" = "${{ steps.get_prev_ocp_version.outputs.result }}" ]; then
             # No change in the OpenShift version on run tests if a dry-run
-            if [ "${{ github.event_name }} == 'schedule' || "${{ github.event.inputs.dry-run }}" != 'true']
+            if [ "${{ github.event_name }}" == 'schedule' || "${{ github.event.inputs.dry-run }}" != 'true']
               printf "OpenShift version has not changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}"
               echo "::set-output name=run_tests::false"
             else:
@@ -252,7 +252,7 @@ jobs:
             echo "::set-output name=run_tests::false"
           elif [ "${{ steps.get_curr_cv_version.outputs.current_cv_digest }}" == "${{ steps.get_prev_cv_digest.outputs.result }}" ]; then
             # No change in the Chart Verifier image only run tests if dry-run is set
-            if [ "${{ github.event_name }} == 'schedule' || "${{ github.event.inputs.dry-run }}" != 'true']
+            if [ "${{ github.event_name }}" == 'schedule' || "${{ github.event.inputs.dry-run }}" != 'true']
               printf "Chart Verifier has not changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_cv_digest.outputs.result }}" "${{ steps.get_curr_cv_version.outputs.current_cv_digest }}"
               echo "::set-output name=run_tests::false"
             else
