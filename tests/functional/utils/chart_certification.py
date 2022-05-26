@@ -318,6 +318,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.chart_name = chart_name
         self.secrets.chart_version = chart_version
         self.secrets.index_file = "index.yaml"
+        self.secrets.provider_delivery = False
+
 
     def cleanup (self):
         # Cleanup releases and release tags
