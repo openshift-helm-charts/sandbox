@@ -40,8 +40,7 @@ Feature: Report only submission with provider control settings
     Given the vendor <vendor> has a valid identity as <vendor_type>
     And provider delivery control is set to <provider_control_owners> in the OWNERS file
     And a <report_path> is provided
-    And provider delivery control is set to <provider_control_report> in the report
-    And a package digest is <package_digest_set> in the report
+    And provider delivery control is set to <provider_control_report> and a package digest is <package_digest_set> in the report
     When the user sends a pull request with the report
     Then the pull request is not merged
     And user gets the <message> in the pull request comment
