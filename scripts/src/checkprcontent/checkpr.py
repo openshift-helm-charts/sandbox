@@ -62,7 +62,7 @@ def check_provider_delivery(report_in_pr,num_files_in_pr,report_file_match):
                 print(f"[INFO] providerDelivery is a go")
                 print(f"::set-output name=providerDelivery::True")
             else:
-                msg = f"[ERROR] Provider delivery control requires a package digest in teh report."
+                msg = f"[ERROR] Provider delivery control requires a package digest in the report."
                 print(msg)
                 print(f"::set-output name=pr-content-error-message::{msg}")
                 sys.exit(1)

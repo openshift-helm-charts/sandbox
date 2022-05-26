@@ -41,11 +41,13 @@ Feature: Report only submission with provider control settings
     And provider delivery control is set to <provider_control_owners> in the OWNERS file
     And a <report_path> is provided
     And provider delivery control is set to <provider_control_report> in the report
+    And a package digest is <package_digest_set> in the report
     When the user sends a pull request with the report
     Then the pull request is not merged
     And user gets the <message> in the pull request comment
 
     Examples:
-      | vendor_type  | vendor    | provider_control_owners | provider_control_report | message |
-      | partners     | hashicorp | true                    | false                   | OWNERS file indicates provider controlled delivery but report does not. |
-      | partners     | hashicorp | false                   | true                    | Report indicates provider controlled delivery but OWNERS file does not. |
+      | vendor_type  | vendor    | provider_control_owners | provider_control_report | package_digest_set | message |
+      | partners     | hashicorp | true                    | false                   | true               | OWNERS file indicates provider controlled delivery but report does not. |
+      | partners     | hashicorp | false                   | true                    | true               | Report indicates provider controlled delivery but OWNERS file does not. |
+      | partners     | hashicorp | true                    | true                    | false              | Provider delivery control requires a package digest in the report. |

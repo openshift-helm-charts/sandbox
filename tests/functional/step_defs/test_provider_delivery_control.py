@@ -53,6 +53,12 @@ def provider_delivery_control_set_in_report(workflow_test,provider_control_repor
         print("[INFO] un-set provider delivery control_in report")
         workflow_test.process_report(update_provider_delivery=True,provider_delivery=False)
 
+@given(parsers.parse("a package digest is <package_digest_set> in the report"))
+def package_digest_set_in_report(workflow_test,package_digest_set):
+    if package_digest_set == "false":
+        workflow_test.process_report(unset_package_digest=True)
+
+
 @then(parsers.parse("the <index_file> is updated with an entry for the submitted chart"))
 def index_file_is_updated(workflow_test,index_file):
     workflow_test.secrets.index_file = index_file
