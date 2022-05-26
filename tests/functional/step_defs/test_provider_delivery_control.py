@@ -44,20 +44,19 @@ def provider_delivery_control_set_in_owners(workflow_test,provider_control_owner
         print("[INFO] un-set provider delivery control_in owners file")
         workflow_test.secrets.provider_delivery=False
 
-@given(parsers.parse("provider delivery control is set to <provider_control_report> in the report"))
+@given(parsers.parse("provider delivery control is set to <provider_control_report> and a package digest is <package_digest_set> in the report"))
 def provider_delivery_control_set_in_report(workflow_test,provider_control_report):
+    if package_digest_set == "true":
+        no_package_digest = False
+    else:
+        no_package_digest = True
+
     if provider_control_report == "true":
         print("[INFO] set provider delivery control_in report")
-        workflow_test.process_report(update_provider_delivery=True,provider_delivery=True)
+        workflow_test.process_report(update_provider_delivery=True,provider_delivery=True,unset_package_digest=no_package_digest)
     else:
         print("[INFO] un-set provider delivery control_in report")
-        workflow_test.process_report(update_provider_delivery=True,provider_delivery=False)
-
-@given(parsers.parse("a package digest is <package_digest_set> in the report"))
-def package_digest_set_in_report(workflow_test,package_digest_set):
-    if package_digest_set == "false":
-        workflow_test.process_report(unset_package_digest=True)
-
+        workflow_test.process_report(update_provider_delivery=True,provider_delivery=False,unset_package_digest=no_package_digest)
 
 @then(parsers.parse("the <index_file> is updated with an entry for the submitted chart"))
 def index_file_is_updated(workflow_test,index_file):
