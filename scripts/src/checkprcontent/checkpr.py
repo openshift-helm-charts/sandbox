@@ -58,8 +58,14 @@ def check_provider_delivery(report_in_pr,num_files_in_pr,report_file_match):
             sys.exit(1)
     elif report_in_pr:
         if report_provider_delivery and owner_provider_delivery:
-            print(f"[INFO] providerDelivery is a go")
-            print(f"::set-output name=providerDelivery::True")
+            if verifier_report.get_package_digest(report_data):
+                print(f"[INFO] providerDelivery is a go")
+                print(f"::set-output name=providerDelivery::True")
+            else:
+                msg = f"[ERROR] Provider delivery control requires a package digest in the report."
+                print(msg)
+                print(f"::set-output name=pr-content-error-message::{msg}")
+                sys.exit(1)
         elif report_provider_delivery:
             msg = f"[ERROR] Report indicates provider controlled delivery but OWNERS file does not."
             print(msg)
