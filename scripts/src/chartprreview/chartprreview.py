@@ -156,6 +156,8 @@ def check_url(directory, report_path):
         msgs.append(str(err))
         write_error_log(directory, *msgs)
 
+    verify_package_digest(chart_url,report_path)
+
 def match_name_and_version(directory, category, organization, chart, version,generated_report_path):
     print("[INFO] Check chart has same name and version as directory structure. %s, %s, %s" % (organization, chart, version))
     submitted_report_path = os.path.join("charts", category, organization, chart, version, "report.yaml")
@@ -300,7 +302,23 @@ def check_report_success(directory, api_url, report_path, report_info_path, vers
             write_error_log(directory, msg)
             sys.exit(1)
 
+def verify_package_digest(url,report):
+    print("[INFO] check package digest.")
 
+    response = requests.get(url, allow_redirects=True)
+    target_digest = hashlib.sha256(response.content).hexdigest()
+
+    found,report_data = verifier_report.get_report_data(report)
+    if found:
+        pkg_digest = verifier_report.get_package_digest(report_data)
+
+    if target_digest:
+        if pkg_digest and pkg_digest != target_digest:
+            # Digest was passed and computed but differ
+            raise Exception("Found an integrity issue. SHA256 digest passed does not match SHA256 digest computed.")
+    elif not pkg_digest:
+        # Digest was not passed and could not be computed
+        raise Exception("Was unable to compute SHA256 digest, please ensure chart url points to a chart package.")
 
 
 def main():
@@ -331,6 +349,7 @@ def main():
     report_generated = os.environ.get("REPORT_GENERATED")
     generated_report_path = os.environ.get("GENERATED_REPORT_PATH")
     generated_report_info_path =  os.environ.get("REPORT_SUMMARY_PATH")
+    provider_delivery = os.environ.get("PROVIDER_DELIVERY")
 
     if os.path.exists(submitted_report_path):
         print("[INFO] Report exists: ", submitted_report_path)
@@ -339,7 +358,7 @@ def main():
         report_info_path = ""
         if report_generated and report_generated == "True":
             match_checksum(args.directory,generated_report_info_path, category, organization, chart, version)
-        else:
+        elif not provider_delivery or provider_delivery == "False":
             check_url(args.directory, report_path)
     else:
         print("[INFO] Report does not exist: ", submitted_report_path)

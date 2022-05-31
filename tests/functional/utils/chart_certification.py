@@ -318,6 +318,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.chart_name = chart_name
         self.secrets.chart_version = chart_version
         self.secrets.index_file = "index.yaml"
+        self.secrets.provider_delivery = False
+
 
     def cleanup (self):
         # Cleanup releases and release tags
@@ -464,7 +466,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
     def process_report(self, update_chart_sha=False, update_url=False, url=None,
                        update_versions=False,supported_versions=None,tested_version=None,kube_version=None,
-                       update_provider_delivery=False, provider_delivery=False, missing_check=None):
+                       update_provider_delivery=False, provider_delivery=False, missing_check=None,unset_package_digest=False):
 
         with SetDirectory(Path(self.temp_dir.name)):
             # Copy report to temporary location and push to test_repo:pr_branch
@@ -486,7 +488,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 report["metadata"]["tool"]["profile"]["VendorType"] = self.secrets.vendor_type
                 logging.info(f'VendorType set to {report["metadata"]["tool"]["profile"]["VendorType"]} in report.yaml')
 
-            if update_chart_sha or update_url or update_versions or update_provider_delivery:
+            if update_chart_sha or update_url or update_versions or update_provider_delivery or unset_package_digest:
                 #For updating the report.yaml, for chart sha mismatch scenario
                 if update_chart_sha:
                     new_sha_value = 'sha256:5b85ae00b9ca2e61b2d70a59f98fd72136453b1a185676b29d4eb862981c1xyz'
@@ -510,6 +512,9 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
                 if update_provider_delivery:
                     report['metadata']['tool']['providerControlledDelivery'] = provider_delivery
+
+                if unset_package_digest:
+                    del report['metadata']['tool']['digests']['package']
 
             with open(report_path, 'w') as fd:
                 try:
