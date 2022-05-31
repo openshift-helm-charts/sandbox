@@ -95,16 +95,9 @@ def create_verification_issue(chart_name, chart_owners, notify_developers, repor
         if dry_run:
             title = f"Dry Run: Chart {chart_name}"
 
-        if not pass_verification:
-            title = f"{title} has failures with {software_name} version {software_version}"
 
-            report_result = "some chart checks have failed. Please review the failures and, if required, consider submitting a new chart version with the appropriate additions/corrections."
-        else:
-            title = f"{title} passed with new {software_name} version {software_version}"
-
-            report_result = (f"all chart checks have passed. If your chart does not already include support for {software_name} version {software_version},"
-                         "with your approval, we could update your chart annotations in index.yaml. Please use this issue to communicate "
-                         "your response")
+        title = f"{title} has failures with {software_name} version {software_version}"
+        report_result = "some chart checks have failed. Please review the failures and, if required, consider submitting a new chart version with the appropriate additions/corrections."
 
         body = (f"FYI @{' @'.join(notify_developers)}, we have triggered the chart certification workflow against chart {chart_name} because the workflow "
             f"now supports {software_name} version {software_version}. We have found that {report_result}. Check details in the report: "
