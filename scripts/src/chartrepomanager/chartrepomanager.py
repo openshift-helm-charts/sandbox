@@ -8,6 +8,8 @@ import tempfile
 from datetime import datetime, timezone
 import hashlib
 import urllib.parse
+import environs
+from environs import Env
 
 import semver
 import requests
@@ -332,14 +334,15 @@ def main():
     print("[INFO] Creating Git worktree for index branch")
     indexdir = create_worktree_for_index(branch)
 
-    print(f'[INFO] os.environ["PROVIDER_DELIVERY"] {os.environ["PROVIDER_DELIVERY"]}')
+    env = Env()
+    provider_delivery = env.bool("PROVIDER_DELIVERY",False)
 
-    if os.environ["PROVIDER_DELIVERY"] and os.environ["PROVIDER_DELIVERY"] == "True":
+    print(f'[INFO] provider delivery is {provider_delivery}')
+
+    if provider_delivery:
         indexfile = "unpublished-certified-charts.yaml"
-        provider_delivery=True
     else:
         indexfile = "index.yaml"
-        provider_delivery=False
 
     print("[INFO] Report Content : ", os.environ.get("REPORT_CONTENT"))
     if chart_source_exists or chart_tarball_exists:

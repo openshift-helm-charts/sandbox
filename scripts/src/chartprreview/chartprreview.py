@@ -3,9 +3,10 @@ import os
 import sys
 import argparse
 import subprocess
-import json
 import hashlib
-import tempfile
+
+import environs
+from environs import Env
 
 import semver
 import semantic_version
@@ -306,7 +307,8 @@ def verify_package_digest(url,report):
     print("[INFO] check package digest.")
 
     response = requests.get(url, allow_redirects=True)
-    target_digest = hashlib.sha256(response.content).hexdigest()
+    if response.status_code == 200:
+        target_digest = hashlib.sha256(response.content).hexdigest()
 
     found,report_data = verifier_report.get_report_data(report)
     if found:
@@ -349,7 +351,8 @@ def main():
     report_generated = os.environ.get("REPORT_GENERATED")
     generated_report_path = os.environ.get("GENERATED_REPORT_PATH")
     generated_report_info_path =  os.environ.get("REPORT_SUMMARY_PATH")
-    provider_delivery = os.environ.get("PROVIDER_DELIVERY")
+    env = Env()
+    provider_delivery = env.bool("PROVIDER_DELIVERY",False)
 
     if os.path.exists(submitted_report_path):
         print("[INFO] Report exists: ", submitted_report_path)
@@ -358,7 +361,7 @@ def main():
         report_info_path = ""
         if report_generated and report_generated == "True":
             match_checksum(args.directory,generated_report_info_path, category, organization, chart, version)
-        elif not provider_delivery or provider_delivery == "False":
+        elif provider_delivery == "False":
             check_url(args.directory, report_path)
     else:
         print("[INFO] Report does not exist: ", submitted_report_path)
