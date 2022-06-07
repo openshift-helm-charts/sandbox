@@ -79,6 +79,8 @@ def check_provider_delivery(report_in_pr,num_files_in_pr,report_file_match):
         else:
             print(f"::set-output name=providerDelivery::False")
             print(f"[INFO] providerDelivery is a no-go")
+    else:
+        print(f"::set-output name=providerDelivery::False")
 
 
 
