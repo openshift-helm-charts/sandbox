@@ -140,10 +140,12 @@ vendor:
             values = {'bot_name': self.secrets.bot_name,
                     'vendor': vendor_name, 'chart_name': chart_name,
                       "provider_delivery" : provider_delivery}
+            print(f"Create owners file values: {values}")
             content = Template(self.secrets.owners_file_content).substitute(values)
             with open(f'{chart_directory}/OWNERS', 'w') as fd:
                 fd.write(content)
 
+            print(f"Write owners file content: {content}")
             # Push OWNERS file to the test_repo
             logging.info(
                 f"Push OWNERS file to '{self.secrets.test_repo}:{base_branch}'")
