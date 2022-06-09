@@ -40,6 +40,7 @@ def provider_delivery_control_set_in_owners(workflow_test,provider_control_owner
     if provider_control_owners == "true":
         print("[INFO] set provider delivery control_in owners file")
         workflow_test.secrets.provider_delivery=True
+        workflow_test.check_owners_file_values()
     else:
         print("[INFO] un-set provider delivery control_in owners file")
         workflow_test.secrets.provider_delivery=False
