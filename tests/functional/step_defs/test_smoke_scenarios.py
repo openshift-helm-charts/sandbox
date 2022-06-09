@@ -42,6 +42,7 @@ def provider_delivery_control_set_in_owners(workflow_test,provider_control_owner
 def provider_delivery_control_set_in_report(workflow_test,provider_control_report):
     if provider_control_report == "true":
         print("[INFO] set provider delivery control_in report")
+        workflow_test.check_owners_file_values()
         workflow_test.process_report(update_provider_delivery=True,provider_delivery=True)
     else:
         print("[INFO] un-set provider delivery control_in report")
