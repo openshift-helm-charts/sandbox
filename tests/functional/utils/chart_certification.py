@@ -7,6 +7,7 @@ import pathlib
 import shutil
 import logging
 import time
+import traceback
 import uuid
 from tempfile import TemporaryDirectory
 from dataclasses import dataclass
@@ -329,8 +330,9 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.chart_name = chart_name
         self.secrets.chart_version = chart_version
         self.secrets.index_file = "index.yaml"
-        print("__post_init__ set provider delivery to false")
+        print(f" {self}: __post_init__ set provider delivery to false")
         self.secrets.provider_delivery = False
+        traceback.print_stack()
 
 
     def cleanup (self):
@@ -466,7 +468,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         super().create_and_push_owners_file(self.chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.secrets.chart_name,self.secrets.provider_delivery)
 
     def check_owners_file_values(self):
-        print(f"Owners files values: dir: {self.chart_directory}, branch: {self.secrets.base_branch},vendor: {self.secrets.vendor}, type: {self.secrets.vendor_type}, name: {self.secrets.chart_name}, provider delivery:{self.secrets.provider_delivery}")
+        print(f"{self} : Owners files values: dir: {self.chart_directory}, branch: {self.secrets.base_branch},vendor: {self.secrets.vendor}, type: {self.secrets.vendor_type}, name: {self.secrets.chart_name}, provider delivery:{self.secrets.provider_delivery}")
 
     def process_chart(self, is_tarball: bool):
         with SetDirectory(Path(self.temp_dir.name)):
