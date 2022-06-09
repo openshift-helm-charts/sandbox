@@ -140,10 +140,12 @@ vendor:
             values = {'bot_name': self.secrets.bot_name,
                     'vendor': vendor_name, 'chart_name': chart_name,
                       "provider_delivery" : provider_delivery}
+            print(f"Create owners file values: {values}")
             content = Template(self.secrets.owners_file_content).substitute(values)
             with open(f'{chart_directory}/OWNERS', 'w') as fd:
                 fd.write(content)
 
+            print(f"Write owners file content: {content}")
             # Push OWNERS file to the test_repo
             logging.info(
                 f"Push OWNERS file to '{self.secrets.test_repo}:{base_branch}'")
@@ -459,7 +461,11 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 pytest.fail(f"Failed to remove readme file : {e}")
 
     def process_owners_file(self):
+        self.check_owners_file_values()
         super().create_and_push_owners_file(self.chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.secrets.chart_name,self.secrets.provider_delivery)
+
+    def check_owners_file_values(self):
+        print(f"Owners files values: dir: {self.chart_directory}, branch: {self.secrets.base_branch},vendor: {self.secrets.vendor}, type: {self.secrets.vendor_type}, name: {self.secrets.chart_name}, provider delivery:{self.secrets.provider_delivery}")
 
     def process_chart(self, is_tarball: bool):
         with SetDirectory(Path(self.temp_dir.name)):
