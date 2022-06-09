@@ -329,6 +329,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.chart_name = chart_name
         self.secrets.chart_version = chart_version
         self.secrets.index_file = "index.yaml"
+        print("__post_init__ set provider delivery to false")
         self.secrets.provider_delivery = False
 
 
