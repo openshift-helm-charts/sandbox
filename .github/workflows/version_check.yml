@@ -1,9 +1,5 @@
 name: Check Software Version
 on:
-  # Daily trigger to check updates
-  schedule:
-    - cron: "0 0 * * *"
-  # manual dispatch
   workflow_dispatch:
     inputs:
       # XXX: dry-run has side effects:
