@@ -89,12 +89,10 @@ def user_has_created_error_free_chart_tarball(workflow_test, chart_path):
 @given(parsers.parse("an error-free report is used in <report_path>"))
 def user_has_created_error_free_report(workflow_test, report_path):
     """an error-free report is used in <report_path>."""
-    print(f'start user_has_created_error_free_report {workflow_test.check_owners_file_values()}')
     workflow_test.update_test_report(report_path)
     workflow_test.setup_git_context()
     workflow_test.setup_gh_pages_branch()
     workflow_test.setup_temp_dir()
-    print(f'set owners from: user_has_created_error_free_report {workflow_test.check_owners_file_values()}')
     workflow_test.process_owners_file()
     workflow_test.process_report()
 
