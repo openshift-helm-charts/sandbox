@@ -393,7 +393,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
     def get_chart_name_version(self):
         if not self.test_report and not self.test_chart:
-            pytest.fail("Provide at least one of test report or test chart.")
+            return "",""
         if self.test_report:
             chart_name, chart_version = get_name_and_version_from_report(self.test_report)
         else:
