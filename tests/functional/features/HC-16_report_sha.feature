@@ -17,7 +17,7 @@ Feature: Report sha value in report
 
   Scenario Outline: [HC-16-002] A partner or redhat associate submits a report with invalid report sha value
     Given the vendor <vendor> has a valid identity as <vendor_type>
-    And a <report_path> is provided
+    And an error-free report is used in <report_path>
     When the user sends a pull request with the report
     Then the pull request is not merged
     And user gets the <message> in the pull request comment
