@@ -194,12 +194,14 @@ def user_should_see_pull_request_getting_merged(workflow_test):
     """the user sees the pull request is merged."""
     workflow_test.check_workflow_conclusion(expect_result='success')
     workflow_test.check_pull_request_result(expect_merged=True)
+    workflow_test.check_pull_request_labels(expect_merged=True)
 
 @then("the pull request is not merged")
 def the_pull_request_is_not_getting_merged(workflow_test):
     """the pull request is not merged"""
     workflow_test.check_workflow_conclusion(expect_result='failure')
     workflow_test.check_pull_request_result(expect_merged=False)
+    workflow_test.check_pull_request_labels(expect_merged=False)
 
 @then("the index.yaml file is updated with an entry for the submitted chart")
 def index_yaml_is_updated_with_new_entry(workflow_test):
