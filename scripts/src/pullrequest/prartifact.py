@@ -26,12 +26,15 @@ def get_modified_charts(api_url):
 def save_metadata(directory, vendor_label, chart, number):
     with open(os.path.join(directory, "vendor"), "w") as fd:
         fd.write(vendor_label)
+        print(f"set {directory}/vendor to {vendor_label}")
 
     with open(os.path.join(directory, "chart"), "w") as fd:
         fd.write(chart)
+        print(f"set {directory}/chart to {chart}")
 
     with open(os.path.join(directory, "NR"), "w") as fd:
         fd.write(number)
+        print(f"set {directory}/NR to {number}")
 
     if os.path.exists("report.yaml"):
         shutil.copy("report.yaml", directory)

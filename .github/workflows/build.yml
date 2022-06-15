@@ -268,9 +268,9 @@ jobs:
           script: |
             var fs = require('fs');
             var issue_number = ${{ github.event.number }};
-            var vendor_label = fs.readFileSync('./pr/vendor');
-            var chart_name = fs.readFileSync('./pr/chart');
-            if (vendor_label.toString() !== "" && chart_name.toString() !== "") {
+            var vendor_label = fs.readFileSync('./pr/vendor').toString();
+            var chart_name = fs.readFileSync('./pr/chart').toString();
+            if (vendor_label !== "" && chart_name !== "") {
               github.issues.addLabels({
                 issue_number: Number(issue_number),
                 owner: context.repo.owner,
