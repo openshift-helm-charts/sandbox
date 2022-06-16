@@ -84,6 +84,11 @@ def check_provider_delivery(report_in_pr,num_files_in_pr,report_file_match):
         print(f"::set-output name=providerDelivery::False")
         print(f"[INFO] providerDelivery is a no-go")
 
+def get_file_match_compiled_patterns():
+    pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
+    reportpattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/report.yaml")
+    return pattern,reportpattern
+
 
 def ensure_only_chart_is_modified(api_url, repository, branch):
     # api_url https://api.github.com/repos/<organization-name>/<repository-name>/pulls/1
@@ -95,8 +100,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
     files_api_url = f'{api_url}/files'
     headers = {'Accept': 'application/vnd.github.v3+json'}
     r = requests.get(files_api_url, headers=headers)
-    pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
-    reportpattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/report.yaml")
+    pattern,reportpattern = get_file_match_compiled_patterns()
     page_number = 1
     max_page_size,page_size = 100,100
     matches_found = 0
