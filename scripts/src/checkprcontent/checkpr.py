@@ -129,9 +129,10 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                 if matches_found == 1:
                     pattern_match = match
                 elif pattern_match.groups() != match.groups():
-                    msg = f"[ERROR] PR must only include one chart"
+                    msg = "[ERROR] A PR must contain only one chart. Current PR includes files for multiple charts."
                     print(msg)
                     print(f"::set-output name=pr-content-error-message::{msg}")
+                    exit(1)
     
     if none_chart_files:
         if file_count > 1 or "OWNERS" not in none_chart_files: #OWNERS not present or preset but not the only file
