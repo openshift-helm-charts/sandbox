@@ -314,7 +314,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
         if self.test_report or self.test_chart:
             self.secrets.chart_name, self.secrets.chart_version = self.get_chart_name_version()
-            self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{chart_name}'
+            self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
 
         bot_name, bot_token = self.get_bot_name_and_token()
         test_repo = TEST_REPO
@@ -352,7 +352,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.index_file = "index.yaml"
         self.secrets.provider_delivery = False
 
-def cleanup (self):
+    def cleanup (self):
         # Cleanup releases and release tags
         self.cleanup_release()
         # Teardown step to cleanup branches
