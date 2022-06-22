@@ -312,7 +312,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         # different processes.
         self.uuid = uuid.uuid4().hex
 
-        chart_name, chart_version = self.get_chart_name_version()
+        if self.test_report or self.test_chart:
+            self.secrets.chart_name, self.secrets.chart_version = self.get_chart_name_version()
+            self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{chart_name}'
+
         bot_name, bot_token = self.get_bot_name_and_token()
         test_repo = TEST_REPO
 
@@ -346,13 +349,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.bot_token = bot_token
         self.secrets.base_branch = base_branch
         self.secrets.pr_branch = pr_branch
-        self.secrets.chart_name = chart_name
-        self.secrets.chart_version = chart_version
         self.secrets.index_file = "index.yaml"
         self.secrets.provider_delivery = False
 
-
-    def cleanup (self):
+def cleanup (self):
         # Cleanup releases and release tags
         self.cleanup_release()
         # Teardown step to cleanup branches
@@ -430,7 +430,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         vendor_without_suffix = self.secrets.vendor.split("-")[0]
         self.secrets.base_branch = f'{base_branch_without_uuid}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_name}-{self.secrets.chart_version}'
         self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
-        self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
+        self.__post_init__()
 
     def setup_git_context(self):
         super().setup_git_context(self.repo)
