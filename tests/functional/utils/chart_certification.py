@@ -257,6 +257,28 @@ vendor:
             logger(f"PR{pr_number} Got unexpected status code from PR: {r.status_code}")
             return False
 
+    def check_pull_request_labels(self,pr_number,logger=pytest.fail):
+        r = github_api(
+            'get', f'repos/{self.secrets.test_repo}/issues/{pr_number}/labels', self.secrets.bot_token)
+        labels = json.loads(r.text)
+        authorized_request = False
+        content_ok = False
+        for label in labels:
+            logging.info(f"PR{pr_number} found label {label['name']}")
+            if label['name'] == "authorized-request":
+                authorized_request = True
+            if label['name'] == "content-ok":
+                content_ok = True
+
+
+        if authorized_request and content_ok:
+            logging.info(f"PR{pr_number} authorized request and content-ok labels were found as expected")
+            return True
+        else:
+            logger(f"PR{pr_number} authorized request and/or content-ok labels were not found as expected")
+            return False
+
+
     def cleanup_release(self, expected_tag):
         """Cleanup the release and release tag.
 
@@ -290,7 +312,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         # different processes.
         self.uuid = uuid.uuid4().hex
 
-        chart_name, chart_version = self.get_chart_name_version()
+        if self.test_report or self.test_chart:
+            self.secrets.chart_name, self.secrets.chart_version = self.get_chart_name_version()
+            self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
+
         bot_name, bot_token = self.get_bot_name_and_token()
         test_repo = TEST_REPO
 
@@ -324,11 +349,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.bot_token = bot_token
         self.secrets.base_branch = base_branch
         self.secrets.pr_branch = pr_branch
-        self.secrets.chart_name = chart_name
-        self.secrets.chart_version = chart_version
         self.secrets.index_file = "index.yaml"
         self.secrets.provider_delivery = False
-
 
     def cleanup (self):
         # Cleanup releases and release tags
@@ -408,7 +430,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         vendor_without_suffix = self.secrets.vendor.split("-")[0]
         self.secrets.base_branch = f'{base_branch_without_uuid}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_name}-{self.secrets.chart_version}'
         self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
-        self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
+        self.__post_init__()
 
     def setup_git_context(self):
         super().setup_git_context(self.repo)
@@ -584,6 +606,11 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     # expect_merged: boolean representing whether the PR should be merged
     def check_pull_request_result(self, expect_merged: bool):
         super().check_pull_request_result(self.secrets.pr_number, expect_merged, pytest.fail)
+
+    # expect_merged: boolean representing whether the PR should be merged
+    def check_pull_request_labels(self):
+        super().check_pull_request_labels(self.secrets.pr_number, pytest.fail)
+
 
     def check_pull_request_comments(self, expect_message: str):
         r = github_api(
