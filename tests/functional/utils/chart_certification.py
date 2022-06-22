@@ -257,6 +257,28 @@ vendor:
             logger(f"PR{pr_number} Got unexpected status code from PR: {r.status_code}")
             return False
 
+    def check_pull_request_labels(self,pr_number,logger=pytest.fail):
+        r = github_api(
+            'get', f'repos/{self.secrets.test_repo}/issues/{pr_number}/labels', self.secrets.bot_token)
+        labels = json.loads(r.text)
+        authorized_request = False
+        content_ok = False
+        for label in labels:
+            logging.info(f"PR{pr_number} found label {label['name']}")
+            if label['name'] == "authorized-request":
+                authorized_request = True
+            if label['name'] == "content-ok":
+                content_ok = True
+
+
+        if authorized_request and content_ok:
+            logging.info(f"PR{pr_number} authorized request and content-ok labels were found as expected")
+            return True
+        else:
+            logger(f"PR{pr_number} authorized request and/or content-ok labels were not found as expected")
+            return False
+
+
     def cleanup_release(self, expected_tag):
         """Cleanup the release and release tag.
 
@@ -584,6 +606,11 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     # expect_merged: boolean representing whether the PR should be merged
     def check_pull_request_result(self, expect_merged: bool):
         super().check_pull_request_result(self.secrets.pr_number, expect_merged, pytest.fail)
+
+    # expect_merged: boolean representing whether the PR should be merged
+    def check_pull_request_labels(self):
+        super().check_pull_request_labels(self.secrets.pr_number, pytest.fail)
+
 
     def check_pull_request_comments(self, expect_message: str):
         r = github_api(
