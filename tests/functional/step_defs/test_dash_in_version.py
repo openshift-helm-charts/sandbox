@@ -12,7 +12,8 @@ from functional.utils.chart_certification import ChartCertificationE2ETestSingle
 @pytest.fixture
 def workflow_test():
     test_name = 'Test Chart Report Only'
-    workflow_test = ChartCertificationE2ETestSingle(test_name=test_name)
+    test_report = 'tests/data/HC-16/dash_in_version/partner/report.yaml'
+    workflow_test = ChartCertificationE2ETestSingle(test_name=test_name,test_report=test_report)
     yield workflow_test
     workflow_test.cleanup()
 
