@@ -352,7 +352,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.index_file = "index.yaml"
         self.secrets.provider_delivery = False
 
-def cleanup (self):
+    def cleanup (self):
         # Cleanup releases and release tags
         self.cleanup_release()
         # Teardown step to cleanup branches
