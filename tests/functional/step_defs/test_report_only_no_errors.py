@@ -25,3 +25,7 @@ def test_partner_or_redhat_user_submits_report():
 @scenario('../features/HC-12_report_without_chart.feature', "[HC-12-002] A community user submits an error-free report")
 def test_community_user_submits_report():
     """A community user submits an error-free report"""
+
+@scenario('../features/HC-12_report_without_chart.feature', "[HC-12-003] A partner or redhat associate submits report only with dash in chart version")
+def test_partner_or_redhat_user_submits_report_dash_in_version():
+    """A community user submits an error-free report"""
