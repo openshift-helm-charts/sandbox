@@ -15,5 +15,3 @@ Feature: Chart test takes longer time and exceeds default timeout
     Examples:
       | vendor_type  | vendor         |
       | partners     | hashicorp      |
-      | redhat       | redhat         |
-      | community    | redhat         |
