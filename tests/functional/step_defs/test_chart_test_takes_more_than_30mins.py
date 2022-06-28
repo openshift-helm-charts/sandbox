@@ -24,6 +24,10 @@ def workflow_test():
         pytest.fail(f"Timeout is not as expected: {total_diff_seconds}")
 
 
-@scenario('../features/HC-16_chart_test_takes_more_than_30mins.feature', "[HC-16-001] A submitted chart takes more than 30 mins")
-def test_chart_test_takes_more_than_30mins():
-    """ A submitted chart takes more than 30 mins"""
+@scenario('../features/HC-16_chart_test_takes_more_than_30mins.feature', "[HC-16-001] A partner or community user submits chart that takes more than 30 mins")
+def test_partner_or_community_chart_test_takes_more_than_30mins():
+    """ A partner or community submitted chart takes more than 30 mins"""
+
+@scenario('../features/HC-16_chart_test_takes_more_than_30mins.feature', "[HC-16-002] A redhat associate submits a chart that takes more than 30 mins")
+def test_redhat_chart_test_takes_more_than_30mins():
+    """ A redhat submitted chart takes more than 30 mins"""
