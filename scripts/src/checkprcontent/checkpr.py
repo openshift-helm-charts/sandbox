@@ -85,8 +85,21 @@ def check_provider_delivery(report_in_pr,num_files_in_pr,report_file_match):
         print(f"[INFO] providerDelivery is a no-go")
 
 def get_file_match_compiled_patterns():
+    """Return a tuple of patterns, where the first can be used to match any file in a chart PR 
+    and the second can be used to match a valid report file within a chart PR. The patterns
+    match based on the relative path of a file to the base repository
+    
+    Both patterns capture chart type, chart vendor, chart name and chart version from the file path..
+    
+    Examples of valid file paths are:
+    
+    charts/partners/hashicorp/vault/0.20.0/<file>
+    charts/partners/hashicorp/vault/0.20.0//report.yaml
+    """
+
     pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
     reportpattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/report.yaml")
+
     return pattern,reportpattern
 
 
