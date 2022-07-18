@@ -3,7 +3,7 @@ from common.utils.chart_certification import ChartCertificationE2ETestSingle
 
 @fixture
 def workflow_test(context):
-    context.workflow_test = ChartCertificationE2ETestSingle(test_name=context.test_name, test_chart=context.test_chart)
+    context.workflow_test = ChartCertificationE2ETestSingle(test_name=context.test_name)
     yield context.workflow_test
     context.workflow_test.cleanup()
 
