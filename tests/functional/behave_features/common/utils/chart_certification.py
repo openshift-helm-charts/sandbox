@@ -285,7 +285,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         # different processes.
         self.uuid = uuid.uuid4().hex
 
-        chart_name, chart_version = self.get_chart_name_version()
+        #chart_name, chart_version = self.get_chart_name_version()
         bot_name, bot_token = self.get_bot_name_and_token()
         test_repo = TEST_REPO
 
@@ -316,15 +316,11 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         pr_branch = base_branch + '-pr-branch'
 
         self.secrets.owners_file_content = self.owners_file_content
-        self.secrets.test_chart = self.test_chart
-        self.secrets.test_report = self.test_report
         self.secrets.test_repo = test_repo
         self.secrets.bot_name = bot_name
         self.secrets.bot_token = bot_token
         self.secrets.base_branch = base_branch
         self.secrets.pr_branch = pr_branch
-        self.secrets.chart_name = chart_name
-        self.secrets.chart_version = chart_version
         self.secrets.index_file = "index.yaml"
         self.secrets.provider_delivery = False
 
@@ -368,17 +364,30 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         except git.exc.GitCommandError:
             logging.info(f"Local '{current_branch}' does not exist")
 
+    def update_chart_directory(self):
+        base_branch_without_uuid = "-".join(self.secrets.base_branch.split("-")[:-1])
+        vendor_without_suffix = self.secrets.vendor.split("-")[0]
+        self.secrets.base_branch = f'{base_branch_without_uuid}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_name}-{self.secrets.chart_version}'
+        self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
+        self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
+
     def update_test_chart(self, test_chart):
-        if test_chart != self.test_chart:
-            # reinitialize the settings according with new chart
-            self.test_chart = test_chart
-            self.__post_init__()
+        self.test_chart = test_chart
+        chart_name, chart_version = self.get_chart_name_version()
+        self.secrets.test_chart = self.test_chart
+        self.secrets.test_report = self.test_report
+        self.secrets.chart_name = chart_name
+        self.secrets.chart_version = chart_version
+        self.update_chart_directory()
 
     def update_test_report(self, test_report):
-        if test_report != self.test_report:
-            # reinitialize the settings according with new report
-            self.test_report = test_report
-            self.__post_init__()
+        self.test_report = test_report
+        chart_name, chart_version = self.get_chart_name_version()
+        self.secrets.test_chart = self.test_chart
+        self.secrets.test_report = self.test_report
+        self.secrets.chart_name = chart_name
+        self.secrets.chart_version = chart_version
+        self.update_chart_directory()
 
     def get_unique_vendor(self, vendor):
         """Set unique vendor name.
@@ -404,11 +413,6 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         # use unique vendor id to avoid collision between tests
         self.secrets.vendor = self.get_unique_vendor(vendor)
         self.secrets.vendor_type = vendor_type
-        base_branch_without_uuid = "-".join(self.secrets.base_branch.split("-")[:-1])
-        vendor_without_suffix = self.secrets.vendor.split("-")[0]
-        self.secrets.base_branch = f'{base_branch_without_uuid}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_name}-{self.secrets.chart_version}'
-        self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
-        self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
 
     def setup_git_context(self):
         super().setup_git_context(self.repo)
