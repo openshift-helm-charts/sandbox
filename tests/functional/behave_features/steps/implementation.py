@@ -71,4 +71,8 @@ def user_gets_a_message(context, message):
 def readme_file_is_missing(context):
     context.workflow_test.remove_readme_file()
 
+@then(u'the index.yaml file is updated with an entry for the submitted chart with correct providerType')
+def index_yaml_is_updated_with_new_entry_with_correct_provider_type(context):
+    context.workflow_test.check_index_yaml(check_provider_type=True)
+
 
