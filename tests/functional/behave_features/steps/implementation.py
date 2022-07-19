@@ -34,6 +34,15 @@ def user_has_created_error_free_chart_tarball(context, chart_path):
     context.workflow_test.process_chart(is_tarball=True)
     context.workflow_test.push_chart(is_tarball=True)
 
+@given(u'a "{report_path}" is provided')
+def user_generated_a_report(context, report_path):
+    context.workflow_test.update_test_report(report_path)
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file()
+
+@when(u'the user sends a pull request with the report')
 @when(u'the user sends a pull request with the chart')
 def user_sends_a_pull_request(context):
     context.workflow_test.send_pull_request()
@@ -75,4 +84,7 @@ def readme_file_is_missing(context):
 def index_yaml_is_updated_with_new_entry_with_correct_provider_type(context):
     context.workflow_test.check_index_yaml(check_provider_type=True)
 
+@given(u'the report contains an "{invalid_url}"')
+def invalid_url_in_the_report(context, invalid_url):
+    context.workflow_test.process_report(update_url=True, url=invalid_url)
 
