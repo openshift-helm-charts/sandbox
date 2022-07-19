@@ -93,6 +93,6 @@ def user_adds_a_non_chart_related_file(context):
     context.workflow_test.add_non_chart_related_file()
 
 @when(u'the user sends a pull request with both chart and non related file')
-def user_sends_pull_request_with_chart_and_non_related_file(workflow_test):
-    workflow_test.push_chart(is_tarball=False, add_non_chart_file=True)
-    workflow_test.send_pull_request()
+def user_sends_pull_request_with_chart_and_non_related_file(context):
+    context.workflow_test.push_chart(is_tarball=False, add_non_chart_file=True)
+    context.workflow_test.send_pull_request()
