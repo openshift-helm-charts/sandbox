@@ -80,7 +80,7 @@ jobs:
           set -euo pipefail
           if [ "${{ steps.check_repo.outputs.run-job }}" != "true" ]; then
             echo "::set-output name=run_tests::false"
-          elif [ "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}" <= "${{ steps.get_prev_ocp_version.outputs.result }}" ]; then
+          elif [ "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}" == "${{ steps.get_prev_ocp_version.outputs.result }}" ]; then
             # No chnage in the OpenShift version - do not run tests if a scheduled run or dry-run is not set
             if [ "${{ github.event_name }}" == 'schedule' || "${{ github.event.inputs.dry-run }}" != 'true' ]; then
               printf "OpenShift version has not changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}"
@@ -100,7 +100,7 @@ jobs:
           steps.compare_ocp_versions.outputs.run_tests == 'true'
         uses: mikefarah/yq@master
         with:
-          cmd: yq eval -i '.openshift.release-client-version = ${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}' 'software-version.yaml'
+          cmd: yq eval -i '.openshift.release-client-version = "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}"' 'software-version.yaml'
 
       - name: Push software-version.yaml
         if: |
