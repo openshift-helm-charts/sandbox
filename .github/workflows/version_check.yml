@@ -10,8 +10,8 @@ on:
         description: "Dry Run? (Unconditionally run tests and create issues in sandbox) {true,false}"
         required: true
         default: "true"
-      test-run:
-        description: "Dry run also checks and updates software-version file in local repository"
+      update-version:
+        description: "Dry run also checks and updates software-version file if not charts repository"
         required: true
         default: "false"
       vendor-type:
@@ -33,10 +33,12 @@ jobs:
         run: |
           echo "GITHUB_EVENT_NAME : $GITHUB_EVENT_NAME"
           echo "GITHUB_REPOSITORY : $GITHUB_REPOSITORY"
+          echo "dry-run : ${{ github.event.inputs.dry-run }}"
+          echo "update-version : ${{ github.event.inputs.update-version }}"
           if [ $GITHUB_EVENT_NAME == 'workflow_dispatch' ]; then
             echo '::set-output name=run-job::true'
             if [ "${{ github.event.inputs.dry-run }}" == "true" ]; then
-                if [[ "${{ github.event.inputs.test-run }}" == "true"  && $GITHUB_REPOSITORY != "openshift-helm-charts/charts" ]]; then
+                if [[ "${{ github.event.inputs.update-version }}" == "true"  && $GITHUB_REPOSITORY != "openshift-helm-charts/charts" ]]; then
                   echo '::set-output name=check-version::true'
                 else
                   echo '::set-output name=check-version::false'
