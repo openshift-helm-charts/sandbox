@@ -34,6 +34,19 @@ def user_has_created_error_free_chart_tarball(context, chart_path):
     context.workflow_test.process_chart(is_tarball=True)
     context.workflow_test.push_chart(is_tarball=True)
 
+@given(u'an error-free chart tarball used in "{chart_path}" and report in "{report_path}"')
+def user_has_created_error_free_chart_tarball_and_report(context, chart_path, report_path):
+    context.workflow_test.update_test_chart(chart_path)
+    context.workflow_test.update_test_report(report_path)
+
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file()
+    context.workflow_test.process_chart(is_tarball=True)
+    context.workflow_test.process_report()
+    context.workflow_test.push_chart(is_tarball=True)
+
 @given(u'a "{report_path}" is provided')
 def user_generated_a_report(context, report_path):
     context.workflow_test.update_test_report(report_path)
