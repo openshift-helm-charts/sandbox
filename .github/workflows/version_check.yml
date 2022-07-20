@@ -36,7 +36,7 @@ jobs:
           if [ $GITHUB_EVENT_NAME == 'workflow_dispatch' ]; then
             echo '::set-output name=run-job::true'
             if [ "${{ github.event.inputs.dry-run }}" == "true" ]; then
-                if [ "${{ github.event.inputs.test-run }}" == "true" ]; then
+                if [[ "${{ github.event.inputs.test-run }}" == "true"  && $GITHUB_REPOSITORY != "openshift-helm-charts/charts" ]]; then
                   echo '::set-output name=check-version::true'
                 else
                   echo '::set-output name=check-version::false'
@@ -51,6 +51,7 @@ jobs:
             echo '::set-output name=run-job::false'
             echo '::set-output name=check-version::false'
           fi
+
 
       - name: Install oc
         if: steps.check_repo.outputs.run-job == 'true'
