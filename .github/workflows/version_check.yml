@@ -13,7 +13,7 @@ on:
       test-run:
         description: "Dry run also updates software-version file"
         required: true
-        default: false
+        default: "false"
       vendor-type:
         description: "Vendor type {all,partner,redhat,community}"
         required: true
@@ -40,8 +40,10 @@ jobs:
                   echo '::set-output name=check-version::true'
                 else
                   echo '::set-output name=check-version::false'
+                fi
             else
                 echo '::set-output name=check-version::true'
+            fi
           elif [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
             echo '::set-output name=run-job::true'
             echo '::set-output name=check-version::true'
