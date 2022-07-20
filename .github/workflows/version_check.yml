@@ -55,6 +55,7 @@ jobs:
         id: get_curr_ocp_version
         run: |
           OCP_VERSION=$(./oc version -o json | jq '.openshiftVersion') | sed -e 's/^"//' -e 's/"$//'
+          OCP_VERSION=sed -e 's/^"//' -e 's/"$//' <<< $OCP_VERSION
           printf "[INFO] Current OCP Version: %s\n" ${OCP_VERSION}
           echo "::set-output name=curr_ocp_version::${OCP_VERSION}"
         shell: bash
