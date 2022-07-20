@@ -20,8 +20,6 @@ on:
         default: ""
 jobs:
   check-ocp:
-    concurrency:
-      group: version_check
     name: Check OpenShift Version
     runs-on: ubuntu-20.04
     steps:
@@ -200,8 +198,8 @@ jobs:
 
 
   check-chart-verifier:
-    concurrency:
-      group: version_check
+    if: ${{ always() }}
+    needs: check-ocp
     name: Check Chart Verifier Version
     runs-on: ubuntu-20.04
     steps:
