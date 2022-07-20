@@ -54,7 +54,7 @@ jobs:
         if: steps.check_repo.outputs.run-job == 'true'
         id: get_curr_ocp_version
         run: |
-          OCP_VERSION=$(./oc version -o json | jq '.openshiftVersion')
+          OCP_VERSION = sed -e 's/^"//' -e 's/"$//' <<< $(./oc version -o json | jq '.openshiftVersion')
           printf "[INFO] Current OCP Version: %s\n" ${OCP_VERSION}
           echo "::set-output name=curr_ocp_version::${OCP_VERSION}"
         shell: bash
@@ -79,8 +79,8 @@ jobs:
           set -euo pipefail
           if [ "${{ steps.check_repo.outputs.run-job }}" != "true" ]; then
             echo "::set-output name=run_tests::false"
-          elif [ "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}" = "${{ steps.get_prev_ocp_version.outputs.result }}" ]; then
-            # No change in the OpenShift version - do not run tests if a scheduled run or dry-run is not set
+          elif [ "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}" <= "${{ steps.get_prev_ocp_version.outputs.result }}" ]; then
+            # No chnage in the OpenShift version - do not run tests if a scheduled run or dry-run is not set
             if [ "${{ github.event_name }}" == 'schedule' || "${{ github.event.inputs.dry-run }}" != 'true' ]; then
               printf "OpenShift version has not changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}"
               echo "::set-output name=run_tests::false"
@@ -103,8 +103,7 @@ jobs:
 
       - name: Push software-version.yaml
         if: |
-          steps.compare_ocp_versions.outputs.run_tests == 'true' &&
-          (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry-run != 'true'))
+          steps.compare_ocp_versions.outputs.run_tests == 'true'
         run: |
           COMMIT_MESSAGE=$(printf "software-version.yaml: Update OpenShift version from '%s' to '%s'" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}")
           git remote -v
@@ -273,8 +272,7 @@ jobs:
 
       - name: Push software-version.yaml
         if: |
-          steps.compare_cv_versions.outputs.run_tests == 'true' &&
-          (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry-run != 'true'))
+          steps.compare_cv_versions.outputs.run_tests == 'true'
         run: |
           COMMIT_MESSAGE=$(printf "software-version.yaml: Update chart-verifier version from '%s' to '%s'" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_cv_version.outputs.current_cv_digest }}")
           git remote -v
