@@ -86,6 +86,7 @@ jobs:
               printf "OpenShift version has not changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}"
               echo "::set-output name=run_tests::false"
             else
+              printf "Openshift has not changed but run anyway for dry-run"
               echo "::set-output name=run_tests::true"
             fi
           else
@@ -255,6 +256,7 @@ jobs:
               printf "Chart Verifier has not changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_cv_digest.outputs.result }}" "${{ steps.get_curr_cv_version.outputs.current_cv_digest }}"
               echo "::set-output name=run_tests::false"
             else
+              printf "Chart verifier has not changed but run anyway for dry-run"
               echo "::set-output name=run_tests::true"
             fi
           else
@@ -312,7 +314,7 @@ jobs:
 
       - name: (Manual) Run tests on existing charts
         if: |
-          github.event_name == 'workflow_dispatch'
+          github.event_name == 'workflow_dispatch' && steps.compare_cv_versions.outputs.run_tests == 'true'
         env:
           CLUSTER_TOKEN: ${{ secrets.CLUSTER_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
