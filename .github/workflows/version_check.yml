@@ -108,7 +108,7 @@ jobs:
                 printf "%s/n" "Openshift version has not changed but run anyaway as dry-run is set"
                 echo "::set-output name=run_tests::true"
               else
-                printf "%s/n" "Openshift version has not changed do not run tests"
+                echo "Openshift version has not changed do not run tests"
                 echo "::set-output name=run_tests::false"
               fi
             else
@@ -118,7 +118,7 @@ jobs:
             fi
           else
             # Run whetheropen shift version has changed or not
-            printf "%s,/n" "Run tests - version check skipped"
+            echo "Run tests - version check skipped"
             echo "::set-output name=update-version::false"
             echo "::set-output name=run_tests::true"
           fi
