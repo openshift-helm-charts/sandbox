@@ -267,6 +267,25 @@ vendor:
                 logging.info(f"Delete release tag '{expected_tag}'")
                 github_api(
                     'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
+    
+    def check_pull_request_labels(self, pr_number):
+        r = github_api(
+            'get', f'repos/{self.secrets.test_repo}/issues/{pr_number}/labels', self.secrets.bot_token)
+        labels = json.loads(r.text)
+        authorized_request = False
+        content_ok = False
+        for label in labels:
+            logging.info(f"PR{pr_number} found label {label['name']}")
+            if label['name'] == "authorized-request":
+                authorized_request = True
+            if label['name'] == "content-ok":
+                content_ok = True
+        
+        if authorized_request and content_ok:
+            logging.info(f"PR{pr_number} authorized request and content-ok labels were found as expected")
+            return True
+        else:
+            raise AssertionError(f"PR{pr_number} authorized request and/or content-ok labels were not found as expected")
 
 @dataclass
 class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
@@ -597,6 +616,9 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     # expect_merged: boolean representing whether the PR should be merged
     def check_pull_request_result(self, expect_merged: bool):
         super().check_pull_request_result(self.secrets.pr_number, expect_merged)
+
+    def check_pull_request_labels(self):
+        super().check_pull_request_labels(self.secrets.pr_number)
 
     def check_pull_request_comments(self, expect_message: str):
         r = github_api(

@@ -56,6 +56,7 @@ def user_pushed_the_chart_and_created_pull_request(context):
 def pull_request_is_merged(context):
     context.workflow_test.check_workflow_conclusion(expect_result='success')
     context.workflow_test.check_pull_request_result(expect_merged=True)
+    context.workflow_test.check_pull_request_labels()
 
 @then(u'the index.yaml file is updated with an entry for the submitted chart')
 def index_yaml_updated_with_submitted_chart(context):
@@ -96,3 +97,35 @@ def user_adds_a_non_chart_related_file(context):
 def user_sends_pull_request_with_chart_and_non_related_file(context):
     context.workflow_test.push_chart(is_tarball=False, add_non_chart_file=True)
     context.workflow_test.send_pull_request()
+
+@given(u'provider delivery control is set to "{provider_control_owners}" in the OWNERS file')
+def provider_delivery_control_set_in_owners(context, provider_control_owners):
+    if provider_control_owners == "true":
+        context.workflow_test.secrets.provider_delivery=True
+    else:
+        context.workflow_test.secrets.provider_delivery=False
+
+@given(u'provider delivery control is set to "{provider_control_report}" in the report')
+def provider_delivery_control_set_in_report(context, provider_control_report):
+    if provider_control_report == "true":
+        context.workflow_test.process_report(update_provider_delivery=True, provider_delivery=True)
+    else:
+        context.workflow_test.process_report(update_provider_delivery=True, provider_delivery=False)
+
+@given(u'provider delivery control is set to "{provider_control_report}" and a package digest is "{package_digest_set}" in the report')
+def provider_delivery_control_and_package_digest_set_in_report(context, provider_control_report, package_digest_set=True):
+    if package_digest_set == "true":
+        no_package_digest = False
+    else:
+        no_package_digest = True
+
+    if provider_control_report == "true":
+        context.workflow_test.process_report(update_provider_delivery=True, provider_delivery=True, unset_package_digest=no_package_digest)
+    else:
+        context.workflow_test.process_report(update_provider_delivery=True, provider_delivery=False, unset_package_digest=no_package_digest)
+
+@then(u'the "{index_file}" is updated with an entry for the submitted chart')
+def index_file_is_updated(context, index_file):
+    context.workflow_test.secrets.index_file = index_file
+    context.workflow_test.check_index_yaml(True)
+
