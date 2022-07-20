@@ -11,7 +11,7 @@ on:
         required: true
         default: "true"
       test-run:
-        description: "Dry run also updates software-version file"
+        description: "Dry run also checks and updates software-version file in local repository"
         required: true
         default: "false"
       vendor-type:
@@ -101,7 +101,7 @@ jobs:
               # No change in the OpenShift versions.
               printf "OpenShift version has not changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}"
               echo "::set-output name=update-version::false"
-              if [ "${{ github.event.inputs.dry-run }}" == "true" ]]; then
+              if [ "${{ github.event.inputs.dry-run }}" == "true" ]; then
                 printf "%s/n" "Openshift version has not changed but run anyaway as dry-run is set"
                 echo "::set-output name=run_tests::true"
               else
