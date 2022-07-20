@@ -105,7 +105,7 @@ jobs:
               printf "OpenShift version has not changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}"
               echo "::set-output name=update-version::false"
               if [ "${{ github.event.inputs.dry-run }}" == "true" ]; then
-                printf "%s/n" "Openshift version has not changed but run anyaway as dry-run is set"
+                echo "Openshift version has not changed but run anyaway as dry-run is set"
                 echo "::set-output name=run_tests::true"
               else
                 echo "Openshift version has not changed do not run tests"
