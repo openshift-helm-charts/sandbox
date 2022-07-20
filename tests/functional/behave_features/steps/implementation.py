@@ -112,7 +112,7 @@ def provider_delivery_control_set_in_report(context, provider_control_report):
     else:
         context.workflow_test.process_report(update_provider_delivery=True, provider_delivery=False)
 
-@given(u'provider delivery control is set to "{provider_control_report}" and a package digest is "{package_digest_set}" in the report')
+@given(u'provider delivery controls is set to "{provider_control_report}" and a package digest is "{package_digest_set}" in the report')
 def provider_delivery_control_and_package_digest_set_in_report(context, provider_control_report, package_digest_set=True):
     if package_digest_set == "true":
         no_package_digest = False
