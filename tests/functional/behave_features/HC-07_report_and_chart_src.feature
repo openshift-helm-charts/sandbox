@@ -4,7 +4,7 @@ Feature: Chart source submission with report
 
     Scenario Outline: [HC-07-001] A partner or redhat associate submits an error-free chart source with report
         Given the vendor "<vendor>" has a valid identity as "<vendor_type>"
-        And an error-free chart source is used in "<chart_path>" and report in "<report_path>"
+        And an error-free chart source used in "<chart_path>" and report in "<report_path>"
         When the user sends a pull request with the chart and report
         Then the user sees the pull request is merged
         And the index.yaml file is updated with an entry for the submitted chart
@@ -22,7 +22,7 @@ Feature: Chart source submission with report
 
     Scenario Outline: [HC-07-002] A community user submits an error-free chart source with report
         Given the vendor "<vendor>" has a valid identity as "<vendor_type>"
-        And an error-free chart source is used in "<chart_path>" and report in "<report_path>"
+        And an error-free chart source used in "<chart_path>" and report in "<report_path>"
         When the user sends a pull request with the chart and report
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
