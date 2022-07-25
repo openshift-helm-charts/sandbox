@@ -156,8 +156,10 @@ def index_file_is_updated(context, index_file):
     context.workflow_test.secrets.index_file = index_file
     context.workflow_test.check_index_yaml(True)
 
-
 @given(u'the report includes "{tested}" and "{supported}" OpenshiftVersion values and chart "{kubeversion}" value')
 def report_includes_specified_versions(context, tested, supported, kubeversion):
     context.workflow_test.process_report(update_versions=True, supported_versions=supported, tested_version=tested, kube_version=kubeversion)
 
+@given(u'the report has a "{check}" missing')
+def report_has_a_check_missing(context, check):
+    context.workflow_test.process_report(missing_check=check)
