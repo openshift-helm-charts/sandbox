@@ -16,10 +16,6 @@ def check_index_entries(ocpVersion):
     all_chart_list = index.get_latest_charts()
     failed_chart_list = []
 
-    for chart in all_chart_list:
-        print(f'[INFO] found latest chart : {chart["name"]} {chart["version"]}')
-
-
     OCP_VERSION = semantic_version.Version.coerce(ocpVersion)
 
     for chart in all_chart_list:

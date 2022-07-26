@@ -73,8 +73,6 @@ def getOCPVersions(kubeVersion):
             if maxOCP == "" or semantic_version.Version.coerce(maxOCP) < coercedOCPVersionValue:
                 maxOCP = kubeOpenShiftVersionMap[kubeVersionKey]
                 #print(f"   Found new Max : {checkKubeVersion}: {maxOCP}")
-        #else:
-            #print(f"   Not in range : {checkKubeVersion}: {coercedKubeVersionKey}")
 
     # check if minOCP is open ended
     if minOCP != "" and semantic_version.Version("1.999.999") in semantic_version.NpmSpec(checkKubeVersion):

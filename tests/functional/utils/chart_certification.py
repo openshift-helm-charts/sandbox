@@ -17,6 +17,7 @@ import git
 import yaml
 import pytest
 from functional.utils.notifier import create_verification_issue
+from functional.utils.index import check_index_entries
 
 from functional.utils.github import *
 from functional.utils.secret import *
