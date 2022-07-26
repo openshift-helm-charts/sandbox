@@ -172,3 +172,33 @@ def report_includes_specified_versions(context, tested, supported, kubeversion):
 @given(u'the report has a "{check}" missing')
 def report_has_a_check_missing(context, check):
     context.workflow_test.process_report(missing_check=check)
+
+@given(u'A "{user}" wants to submit a chart in "{chart_path}"')
+def user_wants_to_submit_a_chart(context, user, chart_path):
+    context.workflow_test.update_test_chart(chart_path)
+    context.workflow_test.secrets.bot_name = user
+
+@given(u'An authorized user wants to submit a chart in "{chart_path}"')
+def authorized_user_wants_to_submit_a_chart(context, chart_path):
+    context.workflow_test.update_test_chart(chart_path)
+
+@given(u'"{vendor} of "{vendor_type}" wants to submit "{chart}" of "{version}"')
+def vendor_of_vendor_type_wants_to_submit_chart_of_version(context, vendor, vendor_type, chart, version):
+    context.workflow_test.set_vendor(vendor, vendor_type)
+    context.workflow_test.chart_name, context.workflow_test.chart_version = chart, version
+
+@given(u'the user creates a branch to add a new chart version')
+def the_user_creates_a_branch_to_add_a_new_chart_version(context):
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file()
+    context.workflow_test.process_chart(is_tarball=False)
+    if context.workflow_test.secrets.bad_version:
+        context.workflow_test.update_chart_version_in_chart_yaml(context.workflow_test.secrets.bad_version)
+    context.workflow_test.push_chart(is_tarball=False)
+
+@given(u'Chart.yaml specifies a "{bad_version}"')
+def chart_yaml_specifies_bad_version(context, bad_version):
+    if bad_version != '':
+        context.workflow_test.secrets.bad_version = bad_version
