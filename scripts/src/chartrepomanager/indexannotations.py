@@ -1,18 +1,22 @@
 import sys
 import semantic_version
+import requests
+import yaml
 
 sys.path.append('../')
 from report import report_info
 
-kubeOpenShiftVersionMap = {"1.13": "4.1",
-                           "1.14": "4.2",
-                           "1.16": "4.3",
-                           "1.17": "4.4",
-                           "1.18": "4.5",
-                           "1.19": "4.6",
-                           "1.20": "4.7",
-                           "1.21": "4.8",
-                           "1.22": "4.9"}
+kubeOpenShiftVersionMap = {}
+
+def getKubVersionMap():
+
+    if not kubeOpenShiftVersionMap:
+       content = requests.get("https://github.com/mmulholla/chart-verifier/blob/versionYaml/internal/tool/kubeOpenShiftVersionMap.yaml?raw=true")
+       version_data = yaml.safe_load(content.text)
+       for kubeVersion in version_data["versions"]:
+           kubeOpenShiftVersionMap[kubeVersion["kube-version"]] = kubeVersion["ocp-version"]
+
+    return  kubeOpenShiftVersionMap
 
 
 def getOCPVersions(kubeVersion):
@@ -56,6 +60,7 @@ def getOCPVersions(kubeVersion):
 
     minOCP = ""
     maxOCP = ""
+    getKubVersionMap()
     for kubeVersionKey in kubeOpenShiftVersionMap :
         coercedKubeVersionKey = semantic_version.Version.coerce(kubeVersionKey)
         if minOCP == "" and coercedKubeVersionKey in semantic_version.NpmSpec(checkKubeVersion):
