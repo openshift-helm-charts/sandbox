@@ -16,9 +16,8 @@ from pathlib import Path
 import git
 import yaml
 import pytest
-from functional.utils.notifier import create_verification_issue
+from functional.utils.notifier import *
 from functional.utils.index import *
-
 from functional.utils.github import *
 from functional.utils.secret import *
 from functional.utils.set_directory import SetDirectory
