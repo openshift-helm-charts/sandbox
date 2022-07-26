@@ -60,6 +60,15 @@ def user_has_created_error_free_chart_src_and_report(context, chart_path, report
     context.workflow_test.process_report()
     context.workflow_test.push_chart(is_tarball=False)
 
+@given(u'an error-free report is used in "{report_path}"')
+def user_has_created_error_free_report(context, report_path):
+    context.workflow_test.update_test_report(report_path)
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file()
+    context.workflow_test.process_report()
+
 @given(u'a "{report_path}" is provided')
 def user_generated_a_report(context, report_path):
     context.workflow_test.update_test_report(report_path)
