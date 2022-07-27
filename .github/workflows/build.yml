@@ -118,7 +118,7 @@ jobs:
 
       - name: Remove 'content-ok' label
         uses: actions/github-script@v3
-        if: ${{ steps.check_pr_content.outcome == 'failure'}}
+        if: ${{ steps.check_pr_content.outcome == 'failure' && contains( github.event.pull_request.labels.*.name, 'content-ok') }}
         continue-on-error: true
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
