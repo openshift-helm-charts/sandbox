@@ -384,6 +384,14 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             self.repo.git.branch('-D', current_branch)
         except git.exc.GitCommandError:
             logging.info(f"Local '{current_branch}' does not exist")
+    
+    def update_bot_name(self, bot_name):
+        logging.debug(f"Updating bot name: {bot_name}")
+        self.secrets.bot_name = bot_name
+    
+    def update_bad_version(self, bad_version):
+        logging.debug(f"Updating bad version: {bad_version}")
+        self.secrets.bad_version = bad_version
 
     def update_chart_directory(self):
         base_branch_without_uuid = "-".join(self.secrets.base_branch.split("-")[:-1])

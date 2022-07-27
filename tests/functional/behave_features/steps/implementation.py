@@ -176,7 +176,7 @@ def report_has_a_check_missing(context, check):
 @given(u'A "{user}" wants to submit a chart in "{chart_path}"')
 def user_wants_to_submit_a_chart(context, user, chart_path):
     context.workflow_test.update_test_chart(chart_path)
-    context.workflow_test.secrets.bot_name = user
+    context.workflow_test.update_bot_name(user)
 
 @given(u'An authorized user wants to submit a chart in "{chart_path}"')
 def authorized_user_wants_to_submit_a_chart(context, chart_path):
@@ -196,4 +196,5 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(context):
 @given(u'Chart.yaml specifies a "{bad_version}"')
 def chart_yaml_specifies_bad_version(context, bad_version):
     if bad_version != '':
-        context.workflow_test.secrets.bad_version = bad_version
+        context.workflow_test.update_bad_version(bad_version)
+        
