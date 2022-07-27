@@ -138,7 +138,7 @@ jobs:
 
       - name: Remove 'authorized-request' label from PR
         uses: actions/github-script@v3
-        if: ${{ steps.check_build_required.outputs.run-build == 'true' }}
+        if: ${{ steps.check_build_required.outputs.run-build == 'true' && contains( github.event.pull_request.labels.*.name, 'authorized-request') }}
         continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -149,7 +149,6 @@ jobs:
               repo: context.repo.repo,
               issue_number: Number(issue_number),
               name: 'authorized-request'
-              fail_on_error: false
             })
 
       - name: install chart verifier for action
