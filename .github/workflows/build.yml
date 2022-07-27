@@ -149,6 +149,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: Number(issue_number),
               name: 'authorized-request'
+              fail_on_error: false
             })
 
       - name: install chart verifier for action
