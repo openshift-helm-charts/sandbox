@@ -182,11 +182,6 @@ def user_wants_to_submit_a_chart(context, user, chart_path):
 def authorized_user_wants_to_submit_a_chart(context, chart_path):
     context.workflow_test.update_test_chart(chart_path)
 
-@given(u'"{vendor}" of "{vendor_type}" wants to submit "{chart}" of "{version}"')
-def vendor_of_vendor_type_wants_to_submit_chart_of_version(context, vendor, vendor_type, chart, version):
-    context.workflow_test.set_vendor(vendor, vendor_type)
-    context.workflow_test.chart_name, context.workflow_test.chart_version = chart, version
-
 @given(u'the user creates a branch to add a new chart version')
 def the_user_creates_a_branch_to_add_a_new_chart_version(context):
     context.workflow_test.setup_git_context()
