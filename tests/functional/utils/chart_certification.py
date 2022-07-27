@@ -819,7 +819,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', logging.warning)
 
         if conclusion and run_id:
-            if conclusion == 'success':
+            if conclusion != 'success':
                 # Send notification to owner through GitHub issues
                 r = github_api(
                     'get', f'repos/{self.secrets.test_repo}/actions/runs/{run_id}', self.secrets.bot_token)
@@ -937,7 +937,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                     skip_charts.append(f'{chart["name"]}-{chart["version"]}')
 
 
-    # Process test charts and send PRs from temporary directory
+        # Process test charts and send PRs from temporary directory
         with SetDirectory(Path(self.temp_dir.name)):
             for vendor_type, vendor_name, chart_name, chart_version in self.secrets.submitted_charts:
                 if f'{chart_name}-{chart_version}' in skip_charts:
