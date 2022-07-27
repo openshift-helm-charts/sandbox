@@ -925,8 +925,10 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
 
         skip_charts = list()
 
+        logging.info(f"Running tests for : {self.secrets.software_name} {self.secrets.software_version} :")
         # First look for charts in index.yaml to see if kubeVersion is good:
         if self.secrets.software_name == "OpenShift":
+            logging.info("check index file for invalid kubeVersions")
             failed_charts = check_index_entries(self.secrets.software_version)
             if failed_charts:
                 for chart in failed_charts:
