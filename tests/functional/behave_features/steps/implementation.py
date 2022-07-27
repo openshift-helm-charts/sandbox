@@ -60,6 +60,7 @@ def user_has_created_error_free_chart_src_and_report(context, chart_path, report
     context.workflow_test.process_report()
     context.workflow_test.push_chart(is_tarball=False)
 
+@given(u'report is used in "{report_path}"')
 @given(u'an error-free report is used in "{report_path}"')
 def user_has_created_error_free_report(context, report_path):
     context.workflow_test.update_test_report(report_path)
