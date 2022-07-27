@@ -108,7 +108,7 @@ jobs:
             ve1/bin/pytest tests/ --log-cli-level=WARNING --ignore=tests/functional/step_defs/test_smoke_scenarios.py --ignore=tests/functional/step_defs/test_submitted_charts.py --tb=short
           else
             echo "Not a release PR from dev to charts, so running only smoke tests"
-            ve1/bin/pytest tests/functional/step_defs/test_smoke_scenarios.py --log-cli-level=WARNING --tb=short
+            ve1/bin/behave tests/functional/behave_features/ --tags=smoke --logging-level=WARNING --no-capture --no-color
           fi
 
       - name: (Manual) Test CI Workflow
