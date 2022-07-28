@@ -36,7 +36,7 @@ entries:
         charts.openshift.io/provider: EXFO Inc.
         charts.openshift.io/providerType: partner
         charts.openshift.io/submissionTimestamp: '2022-07-20T08:38:02.575174+00:00'
-        charts.openshift.io/supportedOpenShiftVersions: '>=4.7'
+        charts.openshift.io/supportedOpenShiftVersions: '>=4.12'
         charts.openshift.io/testedOpenShiftVersion: '4.10'
       apiVersion: v2
       appVersion: 0.2.0
@@ -501,7 +501,7 @@ entries:
         charts.openshift.io/provider: HashiCorp
         charts.openshift.io/providerType: partner
         charts.openshift.io/submissionTimestamp: '2022-01-21T01:16:16.375059+00:00'
-        charts.openshift.io/supportedOpenShiftVersions: '>=4.2'
+        charts.openshift.io/supportedOpenShiftVersions: '4.2'
         charts.openshift.io/testedOpenShiftVersion: '4.9'
       apiVersion: v2
       appVersion: 1.9.2
@@ -533,8 +533,8 @@ entries:
         charts.openshift.io/provider: HashiCorp
         charts.openshift.io/providerType: partner
         charts.openshift.io/submissionTimestamp: '2022-05-17T11:58:27.166946+00:00'
-        charts.openshift.io/supportedOpenShiftVersions: '>=4.3'
-        charts.openshift.io/testedOpenShiftVersion: '4.10'
+        charts.openshift.io/supportedOpenShiftVersions: '4.3 - 4.9'
+        charts.openshift.io/testedOpenShiftVersion: '4.9'
       apiVersion: v2
       appVersion: 1.10.3
       description: Official HashiCorp Vault Chart
@@ -1146,7 +1146,7 @@ entries:
         charts.openshift.io/name: ibm-object-storage-plugin Chart
         charts.openshift.io/providerType: partner
         charts.openshift.io/submissionTimestamp: '2022-07-26T07:21:30.356702+00:00'
-        charts.openshift.io/supportedOpenShiftVersions: '>=4.6'
+        charts.openshift.io/supportedOpenShiftVersions: '4.6'
         charts.openshift.io/testedOpenShiftVersion: '4.9'
       apiVersion: v2
       appVersion: 2.1.19
