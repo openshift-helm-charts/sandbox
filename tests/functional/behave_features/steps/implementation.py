@@ -47,6 +47,17 @@ def user_has_created_error_free_chart_tarball_and_report(context, chart_path, re
     context.workflow_test.process_report()
     context.workflow_test.push_chart(is_tarball=True)
 
+@given(u'a chart tarball is used in "{chart_path}" and report in "{report_path}"')
+def user_has_created_a_chart_tarball_and_report(context, chart_path, report_path):
+    context.workflow_test.update_test_chart(chart_path)
+    context.workflow_test.update_test_report(report_path)
+
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file()
+    context.workflow_test.process_chart(is_tarball=True)
+
 @given(u'an error-free chart source used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_error_free_chart_src_and_report(context, chart_path, report_path):
     context.workflow_test.update_test_chart(chart_path)
@@ -198,4 +209,15 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(context):
 def chart_yaml_specifies_bad_version(context, bad_version):
     if bad_version != '':
         context.workflow_test.update_bad_version(bad_version)
-        
+
+@given(u'the report contains an "{error}"')
+def sha_value_does_not_match(context, error):
+    if error == 'sha_mismatch':
+        context.workflow_test.process_report(update_chart_sha=True)
+    else:
+        raise AssertionError(f"This {error} handling is not implemented yet")
+
+@when(u'the user sends a pull request with the chart tar and report')
+def user_sends_pull_request_with_chart_tarball_and_report(context):
+    context.workflow_test.push_chart(is_tarball=True)
+    context.workflow_test.send_pull_request()
