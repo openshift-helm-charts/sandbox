@@ -210,7 +210,7 @@ def chart_yaml_specifies_bad_version(context, bad_version):
     if bad_version != '':
         context.workflow_test.update_bad_version(bad_version)
 
-@given(u'the report contains an "{error}"')
+@given(u'the report contains "{error}"')
 def sha_value_does_not_match(context, error):
     if error == 'sha_mismatch':
         context.workflow_test.process_report(update_chart_sha=True)
