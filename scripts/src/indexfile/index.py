@@ -52,13 +52,10 @@ def get_charts_info():
         for chart in charts:
             chart_info = {}
             chart_info["name"] = chart['name']
-            #print(f'[INFO] found chart : {chart["name"]} {chart["version"]} ')
             chart_info["version"] = chart["version"]
             chart_info["providerType"] = chart["annotations"]["charts.openshift.io/providerType"]
-            if "charts.openshift.io/provider" in chart["annotations"]:
-                chart_info["provider"] = chart["annotations"]["charts.openshift.io/provider"]
-            else:
-                chart_info["provider"] = ""
+            chart_info["provider"] =  entry.removesuffix(f'-{chart["name"]}')
+            $print(f'[INFO] found chart : {chart_info["provider"]} {chart["name"]} {chart["version"]} ')
             if 'charts.openshift.io/supportedOpenShiftVersions' in chart["annotations"]:
                 chart_info["supportedOCP"] = chart["annotations"]["charts.openshift.io/supportedOpenShiftVersions"]
             else:
