@@ -790,7 +790,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                     f'HEAD:refs/heads/{pr_branch}', '-f')
 
-    def report_failure(self,chart,chart_directory,chart_owners,failure_type,run_id,run_html_url,kube_version=None):
+    def report_failure(self,chart,chart_owners,failure_type,pr_html_url=None,run_html_url=None):
 
         os.environ['GITHUB_REPO'] = PROD_REPO.split('/')[1]
         os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
@@ -799,14 +799,14 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
             os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
             logging.info(f"Send notification to '{self.secrets.notify_id}' about verification result of '{chart}'")
-            create_verification_issue(chart_directory,  chart_owners, failure_type,self.secrets.notify_id, run_html_url, kube_version, self.secrets.software_name,
+            create_verification_issue(chart,  chart_owners, failure_type,self.secrets.notify_id, pr_html_url, run_html_url, self.secrets.software_name,
                                       self.secrets.software_version, self.secrets.bot_token, self.secrets.dry_run)
         else:
             os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
             os.environ['GITHUB_REPO'] = "sandbox"
             os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
             logging.info(f"Send notification to '{self.secrets.notify_id}' about dry run verification result of '{chart}'")
-            create_verification_issue(chart_directory, chart_owners, failure_type,self.secrets.notify_id, run_html_url, kube_version, self.secrets.software_name,
+            create_verification_issue(chart, chart_owners, failure_type,self.secrets.notify_id, pr_html_url, run_html_url, self.secrets.software_name,
                                       self.secrets.software_version, self.secrets.bot_token, self.secrets.dry_run)
             logging.info(f"Dry Run - send sandbox notification to '{chart_owners}' about verification result of '{chart}'")
 
@@ -825,10 +825,13 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                     'get', f'repos/{self.secrets.test_repo}/actions/runs/{run_id}', self.secrets.bot_token)
                 run = r.json()
                 run_html_url = run['html_url']
+
+                pr = get_pr(self,prnumber)
+                pr_html_url = pr["html_url"]
                 chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
                 chart_owners = owners_table[chart_directory]
 
-                self.report_failure(chart,chart_directory,chart_owners,CHECKS_FAILED,run_id,run_html_url)
+                self.report_failure(chart,chart_owners,CHECKS_FAILED,pr_html_url,run_id,run_html_url)
 
                 logging.warning(f"PR{pr_number} workflow failed: {vendor_name}, {chart_name}, {chart_version}")
                 return
@@ -936,7 +939,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                     chart_directory = f'charts/{providerDir}/{chart["provider"]}/{chart["name"]}'
                     self.get_owner_ids(chart_directory,owners_table)
                     chart_owners = owners_table[chart_directory]
-                    self.report_failure(chart,chart_directory,chart_owners,BAD_KUBEVERSION,"","",chart["kubeVersion"])
+                    self.report_failure(chart,chart_owners,chart["message"],"","")
                     skip_charts.append(f'{chart["name"]}-{chart["version"]}')
 
 

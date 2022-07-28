@@ -21,6 +21,7 @@ def check_index_entries(ocpVersion):
             if OCP_VERSION in semantic_version.NpmSpec(chart["supportedOCP"]):
                 logging.info(f'PASS: Chart {chart["name"]} {chart["version"]} supported OCP version {chart["supportedOCP"]} includes: {OCP_VERSION}')
             else:
+                chart["message"] = f'chart {chart["name"]} {chart["version"]} supported OCP version {chart["supportedOCP"]} does not include latest OCP version {OCP_VERSION}'
                 logging.info(f'   ERROR: Chart {chart["name"]} {chart["version"]} supported OCP version {chart["supportedOCP"]} does not include {OCP_VERSION}')
                 failed_chart_list.append(chart)
         elif "kubeVersion" in chart and chart["kubeVersion"] != "":
@@ -28,6 +29,7 @@ def check_index_entries(ocpVersion):
             if OCP_VERSION in semantic_version.NpmSpec(supportedOCPVersion):
                 logging.info(f'PASS: Chart {chart["name"]} {chart["version"]} kubeVersion  {chart["kubeVersion"]} (OCP: {supportedOCPVersion}) includes OCP version: {OCP_VERSION}')
             else:
+                chart["message"] = f'chart {chart["name"]} {chart["version"]} kubeVersion {chart["kubeVersion"]} (OCP: {supportedOCPVersion}) does not include latest OCP version {OCP_VERSION}'
                 logging.info(f'   ERROR: Chart {chart["name"]} {chart["version"]} kubeVersion {chart["kubeVersion"]} (OCP: {supportedOCPVersion}) does not include {OCP_VERSION}')
                 failed_chart_list.append(chart)
 
