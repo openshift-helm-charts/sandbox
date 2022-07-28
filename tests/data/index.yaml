@@ -1274,7 +1274,7 @@ entries:
         - Commercial
         - RHOCP
         - Other
-      kubeVersion: '>=1.16.0-0'
+      kubeVersion: '1.16.0-0'
       maintainers:
         - name: IBM
       name: ibm-oms-ent-prod
