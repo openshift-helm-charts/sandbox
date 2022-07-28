@@ -933,7 +933,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             if failed_charts:
                 for chart in failed_charts:
                     chart_directory = f'charts/{chart["providerType"]}/{chart["provider"]}/{chart["name"]}'
-                    self.get_owner_ids(chart_directory.owners_table)
+                    self.get_owner_ids(chart_directory,owners_table)
                     chart_owners = owners_table[chart_directory]
                     self.report_failure(chart,chart_directory,chart_owners,BAD_KUBEVERSION,"","",chart["kubeVersion"])
                     skip_charts.append(f'{chart["name"]}-{chart["version"]}')
