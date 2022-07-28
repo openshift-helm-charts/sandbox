@@ -11,7 +11,7 @@ keywords:
 - management
 - automation
 - infrastructure
-kubeVersion: '>= 1.16.0-0'
+kubeVersion: '1.16.0-0'
 name: vault
 sources:
 - https://github.com/hashicorp/vault
