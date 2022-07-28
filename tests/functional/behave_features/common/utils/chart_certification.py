@@ -58,7 +58,6 @@ vendor:
         bot_name = os.environ.get("BOT_NAME")
         logging.debug(f"Enviroment variable value BOT_NAME: {bot_name}")
         bot_token = os.environ.get("BOT_TOKEN")
-        logging.debug(f"Enviroment variable value BOT_TOKEN: {bot_token}")
         if not bot_name and not bot_token:
             bot_name = "github-actions[bot]"
             bot_token = os.environ.get("GITHUB_TOKEN")
@@ -407,7 +406,6 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         chart_name, chart_version = self.get_chart_name_version()
         logging.debug(f"Got chart_name: {chart_name} and chart_version: {chart_version} from the chart")
         self.secrets.test_chart = self.test_chart
-        self.secrets.test_report = self.test_report
         self.secrets.chart_name = chart_name
         self.secrets.chart_version = chart_version
         self.update_chart_directory()
@@ -417,7 +415,6 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.test_report = test_report
         chart_name, chart_version = self.get_chart_name_version()
         logging.debug(f"Got chart_name: {chart_name} and chart_version: {chart_version} from the report")
-        self.secrets.test_chart = self.test_chart
         self.secrets.test_report = self.test_report
         self.secrets.chart_name = chart_name
         self.secrets.chart_version = chart_version
