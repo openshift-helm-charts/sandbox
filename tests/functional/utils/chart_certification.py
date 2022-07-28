@@ -815,7 +815,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         base_branch = f'{self.secrets.software_name}-{self.secrets.software_version}-{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}'
 
         # Check workflow conclusion
-        chart = f'{vendor_type} {vendor_name} {chart_name} {chart_version}'
+        chart = f'{vendor_name} {chart_name} {chart_version}'
         run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', logging.warning)
 
         if conclusion and run_id:
@@ -939,7 +939,8 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                     chart_directory = f'charts/{providerDir}/{chart["provider"]}/{chart["name"]}'
                     self.get_owner_ids(chart_directory,owners_table)
                     chart_owners = owners_table[chart_directory]
-                    self.report_failure(chart,chart_owners,chart["message"],"","")
+                    chart_id = f'{chart["provider"]} {chart["name"]} {chart["version"]}'
+                    self.report_failure(chart_id,chart_owners,chart["message"],"","")
                     skip_charts.append(f'{chart["name"]}-{chart["version"]}')
 
 
