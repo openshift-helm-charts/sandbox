@@ -73,6 +73,8 @@ def get_charts_info():
 def get_latest_charts():
     chart_list = get_charts_info()
 
+    print(f"{len(chart_list)} charts found in Index file")
+
     chart_in_process = {"name" : ""}
     chart_latest_version = ""
     latest_charts = []
