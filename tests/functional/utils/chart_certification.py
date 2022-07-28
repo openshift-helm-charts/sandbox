@@ -826,7 +826,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                 run = r.json()
                 run_html_url = run['html_url']
 
-                pr = get_pr(self,prnumber)
+                pr = get_pr(self,pr_number)
                 pr_html_url = pr["html_url"]
                 chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
                 chart_owners = owners_table[chart_directory]
