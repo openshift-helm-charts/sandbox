@@ -46,7 +46,8 @@ def get_chart_info(tar_name):
 def get_charts_info():
     chart_info_list = []
 
-    index_dct = _load_index_yaml("https://charts.openshift.io/index.yaml")
+    #index_dct = _load_index_yaml("https://charts.openshift.io/index.yaml")
+    index_dct = _load_index_yaml("https://github.com/mmulholla/development/blob/main/tests/data/index.yaml?raw=true")
     for entry, charts in index_dct["entries"].items():
         for chart in charts:
             chart_info = {}
