@@ -1,7 +1,5 @@
 
-import json
-import requests
-import yaml
+import logging
 import semantic_version
 import sys
 
