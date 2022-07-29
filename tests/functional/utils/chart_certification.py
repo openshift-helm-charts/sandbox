@@ -831,7 +831,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
                 chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
                 chart_owners = owners_table[chart_directory]
 
-                self.report_failure(chart,chart_owners,CHECKS_FAILED,pr_html_url,run_id,run_html_url)
+                self.report_failure(chart,chart_owners,CHECKS_FAILED,pr_html_url,run_html_url)
 
                 logging.warning(f"PR{pr_number} workflow failed: {vendor_name}, {chart_name}, {chart_version}")
                 return
