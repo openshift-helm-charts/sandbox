@@ -11,7 +11,7 @@ kubeOpenShiftVersionMap = {}
 def getKubVersionMap():
 
     if not kubeOpenShiftVersionMap:
-       content = requests.get("https://github.com/mmulholla/chart-verifier/blob/versionYaml/internal/tool/kubeOpenShiftVersionMap.yaml?raw=true")
+       content = requests.get("https://github.com/redhat-certification/chart-verifier/blob/main/internal/tool/kubeOpenShiftVersionMap.yaml?raw=true")
        version_data = yaml.safe_load(content.text)
        for kubeVersion in version_data["versions"]:
            kubeOpenShiftVersionMap[kubeVersion["kube-version"]] = kubeVersion["ocp-version"]
