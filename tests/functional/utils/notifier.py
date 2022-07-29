@@ -100,7 +100,7 @@ def create_verification_issue(chart, chart_owners, failure_type, notify_develope
     if failure_type == CHECKS_FAILED:
         title = f"{title} has failures with {software_name} version {software_version}"
         report_result = "some chart checks have failed. Please review the failures and, if required, consider submitting a new chart version with the appropriate additions/corrections."
-        body = (f"FYI @{' @'.join(notify_developers)}, in PR {pr_url} we have triggered the chart certification workflow against chart {chart} because the workflow "
+        body = (f"FYI @{' @'.join(notify_developers)}, in PR {pr_url} we triggered the chart certification workflow against chart {chart} because the workflow "
                 f"now supports {software_name} version {software_version}. We have found that {report_result}. Check details in the report: "
                 f"{report_url}, Chart owners are: {chart_owners}")
     else:
