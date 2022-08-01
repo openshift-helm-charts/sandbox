@@ -246,4 +246,4 @@ def submission_tests_run_for_submitted_charts(context):
 
 @then(u'all results are reported back to the caller')
 def all_results_report_back_to_caller(context):
-    print(">>>STEP DEF: all results are reported back to the caller")
+    print("[INFO] Running step: all results are reported back to the caller")
