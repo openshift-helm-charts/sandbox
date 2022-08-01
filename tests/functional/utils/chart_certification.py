@@ -16,8 +16,8 @@ from pathlib import Path
 import git
 import yaml
 import pytest
-from functional.utils.notifier import create_verification_issue
-
+from functional.utils.notifier import *
+from functional.utils.index import *
 from functional.utils.github import *
 from functional.utils.secret import *
 from functional.utils.set_directory import SetDirectory
@@ -790,50 +790,57 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                     f'HEAD:refs/heads/{pr_branch}', '-f')
 
+    def report_failure(self,chart,chart_owners,failure_type,pr_html_url=None,run_html_url=None):
+
+        os.environ['GITHUB_REPO'] = PROD_REPO.split('/')[1]
+        os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
+        if not self.secrets.dry_run:
+            os.environ['GITHUB_REPO'] = PROD_REPO.split('/')[1]
+            os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
+            os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
+            logging.info(f"Send notification to '{self.secrets.notify_id}' about verification result of '{chart}'")
+            create_verification_issue(chart,  chart_owners, failure_type,self.secrets.notify_id, pr_html_url, run_html_url, self.secrets.software_name,
+                                      self.secrets.software_version, self.secrets.bot_token, self.secrets.dry_run)
+        else:
+            os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
+            os.environ['GITHUB_REPO'] = "sandbox"
+            os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
+            logging.info(f"Send notification to '{self.secrets.notify_id}' about dry run verification result of '{chart}'")
+            create_verification_issue(chart, chart_owners, failure_type,self.secrets.notify_id, pr_html_url, run_html_url, self.secrets.software_name,
+                                      self.secrets.software_version, self.secrets.bot_token, self.secrets.dry_run)
+            logging.info(f"Dry Run - send sandbox notification to '{chart_owners}' about verification result of '{chart}'")
+
+
     def check_single_chart_result(self, vendor_type, vendor_name, chart_name, chart_version, pr_number, owners_table):
         base_branch = f'{self.secrets.software_name}-{self.secrets.software_version}-{self.secrets.pr_base_branch}-{vendor_type}-{vendor_name}-{chart_name}-{chart_version}'
 
         # Check workflow conclusion
-        chart = f'{vendor_type} {vendor_name} {chart_name} {chart_version}'
+        chart = f'{vendor_name} {chart_name} {chart_version}'
         run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', logging.warning)
 
         if conclusion and run_id:
-            # Send notification to owner through GitHub issues
-            r = github_api(
-                'get', f'repos/{self.secrets.test_repo}/actions/runs/{run_id}', self.secrets.bot_token)
-            run = r.json()
-            run_html_url = run['html_url']
-            chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
-            pass_verification = conclusion == 'success'
-            os.environ['GITHUB_REPO'] = PROD_REPO.split('/')[1]
-            os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
-            if not self.secrets.dry_run:
-                chart_owners = owners_table[chart_directory]
-                os.environ['GITHUB_REPO'] = PROD_REPO.split('/')[1]
-                os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
-                os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
-                logging.info(f"PR{pr_number} Send notification to '{self.secrets.notify_id}' about verification result of '{chart}'")
-                create_verification_issue(f"charts/{vendor_name}/{chart_name}/{chart_version}",  chart_owners, self.secrets.notify_id, run_html_url, self.secrets.software_name,
-                                    self.secrets.software_version, pass_verification, self.secrets.bot_token, self.secrets.dry_run)
-            else:
-                chart_owners = owners_table[chart_directory]
-                os.environ['GITHUB_ORGANIZATION'] = PROD_REPO.split('/')[0]
-                os.environ['GITHUB_REPO'] = "sandbox"
-                os.environ['GITHUB_AUTH_TOKEN'] = self.secrets.bot_token
-                logging.info(f"Send notification to '{self.secrets.notify_id}' about dry run verification result of '{chart}'")
-                create_verification_issue(f"charts/{vendor_name}/{chart_name}/{chart_version}", chart_owners, self.secrets.notify_id, run_html_url, self.secrets.software_name,
-                                      self.secrets.software_version, pass_verification, self.secrets.bot_token, self.secrets.dry_run)
-                logging.info(f"PR{pr_number} Dry Run - send sandbox notification to '{chart_owners}' about verification result of '{chart}'")
+            if conclusion != 'success':
+                # Send notification to owner through GitHub issues
+                r = github_api(
+                    'get', f'repos/{self.secrets.test_repo}/actions/runs/{run_id}', self.secrets.bot_token)
+                run = r.json()
+                run_html_url = run['html_url']
 
+                pr = get_pr(self.secrets,pr_number)
+                pr_html_url = pr["html_url"]
+                chart_directory = f'charts/{vendor_type}/{vendor_name}/{chart_name}'
+                chart_owners = owners_table[chart_directory]
 
-        if conclusion != 'success':
+                self.report_failure(chart,chart_owners,CHECKS_FAILED,pr_html_url,run_html_url)
+
                 logging.warning(f"PR{pr_number} workflow failed: {vendor_name}, {chart_name}, {chart_version}")
                 return
+            else:
+                logging.info(f"PR{pr_number} workflow passed: {vendor_name}, {chart_name}, {chart_version}")
         else:
             logging.warning(f"PR{pr_number} workflow did not complete: {vendor_name}, {chart_name}, {chart_version}")
             return
 
-        logging.info(f"PR{pr_number} workflow passed: {vendor_name}, {chart_name}, {chart_version}")
 
         # Check PRs are merged
         if not super().check_pull_request_result(pr_number, True, logging.warning):
@@ -919,13 +926,34 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         owners_table = dict()
         pr_number_list = list()
 
+        skip_charts = list()
+
+        logging.info(f"Running tests for : {self.secrets.software_name} {self.secrets.software_version} :")
+        # First look for charts in index.yaml to see if kubeVersion is good:
+        if self.secrets.software_name == "OpenShift":
+            logging.info("check index file for invalid kubeVersions")
+            failed_charts = check_index_entries(self.secrets.software_version)
+            if failed_charts:
+                for chart in failed_charts:
+                    providerDir = chart["providerType"].replace("partner","partners")
+                    chart_directory = f'charts/{providerDir}/{chart["provider"]}/{chart["name"]}'
+                    self.get_owner_ids(chart_directory,owners_table)
+                    chart_owners = owners_table[chart_directory]
+                    chart_id = f'{chart["provider"]} {chart["name"]} {chart["version"]}'
+                    self.report_failure(chart_id,chart_owners,chart["message"],"","")
+                    skip_charts.append(f'{chart["name"]}-{chart["version"]}')
+
+
         # Process test charts and send PRs from temporary directory
         with SetDirectory(Path(self.temp_dir.name)):
             for vendor_type, vendor_name, chart_name, chart_version in self.secrets.submitted_charts:
-                logging.info(f"Process chart: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
-                self.process_single_chart(vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table)
-                logging.info("sleep for 5 seconds  to avoid secondary api limit")
-                time.sleep(5)
+                if f'{chart_name}-{chart_version}' in skip_charts:
+                    logging.info(f"Skip already failed chart: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
+                else:
+                    logging.info(f"Process chart: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
+                    self.process_single_chart(vendor_type, vendor_name, chart_name, chart_version, pr_number_list, owners_table)
+                    logging.info("sleep for 5 seconds  to avoid secondary api limit")
+                    time.sleep(5)
 
         for vendor_type, vendor_name, chart_name, chart_version, pr_number in pr_number_list:
             logging.info(f"PR{pr_number} Check result: {vendor_type}, {vendor_name}, {chart_name}, {chart_version}")
