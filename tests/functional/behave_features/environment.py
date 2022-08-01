@@ -10,9 +10,9 @@ def workflow_test(context):
 
 @fixture
 def submitted_chart_test(context):
-    chart_test = ChartCertificationE2ETestMultiple()
-    yield chart_test
-    chart_test.cleanup()    
+    context.chart_test = ChartCertificationE2ETestMultiple()
+    yield context.chart_test
+    context.chart_test.cleanup()    
 
 def before_scenario(context, scenario):
     if 'version-change' in scenario.tags:
