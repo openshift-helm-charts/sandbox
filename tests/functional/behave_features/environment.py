@@ -16,8 +16,8 @@ def submitted_chart_test(context):
 
 def before_scenario(context, scenario):
     if 'version-change' in scenario.tags:
-        print(">>>> BEFORE SCENARIO: Inside Version Change Test")
-        #use_fixture(submitted_chart_test, context)
+        print("[INFO] Using submitted charts fixture")
+        use_fixture(submitted_chart_test, context)
     else:
         context.test_name = scenario.name.split('@')[0][:-4].split(']')[1]
         use_fixture(workflow_test, context)
