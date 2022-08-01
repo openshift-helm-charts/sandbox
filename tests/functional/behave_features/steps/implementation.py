@@ -245,5 +245,5 @@ def submission_tests_run_for_submitted_charts(context):
     #context.chart_test.process_all_charts()
 
 @then(u'all results are reported back to the caller')
-def all_results_report_back_to_caller():
+def all_results_report_back_to_caller(context):
     print(">>>STEP DEF: all results are reported back to the caller")
