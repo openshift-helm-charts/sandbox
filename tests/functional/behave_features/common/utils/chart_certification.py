@@ -214,7 +214,7 @@ vendor:
                 'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
 
     # expect_result: a string representation of expected result, e.g. 'success'
-    def check_workflow_conclusion(self, pr_number, expect_result: str):
+    def check_workflow_conclusion(self, pr_number, expect_result: str, failure_type='error'):
         try:
             # Check workflow conclusion
             run_id = get_run_id(self.secrets, pr_number)
@@ -222,8 +222,12 @@ vendor:
             if conclusion == expect_result:
                 logging.info(f"PR{pr_number} Workflow run was '{expect_result}' which is expected")
             else:
-                raise AssertionError(
-                    f"PR{pr_number if pr_number else self.secrets.pr_number} Workflow run was '{conclusion}' which is unexpected, run id: {run_id}")
+                if failure_type == 'warning':
+                    logging.warning(f"PR{pr_number if pr_number else self.secrets.pr_number} Workflow run was '{conclusion}' which is unexpected, run id: {run_id}")
+                else:
+                    raise AssertionError(
+                        f"PR{pr_number if pr_number else self.secrets.pr_number} Workflow run was '{conclusion}' which is unexpected, run id: {run_id}")
+                    
             return run_id, conclusion
         except Exception as e:
             raise AssertionError(e)
@@ -807,7 +811,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
 
         # Check workflow conclusion
         chart = f'{vendor_type} {vendor_name} {chart_name} {chart_version}'
-        run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', logging.warning)
+        run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', failure_type='warning')
 
         if conclusion and run_id:
             # Send notification to owner through GitHub issues
