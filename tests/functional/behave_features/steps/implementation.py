@@ -225,24 +225,24 @@ def user_sends_pull_request_with_chart_tarball_and_report(context):
 ######## Test Submitted Charts Step definitions ##########
 @given(u'there is a github workflow for testing existing charts')
 def theres_github_workflow_for_testing_charts(context):
-    print(">>>STEP DEF: there is a github workflow for testing existing charts")
+    print("[INFO] Running step: there is a github workflow for testing existing charts")
 
 @when(u'a new Openshift or chart-verifier version is specified')
 def new_openshift_or_verifier_version_is_specified(context):
-    print(">>>STEP DEF: a new Openshift or chart-verifier version is specified")
+    print("[INFO] Running step: a new Openshift or chart-verifier version is specified")
 
 @when(u'the vendor type is specified, e.g. partner, and/or redhat')
 def vendor_type_is_specified(context):
-    print(">>>STEP DEF: the vendor type is specified, e.g. partner, and/or redhat")
+    print("[INFO] Running step: the vendor type is specified, e.g. partner, and/or redhat")
 
 @when(u'workflow for testing existing charts is triggered')
 def workflow_is_triggered(context):
-    print(">>>STEP DEF: workflow for testing existing charts is triggered")
+    print("[INFO] Running step: workflow for testing existing charts is triggered")
 
 @then(u'submission tests are run for existing charts')
 def submission_tests_run_for_submitted_charts(context):
-    print(">>>STEP DEF: submission tests are run for existing charts")
-    #context.chart_test.process_all_charts()
+    print("[INFO] Running step: submission tests are run for existing charts")
+    context.chart_test.process_all_charts()
 
 @then(u'all results are reported back to the caller')
 def all_results_report_back_to_caller(context):
