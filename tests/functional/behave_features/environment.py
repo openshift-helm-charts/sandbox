@@ -1,5 +1,6 @@
 from behave import fixture, use_fixture
 from common.utils.chart_certification import ChartCertificationE2ETestSingle
+from common.utils.chart_certification import ChartCertificationE2ETestMultiple
 
 @fixture
 def workflow_test(context):
@@ -7,6 +8,16 @@ def workflow_test(context):
     yield context.workflow_test
     context.workflow_test.cleanup()
 
+@fixture
+def submitted_chart_test(context):
+    chart_test = ChartCertificationE2ETestMultiple()
+    yield chart_test
+    chart_test.cleanup()    
+
 def before_scenario(context, scenario):
-    context.test_name = scenario.name.split('@')[0][:-4].split(']')[1]
-    use_fixture(workflow_test, context)
+    if 'version-change' in scenario.tags:
+        print(">>>> BEFORE SCENARIO: Inside Version Change Test")
+        #use_fixture(submitted_chart_test, context)
+    else:
+        context.test_name = scenario.name.split('@')[0][:-4].split(']')[1]
+        use_fixture(workflow_test, context)
