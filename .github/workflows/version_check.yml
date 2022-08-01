@@ -83,7 +83,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: "software-version"
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          repository: ${{ github.repository }}
 
       - name: Read previous OpenShift version
         id: get_prev_ocp_version
@@ -219,7 +219,7 @@ jobs:
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           slack-channel: C02979BDUPL
-          slack-text: ${{ steps.run-schedule-tests.conclusion }}! Nightly run after OCP version update detected. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
+          slack-text: ${{ steps.run-schedule-tests.conclusion }}! Nightly run after an OpenShift version update to ${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }} was detected. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
 
       - name: Result from "Send Message to slack channel"
         run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
@@ -272,7 +272,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: "software-version"
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          repository: ${{ github.repository }}
 
       - name: Read previous Chart Verifier digest
         if: steps.check_repo.outputs.check-version == 'true'
@@ -409,12 +409,15 @@ jobs:
         id: notify
         if: always() && github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true'
         uses: archive/github-actions-slack@v2.0.0
+        env:
+          SOFTWARE_NAME: "chart-verifier"
+          SOFTWARE_VERSION: ${{ steps.get_curr_cv_version.outputs.current_cv_digest }}
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           slack-channel: C02979BDUPL
-          slack-text: ${{ steps.run-schedule-tests.conclusion }}! Nightly run after chartverifier version update detected. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
+          slack-text: ${{ steps.run-schedule-tests.conclusion }}! Nightly run after a chart-verifier version update to ${{ steps.get_curr_cv_version.outputs.current_cv_digest }} was detected. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
 
       - name: Result from "Send Message to slack channel"
-        if: always() && github.event_name == 'schedule' && steps.check_tes.outputs.run_tests == 'true'
+        if: always() && github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true'
         run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
 
