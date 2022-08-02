@@ -534,7 +534,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
                 with open(report_path, 'w') as fd:
                     try:
-                        fd.write(report)
+                        fd.write(json.dumps(report))
                     except Exception as e:
                         raise AssertionError("Failed to write report in json format")
 
