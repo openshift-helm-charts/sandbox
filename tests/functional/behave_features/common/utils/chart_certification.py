@@ -523,7 +523,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             logging.info(
                 f"Push report to '{self.secrets.test_repo}:{self.secrets.pr_branch}'")
             
-            if report_path.endswith('json'):
+            if self.secrets.test_report.endswith('json'):
                 logging.debug("Report type is json")
                 report_path = f'{self.chart_directory}/{self.secrets.chart_version}/' + self.secrets.test_report.split('/')[-1]
                 with open(self.secrets.test_report, 'r') as fd:
@@ -538,7 +538,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                     except Exception as e:
                         raise AssertionError("Failed to write report in json format")
 
-            elif report_path.endswith('yaml'):
+            elif self.secrets.test_report.endswith('yaml'):
+                logging.debug("Report type is yaml")
                 tmpl = open(self.secrets.test_report).read()
                 values = {'repository': self.secrets.test_repo,
                         'branch': self.secrets.base_branch}
