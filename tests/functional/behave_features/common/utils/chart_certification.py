@@ -536,9 +536,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                     raise AssertionError(f"error parsing '{report_path}': {err}")
             elif report_path.endswith('json'):
                 try:
-                    report = json.load(content)
+                    logging.debug("Report type is json")
+                    report = json.load(self.secrets.test_report)
                 except Exception as err:
-                    raise AssertionError(f"error parsing '{report_path}': {err}")
+                    raise AssertionError(f"error parsing '{self.secrets.test_report}': {err}")
             else:
                 raise AssertionError("Unknown report type")
 
