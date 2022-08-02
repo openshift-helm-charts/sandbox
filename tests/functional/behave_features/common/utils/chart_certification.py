@@ -534,7 +534,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
                 with open(report_path, 'w') as fd:
                     try:
-                        fd.write(json.dumps(report))
+                        fd.write(json.dumps(report, indent=4))
                     except Exception as e:
                         raise AssertionError("Failed to write report in json format")
 
@@ -655,6 +655,9 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         logging.info(f'STATUS_CODE: {r.status_code}')
 
         response = json.loads(r.text)
+        logging.debug(f"CHECK PULL_REQUEST COMMENT RESPONSE: {response}")
+        if len(response) == 0:
+            raise AssertionError("No comment found in the PR")
         complete_comment = response[0]['body']
 
         if expect_message in complete_comment:
