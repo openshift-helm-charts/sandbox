@@ -36,7 +36,7 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           PR_BODY: "Test triggered by nightly run."
         run: |
-          ve1/bin/pytest tests/ --log-cli-level=WARNING --ignore=tests/functional/step_defs/test_smoke_scenarios.py --ignore=tests/functional/step_defs/test_submitted_charts.py --tb=short
+          ve1/bin/behave tests/functional/behave_features/ --tags=-version-change --logging-level=WARNING --no-capture --no-color
 
       - name: Send message to slack channel
         id: notify
