@@ -529,10 +529,18 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
             report_path = f'{self.chart_directory}/{self.secrets.chart_version}/' + self.secrets.test_report.split('/')[-1]
 
-            try:
-                report = yaml.safe_load(content)
-            except yaml.YAMLError as err:
-                raise AssertionError(f"error parsing '{report_path}': {err}")
+            if report_path.endswith('yaml'):
+                try:
+                    report = yaml.safe_load(content)
+                except yaml.YAMLError as err:
+                    raise AssertionError(f"error parsing '{report_path}': {err}")
+            elif report_path.endswith('json'):
+                try:
+                    report = json.load(content)
+                except Exception as err:
+                    raise AssertionError(f"error parsing '{report_path}': {err}")
+            else:
+                raise AssertionError("Unknown report type")
 
             if self.secrets.vendor_type != "partners":
                 report["metadata"]["tool"]["profile"]["VendorType"] = self.secrets.vendor_type
@@ -566,12 +574,22 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 if unset_package_digest:
                     del report['metadata']['tool']['digests']['package']
 
-            with open(report_path, 'w') as fd:
-                try:
-                    fd.write(yaml.dump(report))
-                    logging.info("Report updated with new values")
-                except Exception as e:
-                    raise AssertionError("Failed to update report yaml with new values")
+            if report_path.endswith('yaml'):
+                with open(report_path, 'w') as fd:
+                    try:
+                        fd.write(yaml.dump(report))
+                        logging.info("Report updated with new values")
+                    except Exception as e:
+                        raise AssertionError("Failed to update report yaml with new values")
+            elif report_path.endswith('json'):
+                with open(report_path, 'w') as fd:
+                    try:
+                        fd.write(report)
+                    except Exception as e:
+                        raise AssertionError("Failed to update report of json format")
+            else:
+                raise AssertionError("Unknown report type")
+
 
             #For removing the check for missing check scenario
             if missing_check:

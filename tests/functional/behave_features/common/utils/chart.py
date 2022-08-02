@@ -5,6 +5,7 @@ import os
 import tarfile
 import yaml
 import shutil
+import json
 
 def get_name_and_version_from_report(path):
     """
@@ -15,11 +16,20 @@ def get_name_and_version_from_report(path):
     str: chart name
     str: chart version
     """
-    with open(path, 'r') as fd:
-        try:
-            report = yaml.safe_load(fd)
-        except yaml.YAMLError as err:
-            raise AssertionError(f"error parsing '{path}': {err}")
+    if path.endswith('yaml'):
+        with open(path, 'r') as fd:
+            try:
+                report = yaml.safe_load(fd)
+            except yaml.YAMLError as err:
+                raise AssertionError(f"error parsing '{path}': {err}")
+    elif path.endswith('json'):
+        with open(path, 'r') as fd:
+            try:
+                report = json.load(fd)
+            except Exception as err:
+                raise AssertionError(f"error parsing '{path}': {err}")
+    else:
+        raise AssertionError("Unknown report type")
     chart = report['metadata']['chart']
     return chart['name'], chart['version']
 
