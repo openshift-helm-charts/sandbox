@@ -214,7 +214,7 @@ vendor:
                 'delete', f'repos/{self.secrets.test_repo}/git/refs/tags/{expected_tag}', self.secrets.bot_token)
 
     # expect_result: a string representation of expected result, e.g. 'success'
-    def check_workflow_conclusion(self, pr_number, expect_result: str):
+    def check_workflow_conclusion(self, pr_number, expect_result: str, failure_type='error'):
         try:
             # Check workflow conclusion
             run_id = get_run_id(self.secrets, pr_number)
@@ -222,8 +222,12 @@ vendor:
             if conclusion == expect_result:
                 logging.info(f"PR{pr_number} Workflow run was '{expect_result}' which is expected")
             else:
-                raise AssertionError(
-                    f"PR{pr_number if pr_number else self.secrets.pr_number} Workflow run was '{conclusion}' which is unexpected, run id: {run_id}")
+                if failure_type == 'warning':
+                    logging.warning(f"PR{pr_number if pr_number else self.secrets.pr_number} Workflow run was '{conclusion}' which is unexpected, run id: {run_id}")
+                else:
+                    raise AssertionError(
+                        f"PR{pr_number if pr_number else self.secrets.pr_number} Workflow run was '{conclusion}' which is unexpected, run id: {run_id}")
+                    
             return run_id, conclusion
         except Exception as e:
             raise AssertionError(e)
@@ -518,68 +522,88 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             # Copy report to temporary location and push to test_repo:pr_branch
             logging.info(
                 f"Push report to '{self.secrets.test_repo}:{self.secrets.pr_branch}'")
-            tmpl = open(self.secrets.test_report).read()
-            values = {'repository': self.secrets.test_repo,
-                    'branch': self.secrets.base_branch}
-            content = Template(tmpl).substitute(values)
+            
+            if self.secrets.test_report.endswith('json'):
+                logging.debug("Report type is json")
+                report_path = f'{self.chart_directory}/{self.secrets.chart_version}/' + self.secrets.test_report.split('/')[-1]
+                with open(self.secrets.test_report, 'r') as fd:
+                    try:
+                        report = json.load(fd)
+                    except Exception as e:
+                        raise AssertionError("Failed to read json file")
 
-            report_path = f'{self.chart_directory}/{self.secrets.chart_version}/' + self.secrets.test_report.split('/')[-1]
+                with open(report_path, 'w') as fd:
+                    try:
+                        fd.write(json.dumps(report, indent=4))
+                    except Exception as e:
+                        raise AssertionError("Failed to write report in json format")
 
-            try:
-                report = yaml.safe_load(content)
-            except yaml.YAMLError as err:
-                raise AssertionError(f"error parsing '{report_path}': {err}")
+            elif self.secrets.test_report.endswith('yaml'):
+                logging.debug("Report type is yaml")
+                tmpl = open(self.secrets.test_report).read()
+                values = {'repository': self.secrets.test_repo,
+                        'branch': self.secrets.base_branch}
+                content = Template(tmpl).substitute(values)
 
-            if self.secrets.vendor_type != "partners":
-                report["metadata"]["tool"]["profile"]["VendorType"] = self.secrets.vendor_type
-                logging.info(f'VendorType set to {report["metadata"]["tool"]["profile"]["VendorType"]} in report.yaml')
+                report_path = f'{self.chart_directory}/{self.secrets.chart_version}/' + self.secrets.test_report.split('/')[-1]
 
-            if update_chart_sha or update_url or update_versions or update_provider_delivery or unset_package_digest:
-                #For updating the report.yaml, for chart sha mismatch scenario
-                if update_chart_sha:
-                    new_sha_value = 'sha256:5b85ae00b9ca2e61b2d70a59f98fd72136453b1a185676b29d4eb862981c1xyz'
-                    logging.info(f"Current SHA Value in report: {report['metadata']['tool']['digests']['chart']}")
-                    report['metadata']['tool']['digests']['chart'] = new_sha_value
-                    logging.info(f"Updated sha value in report: {new_sha_value}")
-
-                #For updating the report.yaml, for invalid_url sceanrio
-                if update_url:
-                    logging.info(f"Current chart-uri in report: {report['metadata']['tool']['chart-uri']}")
-                    report['metadata']['tool']['chart-uri'] = url
-                    logging.info(f"Updated chart-uri value in report: {url}")
-
-                if update_versions:
-                    report['metadata']['tool']['testedOpenShiftVersion'] = tested_version
-                    report['metadata']['tool']['supportedOpenShiftVersions'] = supported_versions
-                    report['metadata']['chart']['kubeversion'] = kube_version
-                    logging.info(f"Updated testedOpenShiftVersion value in report: {tested_version}")
-                    logging.info(f"Updated supportedOpenShiftVersions value in report: {supported_versions}")
-                    logging.info(f"Updated kubeversion value in report: {kube_version}")
-
-                if update_provider_delivery:
-                    report['metadata']['tool']['providerControlledDelivery'] = provider_delivery
-
-                if unset_package_digest:
-                    del report['metadata']['tool']['digests']['package']
-
-            with open(report_path, 'w') as fd:
                 try:
-                    fd.write(yaml.dump(report))
-                    logging.info("Report updated with new values")
-                except Exception as e:
-                    raise AssertionError("Failed to update report yaml with new values")
+                    report = yaml.safe_load(content)
+                except yaml.YAMLError as err:
+                    raise AssertionError(f"error parsing '{report_path}': {err}")
 
-            #For removing the check for missing check scenario
-            if missing_check:
-                logging.info(f"Updating report with {missing_check}")
-                with open(report_path, 'r+') as fd:
-                    report_content = yaml.safe_load(fd)
-                    results = report_content["results"]
-                    new_results = filter(lambda x: x['check'] != missing_check, results)
-                    report_content["results"] = list(new_results)
-                    fd.seek(0)
-                    yaml.dump(report_content, fd)
-                    fd.truncate()
+                if self.secrets.vendor_type != "partners":
+                    report["metadata"]["tool"]["profile"]["VendorType"] = self.secrets.vendor_type
+                    logging.info(f'VendorType set to {report["metadata"]["tool"]["profile"]["VendorType"]} in report.yaml')
+
+                if update_chart_sha or update_url or update_versions or update_provider_delivery or unset_package_digest:
+                    #For updating the report.yaml, for chart sha mismatch scenario
+                    if update_chart_sha:
+                        new_sha_value = 'sha256:5b85ae00b9ca2e61b2d70a59f98fd72136453b1a185676b29d4eb862981c1xyz'
+                        logging.info(f"Current SHA Value in report: {report['metadata']['tool']['digests']['chart']}")
+                        report['metadata']['tool']['digests']['chart'] = new_sha_value
+                        logging.info(f"Updated sha value in report: {new_sha_value}")
+
+                    #For updating the report.yaml, for invalid_url sceanrio
+                    if update_url:
+                        logging.info(f"Current chart-uri in report: {report['metadata']['tool']['chart-uri']}")
+                        report['metadata']['tool']['chart-uri'] = url
+                        logging.info(f"Updated chart-uri value in report: {url}")
+
+                    if update_versions:
+                        report['metadata']['tool']['testedOpenShiftVersion'] = tested_version
+                        report['metadata']['tool']['supportedOpenShiftVersions'] = supported_versions
+                        report['metadata']['chart']['kubeversion'] = kube_version
+                        logging.info(f"Updated testedOpenShiftVersion value in report: {tested_version}")
+                        logging.info(f"Updated supportedOpenShiftVersions value in report: {supported_versions}")
+                        logging.info(f"Updated kubeversion value in report: {kube_version}")
+
+                    if update_provider_delivery:
+                        report['metadata']['tool']['providerControlledDelivery'] = provider_delivery
+
+                    if unset_package_digest:
+                        del report['metadata']['tool']['digests']['package']
+
+                with open(report_path, 'w') as fd:
+                    try:
+                        fd.write(yaml.dump(report))
+                        logging.info("Report updated with new values")
+                    except Exception as e:
+                        raise AssertionError("Failed to update report yaml with new values")
+
+                #For removing the check for missing check scenario
+                if missing_check:
+                    logging.info(f"Updating report with {missing_check}")
+                    with open(report_path, 'r+') as fd:
+                        report_content = yaml.safe_load(fd)
+                        results = report_content["results"]
+                        new_results = filter(lambda x: x['check'] != missing_check, results)
+                        report_content["results"] = list(new_results)
+                        fd.seek(0)
+                        yaml.dump(report_content, fd)
+                        fd.truncate()
+            else:
+                raise AssertionError("Unknown report type")
 
         self.temp_repo.git.add(report_path)
         self.temp_repo.git.commit(
@@ -631,6 +655,9 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         logging.info(f'STATUS_CODE: {r.status_code}')
 
         response = json.loads(r.text)
+        logging.debug(f"CHECK PULL_REQUEST COMMENT RESPONSE: {response}")
+        if len(response) == 0:
+            raise AssertionError("No comment found in the PR")
         complete_comment = response[0]['body']
 
         if expect_message in complete_comment:
@@ -807,7 +834,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
 
         # Check workflow conclusion
         chart = f'{vendor_type} {vendor_name} {chart_name} {chart_version}'
-        run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', logging.warning)
+        run_id, conclusion = super().check_workflow_conclusion(pr_number, 'success', failure_type='warning')
 
         if conclusion and run_id:
             # Send notification to owner through GitHub issues
