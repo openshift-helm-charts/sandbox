@@ -188,7 +188,7 @@ jobs:
           printf "[INFO] Notify ID: '%s'\n" "${{ env.NOTIFY_ID }}"
           printf "[INFO] Software Name: '%s'\n" "${{ env.SOFTWARE_NAME }}"
           printf "[INFO] Software Version: '%s'\n" "${{ env.SOFTWARE_VERSION }}"
-          ve1/bin/pytest tests/functional/step_defs/test_submitted_charts.py --log-cli-level=INFO --tb=short
+          ve1/bin/behave tests/functional/behave_features/HC-15_check_submitted_charts.feature --logging-level=INFO --no-capture --no-color
 
       - name: (Schedule) Run tests on existing charts
         id: run-schedule-tests
@@ -210,7 +210,7 @@ jobs:
           printf "[INFO] Notify ID: '%s'\n" "${{ env.NOTIFY_ID }}"
           printf "[INFO] Software Name: '%s'\n" "${{ env.SOFTWARE_NAME }}"
           printf "[INFO] Software Version: '%s'\n" "${{ env.SOFTWARE_VERSION }}"
-          ve1/bin/pytest tests/functional/step_defs/test_submitted_charts.py --log-cli-level=INFO --tb=short
+          ve1/bin/behave tests/functional/behave_features/HC-15_check_submitted_charts.feature --logging-level=INFO --no-capture --no-color
 
       - name: Send message to slack channel
         id: notify
@@ -380,7 +380,7 @@ jobs:
           printf "[INFO] Notify ID: '%s'\n" "${{ env.NOTIFY_ID }}"
           printf "[INFO] Software Name: '%s'\n" "${{ env.SOFTWARE_NAME }}"
           printf "[INFO] Software Version: '%s'\n" "${{ env.SOFTWARE_VERSION }}"
-          ve1/bin/pytest tests/functional/step_defs/test_submitted_charts.py --log-cli-level=INFO --tb=short
+          ve1/bin/behave tests/functional/behave_features/HC-15_check_submitted_charts.feature --logging-level=INFO --no-capture --no-color
 
       - name: (Schedule) Run tests on existing charts
         id: run-schedule-tests
@@ -403,7 +403,7 @@ jobs:
           printf "[INFO] Notify ID: '%s'\n" "${{ env.NOTIFY_ID }}"
           printf "[INFO] Software Name: '%s'\n" "${{ env.SOFTWARE_NAME }}"
           printf "[INFO] Software Version: '%s'\n" "${{ env.SOFTWARE_VERSION }}"
-          ve1/bin/pytest tests/functional/step_defs/test_submitted_charts.py --log-cli-level=INFO --tb=short
+          ve1/bin/behave tests/functional/behave_features/HC-15_check_submitted_charts.feature --logging-level=INFO --no-capture --no-color
 
       - name: Send message to slack channel
         id: notify
