@@ -304,7 +304,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         test_repo = TEST_REPO
 
         #Storing current branch to checkout after scenario execution
-        if os.environ.get('WORKFLOW_DEVELOPMENT'):
+        if os.environ.get('LOCAL_RUN'):
             self.secrets.active_branch = self.repo.active_branch.name
             logging.debug(f"Active branch name : {self.secrets.active_branch}")
 
@@ -380,7 +380,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
         logging.info(f"Delete local '{current_branch}'")
         try:
-            if os.environ.get('WORKFLOW_DEVELOPMENT'):
+            if os.environ.get('LOCAL_RUN'):
                 self.repo.git.checkout(f'{self.secrets.active_branch}')
             self.repo.git.branch('-D', current_branch)
         except git.exc.GitCommandError:
