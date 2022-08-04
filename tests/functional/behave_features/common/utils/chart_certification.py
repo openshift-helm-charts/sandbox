@@ -304,8 +304,9 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         test_repo = TEST_REPO
 
         #Storing current branch to checkout after scenario execution
-        self.secrets.active_branch = self.repo.active_branch.name
-        logging.debug(f"Active branch name : {self.secrets.active_branch}")
+        if os.environ.get('LOCAL_RUN'):
+            self.secrets.active_branch = self.repo.active_branch.name
+            logging.debug(f"Active branch name : {self.secrets.active_branch}")
 
         # Create a new branch locally from detached HEAD
         head_sha = self.repo.git.rev_parse('--short', 'HEAD')
@@ -379,7 +380,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
         logging.info(f"Delete local '{current_branch}'")
         try:
-            self.repo.git.checkout(f'{self.secrets.active_branch}')
+            if os.environ.get('LOCAL_RUN'):
+                self.repo.git.checkout(f'{self.secrets.active_branch}')
             self.repo.git.branch('-D', current_branch)
         except git.exc.GitCommandError:
             logging.info(f"Local '{current_branch}' does not exist")
