@@ -1,5 +1,6 @@
 Feature: Report only submission in json format
-    Partners, redhat and community users trying to publish chart by submitting report in json format
+    If partners, redhat and community users try to publish chart by submitting report 
+    in json format then will receive an error message
 
     Scenario Outline: [HC-09-001] An user submits a report in json format
         Given the vendor "<vendor>" has a valid identity as "<vendor_type>"
