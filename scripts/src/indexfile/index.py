@@ -8,14 +8,10 @@ import sys
 sys.path.append('../')
 from chartrepomanager import indexannotations
 
-def _make_http_request(method, url, body=None, params={}, headers={}, verbose=False):
-    method_map = {"get": requests.get,
-                  "post": requests.post,
-                  "put": requests.put,
-                  "delete": requests.delete,
-                  "patch": requests.patch}
-    request_method = method_map[method]
-    response = request_method(url, params=params, headers=headers, json=body)
+INDEX_FILE = "https://charts.openshift.io/index.yaml"
+
+def _make_http_request(url, body=None, params={}, headers={}, verbose=False):
+    response = requests.get(url, params=params, headers=headers, json=body)
     if verbose:
         print(json.dumps(headers, indent=4, sort_keys=True))
         print(json.dumps(body, indent=4, sort_keys=True))
@@ -23,14 +19,13 @@ def _make_http_request(method, url, body=None, params={}, headers={}, verbose=Fa
         print(response.text)
     return response.text
 
-def _load_index_yaml(url):
-
-    yaml_text = _make_http_request('get', url)
+def _load_index_yaml():
+    yaml_text = _make_http_request(INDEX_FILE)
     dct = yaml.safe_load(yaml_text)
     return dct
 
 def get_chart_info(tar_name):
-    index_dct = _load_index_yaml("https://charts.openshift.io/index.yaml")
+    index_dct = _load_index_yaml()
     for entry, charts in index_dct["entries"].items():
         if tar_name.startswith(entry):
             for chart in charts:
@@ -46,7 +41,7 @@ def get_chart_info(tar_name):
 def get_charts_info():
     chart_info_list = []
 
-    index_dct = _load_index_yaml("https://charts.openshift.io/index.yaml")
+    index_dct = _load_index_yaml()
     for entry, charts in index_dct["entries"].items():
         for chart in charts:
             chart_info = {}
