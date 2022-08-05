@@ -47,6 +47,17 @@ def user_has_created_error_free_chart_tarball_and_report(context, chart_path, re
     context.workflow_test.process_report()
     context.workflow_test.push_chart(is_tarball=True)
 
+@given(u'a chart tarball is used in "{chart_path}" and report in "{report_path}"')
+def user_has_created_a_chart_tarball_and_report(context, chart_path, report_path):
+    context.workflow_test.update_test_chart(chart_path)
+    context.workflow_test.update_test_report(report_path)
+
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file()
+    context.workflow_test.process_chart(is_tarball=True)
+
 @given(u'an error-free chart source used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_error_free_chart_src_and_report(context, chart_path, report_path):
     context.workflow_test.update_test_chart(chart_path)
@@ -198,4 +209,41 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(context):
 def chart_yaml_specifies_bad_version(context, bad_version):
     if bad_version != '':
         context.workflow_test.update_bad_version(bad_version)
-        
+
+@given(u'the report contains "{error}"')
+def sha_value_does_not_match(context, error):
+    if error == 'sha_mismatch':
+        context.workflow_test.process_report(update_chart_sha=True)
+    else:
+        raise AssertionError(f"This {error} handling is not implemented yet")
+
+@when(u'the user sends a pull request with the chart tar and report')
+def user_sends_pull_request_with_chart_tarball_and_report(context):
+    context.workflow_test.push_chart(is_tarball=True)
+    context.workflow_test.send_pull_request()
+
+######## Test Submitted Charts Step definitions ##########
+@given(u'there is a github workflow for testing existing charts')
+def theres_github_workflow_for_testing_charts(context):
+    print("[INFO] Running step: there is a github workflow for testing existing charts")
+
+@when(u'a new Openshift or chart-verifier version is specified')
+def new_openshift_or_verifier_version_is_specified(context):
+    print("[INFO] Running step: a new Openshift or chart-verifier version is specified")
+
+@when(u'the vendor type is specified, e.g. partner, and/or redhat')
+def vendor_type_is_specified(context):
+    print("[INFO] Running step: the vendor type is specified, e.g. partner, and/or redhat")
+
+@when(u'workflow for testing existing charts is triggered')
+def workflow_is_triggered(context):
+    print("[INFO] Running step: workflow for testing existing charts is triggered")
+
+@then(u'submission tests are run for existing charts')
+def submission_tests_run_for_submitted_charts(context):
+    print("[INFO] Running step: submission tests are run for existing charts")
+    context.chart_test.process_all_charts()
+
+@then(u'all results are reported back to the caller')
+def all_results_report_back_to_caller(context):
+    print("[INFO] Running step: all results are reported back to the caller")

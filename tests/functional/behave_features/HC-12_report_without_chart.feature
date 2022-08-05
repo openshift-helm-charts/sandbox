@@ -9,12 +9,12 @@ Feature: Report only submission
         Then the user sees the pull request is merged
         And the index.yaml file is updated with an entry for the submitted chart
     
-        @partners @smoke
+        @partners @smoke @full
         Examples:
             | vendor_type  | vendor    | report_path            |
             | partners     | hashicorp | tests/data/report.yaml |
         
-        @redhat
+        @redhat @full
         Examples:
             | vendor_type  | vendor    | report_path            |
             | redhat       | redhat    | tests/data/report.yaml |
@@ -26,7 +26,7 @@ Feature: Report only submission
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
 
-        @community @smoke
+        @community @smoke @full
         Examples:
             | vendor_type | vendor  | report_path            | message                                                                                     |
             | community   | redhat  | tests/data/report.yaml | Community charts require maintainer review and approval, a review will be conducted shortly |

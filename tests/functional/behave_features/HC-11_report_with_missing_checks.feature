@@ -9,17 +9,17 @@ Feature: Report does not include a check
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
 
-        @partners @smoke
+        @partners @smoke @full
         Examples:
             | vendor_type  | vendor    | report_path            | check                  | message                                            |
 	          | partners     | hashicorp | tests/data/report.yaml | v1.0/helm-lint         | Missing mandatory check : v1.0/helm-lint           |
 	      
-        @community 
+        @community @full
         Examples:
             | vendor_type  | vendor    | report_path            | check                  | message                                            |
             | community    | redhat    | tests/data/report.yaml | v1.0/helm-lint         | Missing mandatory check : v1.0/helm-lint           |
 	      
-        @partners 
+        @partners @full
         Examples:
             | vendor_type  | vendor    | report_path            | check                  | message                                            |
             | partners     | hashicorp | tests/data/report.yaml | v1.0/not-contains-crds | Missing mandatory check : v1.0/not-contains-crds   |
