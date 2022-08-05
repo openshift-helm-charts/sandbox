@@ -10,17 +10,17 @@ Feature: SHA value in the report does not match
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
 
-        @partners
+        @partners @full
         Examples:
             | vendor_type  | vendor    | error        | message                | chart_path                  | report_path               |
             | partners     | hashicorp | sha_mismatch | Digest is not matching | tests/data/vault-0.17.0.tgz | tests/data/report.yaml    |
         
-        @redhat
+        @redhat @full
         Examples:
             | vendor_type  | vendor    | error        | message                | chart_path                  | report_path               |
             | redhat       | redhat    | sha_mismatch | Digest is not matching | tests/data/vault-0.17.0.tgz | tests/data/report.yaml    |
         
-        @community
+        @community @full
         Examples:
             | vendor_type  | vendor    | error        | message                | chart_path                  | report_path               |
             | community    | redhat    | sha_mismatch | Digest is not matching | tests/data/vault-0.17.0.tgz | tests/data/report.yaml    |

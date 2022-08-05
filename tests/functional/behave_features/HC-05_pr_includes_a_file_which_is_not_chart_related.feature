@@ -9,17 +9,17 @@ Feature: PR includes a non chart related file
     Then the pull request is not merged
     And user gets the "<message>" in the pull request comment
 
-    @partners @smoke
+    @partners @smoke @full
     Examples:
         | vendor_type  | vendor    | chart_path                  | message                                             |
         | partners     | hashicorp | tests/data/vault-0.17.0.tgz | PR includes one or more files not related to charts |
     
-    @redhat
+    @redhat @full
     Examples:
         | vendor_type  | vendor    | chart_path                  | message                                             |
         | redhat       | redhat    | tests/data/vault-0.17.0.tgz | PR includes one or more files not related to charts |
     
-    @community
+    @community @full
     Examples:
         | vendor_type  | vendor    | chart_path                  | message                                             |
         | community    | redhat    | tests/data/vault-0.17.0.tgz | PR includes one or more files not related to charts |

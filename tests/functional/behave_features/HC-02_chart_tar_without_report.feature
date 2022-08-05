@@ -10,12 +10,12 @@ Feature: Chart tarball submission without report
         And the index.yaml file is updated with an entry for the submitted chart
         And a release is published with corresponding report and chart tarball
 
-        @partners
+        @partners @full
         Examples:
             | vendor_type  | vendor    | chart_path                   |
             | partners     | hashicorp | tests/data/vault-0.17.0.tgz  |
         
-        @redhat @smoke
+        @redhat @smoke @full
         Examples:
             | vendor_type  | vendor    | chart_path                   |
             | redhat       | redhat    | tests/data/vault-0.17.0.tgz  |
@@ -27,7 +27,7 @@ Feature: Chart tarball submission without report
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
 
-        @community
+        @community @full
         Examples:
             | vendor_type   | vendor    | chart_path                   | message                                                                                     |
             | community     | redhat    | tests/data/vault-0.17.0.tgz  | Community charts require maintainer review and approval, a review will be conducted shortly |

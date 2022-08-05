@@ -9,12 +9,12 @@ Feature: Report only submission
         Then the user sees the pull request is merged
         And the index.yaml file is updated with an entry for the submitted chart
 
-        @partners
+        @partners @full
         Examples:
             | vendor_type  | vendor    | report_path                                          |
             | partners     | redhat    | tests/data/HC-17/dash-in-version/partner/report.yaml |
         
-        @redhat
+        @redhat @full
         Examples:
             | vendor_type  | vendor    | report_path                                          |
             | redhat       | redhat    | tests/data/HC-17/dash-in-version/redhat/report.yaml  |

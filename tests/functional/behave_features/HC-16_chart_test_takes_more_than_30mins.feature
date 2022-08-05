@@ -8,12 +8,12 @@ Feature: Chart test takes longer time and exceeds default timeout
     Then the pull request is not merged
     And user gets the "<message>" in the pull request comment
 
-    @partners
+    @partners @full
     Examples:
       | vendor_type  | vendor    | chart_path                                  | message                                                                                     |
       | partners     | hashicorp | tests/data/vault-test-timeout-0.17.0.tgz    | Chart test failure: timed out waiting for the condition                                     |
     
-    @community
+    @community @full
     Examples:
       | vendor_type  | vendor    | chart_path                                  | message                                                                                     |
       | community    | redhat    | tests/data/vault-test-timeout-0.17.0.tgz    | Community charts require maintainer review and approval, a review will be conducted shortly |
@@ -26,7 +26,7 @@ Feature: Chart test takes longer time and exceeds default timeout
         And the index.yaml file is updated with an entry for the submitted chart
         And a release is published with corresponding report and chart tarball
     
-    @redhat
+    @redhat @full
     Examples:
       | vendor_type | vendor | chart_path                                  | 
       | redhat      | redhat | tests/data/vault-test-timeout-0.17.0.tgz    | 

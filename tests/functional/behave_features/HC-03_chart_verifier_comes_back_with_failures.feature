@@ -9,12 +9,12 @@ Feature: Chart verifier comes back with a failure
     Then the pull request is not merged
     And user gets the "<message>" in the pull request comment
 
-    @partners @smoke
+    @partners @smoke @full
     Examples:
         | vendor_type  | vendor    | chart_path                     | message                                                 | 
         | partners     | hashicorp | tests/data/vault-0.17.0.tgz    | Chart does not have a README                            |
 
-    @community
+    @community @full
     Examples:
         | vendor_type  | vendor    | chart_path                     | message                                                 |
         | community    | redhat    | tests/data/vault-0.17.0.tgz    | Community charts require maintainer review and approval |
@@ -28,7 +28,7 @@ Feature: Chart verifier comes back with a failure
     And the index.yaml file is updated with an entry for the submitted chart with correct providerType
     And a release is published with corresponding report and chart tarball
   
-    @redhat
+    @redhat @full
     Examples:
         | vendor_type  | vendor    | chart_path                     |
         | redhat       | redhat    | tests/data/vault-0.17.0.tgz    |

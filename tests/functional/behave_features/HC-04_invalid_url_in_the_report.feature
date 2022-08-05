@@ -9,34 +9,34 @@ Feature: Report contains an invalid URL
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
 
-        @partners @smoke
+        @partners @smoke @full
         Examples:
             | vendor_type  | vendor    | report_path            | invalid_url                         | message               |
             | partners     | hashicorp | tests/data/report.yaml | example.com/vault-0.13.0.tgz        | Missing schema in URL |
         
-        @redhat @smoke
+        @redhat @smoke @full
         Examples:
             | vendor_type  | vendor    | report_path            | invalid_url                         | message               |
             | redhat       | redhat    | tests/data/report.yaml | htts://example.com/vault-0.13.0.tgz | Invalid schema        |
         
-        @community @smoke
+        @community @smoke @full
         Examples:
             | vendor_type  | vendor    | report_path            | invalid_url                         | message               |
             | community    | redhat    | tests/data/report.yaml | https:example.comvault-0.13.0.tgz   | Invalid URL           |
         
-        @partners
+        @partners @full
         Examples:
             | vendor_type  | vendor    | report_path            | invalid_url                         | message               |
             | partners     | hashicorp | tests/data/report.yaml | htts://example.com/vault-0.13.0.tgz | Invalid schema        |
             | partners     | hashicorp | tests/data/report.yaml | https:example.comvault-0.13.0.tgz   | Invalid URL           |
         
-        @redhat
+        @redhat @full
         Examples:
             | vendor_type  | vendor    | report_path            | invalid_url                         | message               |
             | redhat       | redhat    | tests/data/report.yaml | example.com/vault-0.13.0.tgz        | Missing schema in URL |
             | redhat       | redhat    | tests/data/report.yaml | https:example.comvault-0.13.0.tgz   | Invalid URL           |
         
-        @community
+        @community @full
         Examples:
             | vendor_type  | vendor    | report_path            | invalid_url                         | message               |
             | community    | redhat    | tests/data/report.yaml | example.com/vault-0.13.0.tgz        | Missing schema in URL |

@@ -13,7 +13,7 @@ Feature: Report only submission with provider control settings
     Then the user sees the pull request is merged
     And the "<index_file>" is updated with an entry for the submitted chart
 
-    @partners @smoke
+    @partners @smoke @full
     Examples:
       | vendor_type  | vendor    | report_path               | index_file                        | provider_control_owners | provider_control_report |
       | partners     | hashicorp | tests/data/report.yaml    | unpublished-certified-charts.yaml | true                    | true                    |
@@ -28,7 +28,7 @@ Feature: Report only submission with provider control settings
     Then the pull request is not merged
     And user gets the "<message>" in the pull request comment
 
-    @partners
+    @partners @full
     Examples:
       | vendor_type  | vendor    | chart_path                  | report_path               | provider_control_owners | provider_control_report | message                                                                                              |
       | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/report.yaml    | true                    | true                    | OWNERS file and/or report indicate provider controlled delivery but pull request is not report only. |
@@ -43,7 +43,7 @@ Feature: Report only submission with provider control settings
     Then the pull request is not merged
     And user gets the "<message>" in the pull request comment
 
-    @partners
+    @partners @full
     Examples:
       | vendor_type  | vendor    | report_path               | provider_control_owners | provider_control_report | package_digest_set | message                                                                 |
       | partners     | hashicorp | tests/data/report.yaml    | true                    | false                   | true               | OWNERS file indicates provider controlled delivery but report does not. |

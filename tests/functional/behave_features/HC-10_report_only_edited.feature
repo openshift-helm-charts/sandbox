@@ -10,36 +10,36 @@ Feature: Edited report only submission
     Then the pull request is not merged
     And user gets the "<message>" in the pull request comment
 
-    @partners @smoke
+    @partners @smoke @full
     Examples:
       | vendor_type  | vendor    | report_path            | tested | supported | kubeversion | message                                   |
       | partners     | hashicorp | tests/data/report.yaml | 4.9    | 4.6-4.9   | >=1.20.0    | is not a valid semantic version           |
       | partners     | hashicorp | tests/data/report.yaml | 4.8    | >=4.7     | >=1.21.0    | does not match supportedOpenShiftVersions |
       
-    @partners
+    @partners @full
     Examples:
       | vendor_type  | vendor    | report_path            | tested | supported | kubeversion | message                                   |        
       | partners     | hashicorp | tests/data/report.yaml | 4.0    | >=4.7     | >=1.20.0    | is not a supported OpenShift version      |
       | partners     | hashicorp | tests/data/report.yaml | 4.6    | >=4.7     | >=1.20.0    | not within specified kube-versions        |
       
-    @redhat @smoke
+    @redhat @smoke @full
     Examples:
       | vendor_type  | vendor    | report_path            | tested | supported | kubeversion | message                                   |
       | redhat       | redhat    | tests/data/report.yaml | 4.0    | >=4.7     | >=1.20.0    | is not a supported OpenShift version      |
       
-    @redhat
+    @redhat @full
     Examples:
       | vendor_type  | vendor    | report_path            | tested | supported | kubeversion | message                                   |
       | redhat       | redhat    | tests/data/report.yaml | 4.9    | 4.6-4.9   | >=1.20.0    | is not a valid semantic version           |
       | redhat       | redhat    | tests/data/report.yaml | 4.6    | >=4.7     | >=1.20.0    | not within specified kube-versions        |
       | redhat       | redhat    | tests/data/report.yaml | 4.8    | >=4.7     | >=1.21.0    | does not match supportedOpenShiftVersions |
 
-    @community @smoke
+    @community @smoke @full
     Examples:
       | vendor_type  | vendor    | report_path            | tested | supported | kubeversion | message                                   |
       | community    | redhat    | tests/data/report.yaml | 4.6    | >=4.7     | >=1.20.0    | not within specified kube-versions        |
       
-    @community
+    @community @full
     Examples:
       | vendor_type  | vendor    | report_path            | tested | supported | kubeversion | message                                   |
       | community    | redhat    | tests/data/report.yaml | 4.9    | 4.6-4.9   | >=1.20.0    | is not a valid semantic version           |
