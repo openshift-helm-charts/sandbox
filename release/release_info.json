@@ -1,11 +1,11 @@
 {
-  "version": "1.4.0",
+  "version": "1.4.1",
   "info" : [
-      "Require a package digest for provider delivery (#132).",
-      "Fix nightly run to check charts when tool version changes (#131).",
-      "Addition of metrics for analysis (#130,#129,#126,#125).",
-      "Update workflow to use chart verifier github action (#127).",
-      "Automated Test improvement  (#123,#128)."
+      "Improved error message and added an exit after detecting multiple charts in a PR (#137).",
+      "Ensure GitHub labels are added (#140).",
+      "Smoke test migration to behave (#143,#149).",
+      "Enable better testing in workflow (#144).",
+      "Check OCP version support in index.yaml (#147)",
   ],
   "charts" : {
     "merge": ["charts"]
