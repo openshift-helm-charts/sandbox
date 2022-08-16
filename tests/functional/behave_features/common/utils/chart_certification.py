@@ -10,7 +10,6 @@ import time
 import uuid
 from tempfile import TemporaryDirectory
 from dataclasses import dataclass
-from typing import List
 from string import Template
 from pathlib import Path
 
@@ -337,9 +336,9 @@ vendor:
 @dataclass
 class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     test_name: str = '' # Meaningful test name for this test, displayed in PR title
-    test_charts: List[str] = []
-    test_reports: List[str] = []
-    chart_directories: List[str] = []
+    test_charts: list[str] = field(default_factory=list)
+    test_reports: list[str] = field(default_factory=list)
+    chart_directories: list[str] = field(default_factory=list)
     secrets: E2ETestSecretOneShot = E2ETestSecretOneShot()
 
     def __post_init__(self) -> None:

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """Utility class for storing test specific settings."""
 
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
 
 @dataclass
 class E2ETestSecret:
@@ -13,10 +12,10 @@ class E2ETestSecret:
     pr_number: int = -1
     vendor_type: str = ''
     owners_file_content: str = ''
-    test_charts: List[str] = []
-    test_reports: List[str] = []
-    chart_names: List[str] = []
-    chart_versions: List[str] = []
+    test_charts: list[str] = field(default_factory=list)
+    test_reports: list[str] = field(default_factory=list)
+    chart_names: list[str] = field(default_factory=list)
+    chart_versions: list[str] = field(default_factory=list)
 
 @dataclass
 class E2ETestSecretOneShot(E2ETestSecret):
