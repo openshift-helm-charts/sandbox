@@ -7,73 +7,91 @@ import yaml
 import shutil
 import json
 
-def get_name_and_version_from_report(path):
+def get_name_and_version_from_report(paths):
     """
     Parameters:
-    path (str): path to the report.yaml
+    paths (List): paths to the report.yaml
 
     Returns:
-    str: chart name
-    str: chart version
+    List: chart names
+    List: chart versions
     """
-    if path.endswith('yaml'):
-        with open(path, 'r') as fd:
-            try:
-                report = yaml.safe_load(fd)
-            except yaml.YAMLError as err:
-                raise AssertionError(f"error parsing '{path}': {err}")
-    elif path.endswith('json'):
-        with open(path, 'r') as fd:
-            try:
-                report = json.load(fd)
-            except Exception as err:
-                raise AssertionError(f"error parsing '{path}': {err}")
-    else:
-        raise AssertionError("Unknown report type")
-    chart = report['metadata']['chart']
-    return chart['name'], chart['version']
-
-
-def get_name_and_version_from_chart_tar(path):
-    """
-    Parameters:
-    path (str): path to the chart tar file
-
-    Returns:
-    str: chart name
-    str: chart version
-    """
-    tar = tarfile.open(path)
-    for member in tar.getmembers():
-        if member.name.split('/')[-1] == 'Chart.yaml':
-            chart = tar.extractfile(member)
-            if chart is not None:
-                content = chart.read()
+    charts = []
+    versions = []
+    for path in paths:
+        if path.endswith('yaml'):
+            with open(path, 'r') as fd:
                 try:
-                    chart_yaml = yaml.safe_load(content)
-                    return chart_yaml['name'], chart_yaml['version']
+                    report = yaml.safe_load(fd)
                 except yaml.YAMLError as err:
                     raise AssertionError(f"error parsing '{path}': {err}")
-    else:
-        raise AssertionError(f"Chart.yaml not in {path}")
+        elif path.endswith('json'):
+            with open(path, 'r') as fd:
+                try:
+                    report = json.load(fd)
+                except Exception as err:
+                    raise AssertionError(f"error parsing '{path}': {err}")
+        else:
+            raise AssertionError("Unknown report type")
+        
+        chart = report['metadata']['chart']
+        charts.append(chart['name'])
+        versions.append(chart['version'])
+    return charts, versions
 
 
-def get_name_and_version_from_chart_src(path):
+def get_name_and_version_from_chart_tar(paths):
     """
     Parameters:
-    path (str): path to the chart src directory
+    path (List): paths to the chart tar files
 
     Returns:
-    str: chart name
-    str: chart version
+    List: chart names
+    List: chart versions
     """
-    chart_path = os.path.join(path, 'Chart.yaml')
-    with open(chart_path, 'r') as fd:
-        try:
-            chart_yaml = yaml.safe_load(fd)
-        except yaml.YAMLError as err:
-            raise AssertionError(f"error parsing '{path}': {err}")
-    return chart_yaml['name'], chart_yaml['version']
+    charts = []
+    versions = []
+    for path in paths:
+        tar = tarfile.open(path)
+        for member in tar.getmembers():
+            if member.name.split('/')[-1] == 'Chart.yaml':
+                chart = tar.extractfile(member)
+                if chart is not None:
+                    content = chart.read()
+                    try:
+                        chart_yaml = yaml.safe_load(content)
+                        charts.append(chart_yaml['name'])
+                        versions.append(chart_yaml['version'])
+                    except yaml.YAMLError as err:
+                        raise AssertionError(f"error parsing '{path}': {err}")
+        else:
+            raise AssertionError(f"Chart.yaml not in {path}")
+    
+    return charts, versions
+
+
+def get_name_and_version_from_chart_src(paths):
+    """
+    Parameters:
+    paths (List): paths to the chart src directory
+
+    Returns:
+    List: chart names
+    List: chart versions
+    """
+    charts = []
+    versions = []
+    for path in paths:
+        chart_path = os.path.join(path, 'Chart.yaml')
+        with open(chart_path, 'r') as fd:
+            try:
+                chart_yaml = yaml.safe_load(fd)
+            except yaml.YAMLError as err:
+                raise AssertionError(f"error parsing '{path}': {err}")
+            charts.append(chart_yaml['name'])
+            versions.append(chart_yaml['version'])
+    
+    return charts, versions
 
 def extract_chart_tgz(src, dst, secrets, logger):
     """Extracts the chart tgz file into the target location under 'charts/' for PR submission tests

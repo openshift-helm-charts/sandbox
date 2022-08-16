@@ -10,6 +10,7 @@ import time
 import uuid
 from tempfile import TemporaryDirectory
 from dataclasses import dataclass
+from typing import List
 from string import Template
 from pathlib import Path
 
@@ -70,33 +71,42 @@ vendor:
             raise Exception("BOT_NAME set but BOT_TOKEN not specified")
         return bot_name, bot_token
 
-    def remove_chart(self, chart_directory, chart_version, remote_repo, base_branch, bot_token):
+    def remove_chart(self, chart_directories, chart_versions, remote_repo, base_branch, bot_token):
         # Remove chart files from base branch
-        logging.info(
-            f"Remove {chart_directory}/{chart_version} from {remote_repo}:{base_branch}")
+        for i in range(len(chart_directories)):
+            try:
+                logging.info(
+                    f"Remove {chart_directories[i]}/{chart_versions[i]} from {remote_repo}:{base_branch}")
+                self.temp_repo.git.rm('-rf', '--cached', f'{chart_directories[i]}/{chart_versions[i]}')
+            except git.exc.GitCommandError:
+                logging.info(
+                    f"{chart_directories[i]}/{chart_versions[i]} not exist on {remote_repo}:{base_branch}")
         try:
-            self.temp_repo.git.rm('-rf', '--cached', f'{chart_directory}/{chart_version}')
             self.temp_repo.git.commit(
-                '-m', f'Remove {chart_directory}/{chart_version}')
+                '-m', f'Remove {chart_directories} with {chart_versions}')
             self.temp_repo.git.push(f'https://x-access-token:{bot_token}@github.com/{remote_repo}',
                             f'HEAD:refs/heads/{base_branch}')
         except git.exc.GitCommandError:
-            logging.info(
-                f"{chart_directory}/{chart_version} not exist on {remote_repo}:{base_branch}")
+            logging.info(f"Exception while doing Commit or Push")
 
-    def remove_owners_file(self, chart_directory, remote_repo, base_branch, bot_token):
+    def remove_owners_file(self, chart_directories, remote_repo, base_branch, bot_token):
         # Remove the OWNERS file from base branch
-        logging.info(
-            f"Remove {chart_directory}/OWNERS from {remote_repo}:{base_branch}")
+        for i in range(len(chart_directories)):
+            try:
+                logging.info(
+                    f"Remove {chart_directories[i]}/OWNERS from {remote_repo}:{base_branch}")
+                self.temp_repo.git.rm('-rf', '--cached', f'{chart_directories}/OWNERS')
+            except git.exc.GitCommandError:
+                logging.info(
+                    f"{chart_directories[i]}/OWNERS not exist on {remote_repo}:{base_branch}")
         try:
-            self.temp_repo.git.rm('-rf', '--cached', f'{chart_directory}/OWNERS')
             self.temp_repo.git.commit(
-                '-m', f'Remove {chart_directory}/OWNERS')
+                '-m', f'Remove OWNERS from {chart_directories}')
             self.temp_repo.git.push(f'https://x-access-token:{bot_token}@github.com/{remote_repo}',
                             f'HEAD:refs/heads/{base_branch}')
         except git.exc.GitCommandError:
             logging.info(
-                f"{chart_directory}/OWNERS not exist on {remote_repo}:{base_branch}")
+                f"Exception while doing Commit or Push")
 
     def create_test_gh_pages_branch(self, remote_repo, base_branch, bot_token):
         # Get SHA from 'dev-gh-pages' branch
@@ -135,24 +145,25 @@ vendor:
             raise AssertionError(f"error sending pull request, response was: {r.text}")
         return j['number']
 
-    def create_and_push_owners_file(self, chart_directory, base_branch, vendor_name, vendor_type, chart_name, provider_delivery=False):
+    def create_and_push_owners_file(self, chart_directories, base_branch, vendor_name, vendor_type, chart_names, provider_delivery=False):
         with SetDirectory(Path(self.temp_dir.name)):
             # Create the OWNERS file from the string template
-            values = {'bot_name': self.secrets.bot_name,
-                    'vendor': vendor_name, 'chart_name': chart_name,
-                      "provider_delivery" : provider_delivery}
-            content = Template(self.secrets.owners_file_content).substitute(values)
-            logging.debug(f"OWNERS File Content: {content}")
-            with open(f'{chart_directory}/OWNERS', 'w') as fd:
-                fd.write(content)
+            for i in range(len(chart_directories)):
+                values = {'bot_name': self.secrets.bot_name,
+                        'vendor': vendor_name, 'chart_name': chart_names[i],
+                        'provider_delivery' : provider_delivery}
+                content = Template(self.secrets.owners_file_content).substitute(values)
+                logging.debug(f"OWNERS File Content: {content}")
+                with open(f'{chart_directories[i]}/OWNERS', 'w') as fd:
+                    fd.write(content)
 
-            # Push OWNERS file to the test_repo
-            logging.info(
-                f"Push OWNERS file to '{self.secrets.test_repo}:{base_branch}'")
-            self.temp_repo.git.add(f'{chart_directory}/OWNERS')
-            self.temp_repo.git.commit(
-                '-m', f"Add {vendor_type} {vendor_name} {chart_name} OWNERS file")
-            self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
+                # Push OWNERS file to the test_repo
+                logging.info(
+                    f"Push OWNERS file to '{self.secrets.test_repo}:{base_branch}'")
+                self.temp_repo.git.add(f'{chart_directories[i]}/OWNERS')
+                self.temp_repo.git.commit(
+                    '-m', f"Add {vendor_type} {vendor_name} {chart_names[i]} OWNERS file")
+                self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                         f'HEAD:refs/heads/{base_branch}', '-f')
 
     def check_index_yaml(self,base_branch, vendor, chart_name, chart_version, index_file="index.yaml", check_provider_type=False, failure_type='error'):
@@ -326,9 +337,9 @@ vendor:
 @dataclass
 class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     test_name: str = '' # Meaningful test name for this test, displayed in PR title
-    test_chart: str = ''
-    test_report: str = ''
-    chart_directory: str = ''
+    test_charts: List[str] = []
+    test_reports: List[str] = []
+    chart_directories: List[str] = []
     secrets: E2ETestSecretOneShot = E2ETestSecretOneShot()
 
     def __post_init__(self) -> None:
@@ -431,33 +442,34 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         logging.debug(f"Updating bad version: {bad_version}")
         self.secrets.bad_version = bad_version
 
-    def update_chart_directory(self):
+    def update_chart_directories(self):
         base_branch_without_uuid = "-".join(self.secrets.base_branch.split("-")[:-1])
         vendor_without_suffix = self.secrets.vendor.split("-")[0]
         self.secrets.base_branch = f'{base_branch_without_uuid}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_name}-{self.secrets.chart_version}'
         self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
-        self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
-        logging.debug(f"Updating chart_directory: {self.chart_directory}")
+        for chart_name in self.secrets.chart_names:
+            self.chart_directories.append(f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{chart_name}')
+        logging.debug(f"Updating chart_directories: {self.chart_directories}")
 
-    def update_test_chart(self, test_chart):
-        logging.debug(f"Updating test chart: {test_chart}")
-        self.test_chart = test_chart
-        chart_name, chart_version = self.get_chart_name_version()
-        logging.debug(f"Got chart_name: {chart_name} and chart_version: {chart_version} from the chart")
-        self.secrets.test_chart = self.test_chart
-        self.secrets.chart_name = chart_name
-        self.secrets.chart_version = chart_version
-        self.update_chart_directory()
+    def update_test_chart(self, test_charts):
+        logging.debug(f"Updating test chart: {test_charts}")
+        self.test_chart = test_charts
+        chart_names, chart_versions = self.get_chart_name_version()
+        logging.debug(f"Got chart_name: {chart_names} and chart_version: {chart_versions} from the chart")
+        self.secrets.test_charts = self.test_charts
+        self.secrets.chart_names = chart_names
+        self.secrets.chart_versions = chart_versions
+        self.update_chart_directories()
 
-    def update_test_report(self, test_report):
-        logging.debug(f"Updating test report: {test_report}")
-        self.test_report = test_report
-        chart_name, chart_version = self.get_chart_name_version()
-        logging.debug(f"Got chart_name: {chart_name} and chart_version: {chart_version} from the report")
-        self.secrets.test_report = self.test_report
-        self.secrets.chart_name = chart_name
-        self.secrets.chart_version = chart_version
-        self.update_chart_directory()
+    def update_test_report(self, test_reports):
+        logging.debug(f"Updating test reports: {test_reports}")
+        self.test_reports = test_reports
+        chart_names, chart_versions = self.get_chart_name_version()
+        logging.debug(f"Got chart_names: {chart_names} and chart_versions: {chart_versions} from the report")
+        self.secrets.test_reports = self.test_reports
+        self.secrets.chart_names = chart_names
+        self.secrets.chart_versions = chart_versions
+        self.update_chart_directories()
 
     def get_unique_vendor(self, vendor):
         """Set unique vendor name.
@@ -502,11 +514,12 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
             self.set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
             self.temp_repo.git.checkout('-b', self.secrets.base_branch)
-            pathlib.Path(
-                f'{self.chart_directory}/{self.secrets.chart_version}').mkdir(parents=True, exist_ok=True)
+            for i in range(len(self.chart_directories)):
+                pathlib.Path(
+                    f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}').mkdir(parents=True, exist_ok=True)
 
-            self.remove_chart(self.chart_directory, self.secrets.chart_version, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
-            self.remove_owners_file(self.chart_directory, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
+            self.remove_chart(self.chart_directories, self.secrets.chart_versions, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
+            self.remove_owners_file(self.chart_directories, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
 
     def update_chart_version_in_chart_yaml(self, new_version):
         with SetDirectory(Path(self.temp_dir.name)):
@@ -535,7 +548,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 raise AssertionError(f"Failed to remove readme file : {e}")
 
     def process_owners_file(self):
-        super().create_and_push_owners_file(self.chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.secrets.chart_name,self.secrets.provider_delivery)
+        super().create_and_push_owners_file(self.chart_directories, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.secrets.chart_names, self.secrets.provider_delivery)
 
     def process_chart(self, is_tarball: bool):
         with SetDirectory(Path(self.temp_dir.name)):
@@ -557,94 +570,96 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             # Copy report to temporary location and push to test_repo:pr_branch
             logging.info(
                 f"Push report to '{self.secrets.test_repo}:{self.secrets.pr_branch}'")
+
+            for i in range(self.secrets.test_reports):
             
-            if self.secrets.test_report.endswith('json'):
-                logging.debug("Report type is json")
-                report_path = f'{self.chart_directory}/{self.secrets.chart_version}/' + self.secrets.test_report.split('/')[-1]
-                with open(self.secrets.test_report, 'r') as fd:
+                if self.secrets.test_reports[i].endswith('json'):
+                    logging.debug("Report type is json")
+                    report_path = f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}/' + self.secrets.test_reports[i].split('/')[-1]
+                    with open(self.secrets.test_reports[i], 'r') as fd:
+                        try:
+                            report = json.load(fd)
+                        except Exception as e:
+                            raise AssertionError("Failed to read json file")
+
+                    with open(report_path, 'w') as fd:
+                        try:
+                            fd.write(json.dumps(report, indent=4))
+                        except Exception as e:
+                            raise AssertionError("Failed to write report in json format")
+
+                elif self.secrets.test_reports[i].endswith('yaml'):
+                    logging.debug("Report type is yaml")
+                    tmpl = open(self.secrets.test_reports[i]).read()
+                    values = {'repository': self.secrets.test_repo,
+                            'branch': self.secrets.base_branch}
+                    content = Template(tmpl).substitute(values)
+
+                    report_path = f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}/' + self.secrets.test_reports[i].split('/')[-1]
+
                     try:
-                        report = json.load(fd)
-                    except Exception as e:
-                        raise AssertionError("Failed to read json file")
+                        report = yaml.safe_load(content)
+                    except yaml.YAMLError as err:
+                        raise AssertionError(f"error parsing '{report_path}': {err}")
 
-                with open(report_path, 'w') as fd:
-                    try:
-                        fd.write(json.dumps(report, indent=4))
-                    except Exception as e:
-                        raise AssertionError("Failed to write report in json format")
+                    if self.secrets.vendor_type != "partners":
+                        report["metadata"]["tool"]["profile"]["VendorType"] = self.secrets.vendor_type
+                        logging.info(f'VendorType set to {report["metadata"]["tool"]["profile"]["VendorType"]} in report.yaml')
 
-            elif self.secrets.test_report.endswith('yaml'):
-                logging.debug("Report type is yaml")
-                tmpl = open(self.secrets.test_report).read()
-                values = {'repository': self.secrets.test_repo,
-                        'branch': self.secrets.base_branch}
-                content = Template(tmpl).substitute(values)
+                    if update_chart_sha or update_url or update_versions or update_provider_delivery or unset_package_digest:
+                        #For updating the report.yaml, for chart sha mismatch scenario
+                        if update_chart_sha:
+                            new_sha_value = 'sha256:5b85ae00b9ca2e61b2d70a59f98fd72136453b1a185676b29d4eb862981c1xyz'
+                            logging.info(f"Current SHA Value in report: {report['metadata']['tool']['digests']['chart']}")
+                            report['metadata']['tool']['digests']['chart'] = new_sha_value
+                            logging.info(f"Updated sha value in report: {new_sha_value}")
 
-                report_path = f'{self.chart_directory}/{self.secrets.chart_version}/' + self.secrets.test_report.split('/')[-1]
+                        #For updating the report.yaml, for invalid_url sceanrio
+                        if update_url:
+                            logging.info(f"Current chart-uri in report: {report['metadata']['tool']['chart-uri']}")
+                            report['metadata']['tool']['chart-uri'] = url
+                            logging.info(f"Updated chart-uri value in report: {url}")
 
-                try:
-                    report = yaml.safe_load(content)
-                except yaml.YAMLError as err:
-                    raise AssertionError(f"error parsing '{report_path}': {err}")
+                        if update_versions:
+                            report['metadata']['tool']['testedOpenShiftVersion'] = tested_version
+                            report['metadata']['tool']['supportedOpenShiftVersions'] = supported_versions
+                            report['metadata']['chart']['kubeversion'] = kube_version
+                            logging.info(f"Updated testedOpenShiftVersion value in report: {tested_version}")
+                            logging.info(f"Updated supportedOpenShiftVersions value in report: {supported_versions}")
+                            logging.info(f"Updated kubeversion value in report: {kube_version}")
 
-                if self.secrets.vendor_type != "partners":
-                    report["metadata"]["tool"]["profile"]["VendorType"] = self.secrets.vendor_type
-                    logging.info(f'VendorType set to {report["metadata"]["tool"]["profile"]["VendorType"]} in report.yaml')
+                        if update_provider_delivery:
+                            report['metadata']['tool']['providerControlledDelivery'] = provider_delivery
 
-                if update_chart_sha or update_url or update_versions or update_provider_delivery or unset_package_digest:
-                    #For updating the report.yaml, for chart sha mismatch scenario
-                    if update_chart_sha:
-                        new_sha_value = 'sha256:5b85ae00b9ca2e61b2d70a59f98fd72136453b1a185676b29d4eb862981c1xyz'
-                        logging.info(f"Current SHA Value in report: {report['metadata']['tool']['digests']['chart']}")
-                        report['metadata']['tool']['digests']['chart'] = new_sha_value
-                        logging.info(f"Updated sha value in report: {new_sha_value}")
+                        if unset_package_digest:
+                            del report['metadata']['tool']['digests']['package']
 
-                    #For updating the report.yaml, for invalid_url sceanrio
-                    if update_url:
-                        logging.info(f"Current chart-uri in report: {report['metadata']['tool']['chart-uri']}")
-                        report['metadata']['tool']['chart-uri'] = url
-                        logging.info(f"Updated chart-uri value in report: {url}")
+                    with open(report_path, 'w') as fd:
+                        try:
+                            fd.write(yaml.dump(report))
+                            logging.info("Report updated with new values")
+                        except Exception as e:
+                            raise AssertionError("Failed to update report yaml with new values")
 
-                    if update_versions:
-                        report['metadata']['tool']['testedOpenShiftVersion'] = tested_version
-                        report['metadata']['tool']['supportedOpenShiftVersions'] = supported_versions
-                        report['metadata']['chart']['kubeversion'] = kube_version
-                        logging.info(f"Updated testedOpenShiftVersion value in report: {tested_version}")
-                        logging.info(f"Updated supportedOpenShiftVersions value in report: {supported_versions}")
-                        logging.info(f"Updated kubeversion value in report: {kube_version}")
+                    #For removing the check for missing check scenario
+                    if missing_check:
+                        logging.info(f"Updating report with {missing_check}")
+                        with open(report_path, 'r+') as fd:
+                            report_content = yaml.safe_load(fd)
+                            results = report_content["results"]
+                            new_results = filter(lambda x: x['check'] != missing_check, results)
+                            report_content["results"] = list(new_results)
+                            fd.seek(0)
+                            yaml.dump(report_content, fd)
+                            fd.truncate()
+                else:
+                    raise AssertionError("Unknown report type")
 
-                    if update_provider_delivery:
-                        report['metadata']['tool']['providerControlledDelivery'] = provider_delivery
-
-                    if unset_package_digest:
-                        del report['metadata']['tool']['digests']['package']
-
-                with open(report_path, 'w') as fd:
-                    try:
-                        fd.write(yaml.dump(report))
-                        logging.info("Report updated with new values")
-                    except Exception as e:
-                        raise AssertionError("Failed to update report yaml with new values")
-
-                #For removing the check for missing check scenario
-                if missing_check:
-                    logging.info(f"Updating report with {missing_check}")
-                    with open(report_path, 'r+') as fd:
-                        report_content = yaml.safe_load(fd)
-                        results = report_content["results"]
-                        new_results = filter(lambda x: x['check'] != missing_check, results)
-                        report_content["results"] = list(new_results)
-                        fd.seek(0)
-                        yaml.dump(report_content, fd)
-                        fd.truncate()
-            else:
-                raise AssertionError("Unknown report type")
-
-        self.temp_repo.git.add(report_path)
+            self.temp_repo.git.add(report_path)
         self.temp_repo.git.commit(
-                '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} report")
+                '-m', f"Add {self.secrets.vendor} {self.secrets.chart_names[i]} {self.secrets.chart_versions[i]} report")
         self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
-                f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
+                    f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
 
     def add_non_chart_related_file(self):
         with SetDirectory(Path(self.temp_dir.name)):
