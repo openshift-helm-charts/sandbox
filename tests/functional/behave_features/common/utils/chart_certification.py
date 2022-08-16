@@ -444,7 +444,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def update_chart_directories(self):
         base_branch_without_uuid = "-".join(self.secrets.base_branch.split("-")[:-1])
         vendor_without_suffix = self.secrets.vendor.split("-")[0]
-        self.secrets.base_branch = f'{base_branch_without_uuid}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_name}-{self.secrets.chart_version}'
+        self.secrets.base_branch = f'{base_branch_without_uuid}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_names[0]}-{self.secrets.chart_versions[0]}'
         self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
         for chart_name in self.secrets.chart_names:
             self.chart_directories.append(f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{chart_name}')
