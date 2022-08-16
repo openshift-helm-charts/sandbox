@@ -555,12 +555,14 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         with SetDirectory(Path(self.temp_dir.name)):
             if is_tarball:
                 # Copy the chart tar into temporary directory for PR submission
-                chart_tar = self.secrets.test_chart.split('/')[-1]
-                shutil.copyfile(f'{self.old_cwd}/{self.secrets.test_chart}',
-                                f'{self.chart_directory}/{self.secrets.chart_version}/{chart_tar}')
+                for i in range(len(self.chart_directories)):
+                    chart_tar = self.secrets.test_charts[i].split('/')[-1]
+                    shutil.copyfile(f'{self.old_cwd}/{self.secrets.test_charts[i]}',
+                                f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}/{chart_tar}')
             else:
                 # Unzip files into temporary directory for PR submission
-                extract_chart_tgz(self.secrets.test_chart, f'{self.chart_directory}/{self.secrets.chart_version}', self.secrets, logging)
+                for i in range(len(self.chart_directories)):
+                    extract_chart_tgz(self.secrets.test_charts[i], f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}', self.secrets, logging)
 
 
     def process_report(self, update_chart_sha=False, update_url=False, url=None,
@@ -671,15 +673,18 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def push_chart(self, is_tarball: bool, add_non_chart_file=False):
         # Push chart to test_repo:pr_branch
         if is_tarball:
-            chart_tar = self.secrets.test_chart.split('/')[-1]
-            self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/{chart_tar}')
+            for i in range(len(self.chart_directories)):
+                chart_tar = self.secrets.test_charts[i].split('/')[-1]
+                self.temp_repo.git.add(f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}/{chart_tar}')
         else:
             if add_non_chart_file:
-                self.temp_repo.git.add(f'{self.chart_directory}/')
+                for i in range(len(self.chart_directories)):
+                    self.temp_repo.git.add(f'{self.chart_directories[i]}/')
             else:
-                self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/src')
+                for i in range(len(self.chart_directories)):
+                    self.temp_repo.git.add(f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}/src')
         self.temp_repo.git.commit(
-            '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} chart")
+            '-m', f"Adding {self.secrets.vendor} {self.secrets.chart_names} {self.secrets.chart_versions} chart")
 
         self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                       f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
