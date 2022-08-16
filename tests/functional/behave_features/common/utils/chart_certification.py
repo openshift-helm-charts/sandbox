@@ -654,10 +654,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 else:
                     raise AssertionError("Unknown report type")
 
-            self.temp_repo.git.add(report_path)
-        self.temp_repo.git.commit(
+                self.temp_repo.git.add(report_path)
+            self.temp_repo.git.commit(
                 '-m', f"Add {self.secrets.vendor} {self.secrets.chart_names[i]} {self.secrets.chart_versions[i]} report")
-        self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
+            self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                     f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
 
     def add_non_chart_related_file(self):
