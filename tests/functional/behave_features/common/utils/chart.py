@@ -64,10 +64,11 @@ def get_name_and_version_from_chart_tar(paths):
                         versions.append(chart_yaml['version'])
                     except yaml.YAMLError as err:
                         raise AssertionError(f"error parsing '{path}': {err}")
-        else:
-            raise AssertionError(f"Chart.yaml not in {path}")
-    
-    return charts, versions
+        
+    if len(charts) == 0 and len(versions) == 0:
+        raise AssertionError(f"Chart.yaml not found")
+    else:
+        return charts, versions
 
 
 def get_name_and_version_from_chart_src(paths):
