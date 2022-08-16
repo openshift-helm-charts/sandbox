@@ -6,7 +6,7 @@ metadata:
         profile:
             VendorType: partner
             version: v1.1
-        chart-uri: https://github.com/${repository}/raw/${branch}/tests/data/vault-0.17.0.tgz
+        chart-uri: https://github.com/${repository}/raw/${branch}/tests/data/vault-0.18.0.tgz
         digests:
             chart: sha256:f01dd362d81fe4b1ef99bb7fa5be268fa94dc96f3009d28bc93a18517aa1ef7a
             package: 9cb7e3a5d82537f512319c754ccd6e9a4be08118b34849609d0fc261934d062a
@@ -22,7 +22,7 @@ metadata:
             - https://github.com/hashicorp/vault-helm
             - https://github.com/hashicorp/vault-k8s
             - https://github.com/hashicorp/vault-csi-provider
-        version: 0.17.0
+        version: 0.18.0
         description: Official HashiCorp Vault Chart
         keywords:
             - vault
