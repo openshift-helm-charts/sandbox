@@ -572,7 +572,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             logging.info(
                 f"Push report to '{self.secrets.test_repo}:{self.secrets.pr_branch}'")
 
-            for i in range(self.secrets.test_reports):
+            for i in range(len(self.secrets.test_reports)):
             
                 if self.secrets.test_reports[i].endswith('json'):
                     logging.debug("Report type is json")
