@@ -145,6 +145,7 @@ vendor:
         return j['number']
 
     def create_and_push_owners_file(self, chart_directories, base_branch, vendor_name, vendor_type, chart_names, provider_delivery=False):
+        chart_directories = set(chart_directories)
         with SetDirectory(Path(self.temp_dir.name)):
             # Create the OWNERS file from the string template
             for i in range(len(chart_directories)):
