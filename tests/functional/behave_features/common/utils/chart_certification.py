@@ -587,7 +587,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                         except Exception as e:
                             raise AssertionError("Failed to write report in json format")
 
-                elif self.secrets.test_reports[i].endswith('yaml'):
+                elif self.secrets.test_reports[i].endswith('yaml') or self.secrets.test_reports[i].endswith('swp'):
                     logging.debug("Report type is yaml")
                     tmpl = open(self.secrets.test_reports[i]).read()
                     values = {'repository': self.secrets.test_repo,
