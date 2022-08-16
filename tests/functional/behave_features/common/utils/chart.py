@@ -94,7 +94,7 @@ def get_name_and_version_from_chart_src(paths):
     
     return charts, versions
 
-def extract_chart_tgz(src, dst, secrets, logger):
+def extract_chart_tgz(src, dst, chart_name, logger):
     """Extracts the chart tgz file into the target location under 'charts/' for PR submission tests
 
     Parameters:
@@ -109,7 +109,7 @@ def extract_chart_tgz(src, dst, secrets, logger):
     finally:
         with tarfile.open(src, 'r') as fd:
             fd.extractall(dst)
-            os.rename(f'{dst}/{secrets.chart_name}', f'{dst}/src')
+            os.rename(f'{dst}/{chart_name}', f'{dst}/src')
 
 def get_all_charts(charts_path: str, vendor_types: str) -> list:
     # TODO: Support `community` as vendor_type.

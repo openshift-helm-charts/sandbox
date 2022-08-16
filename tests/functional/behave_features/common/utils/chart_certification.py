@@ -562,7 +562,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             else:
                 # Unzip files into temporary directory for PR submission
                 for i in range(len(self.chart_directories)):
-                    extract_chart_tgz(self.secrets.test_charts[i], f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}', self.secrets, logging)
+                    extract_chart_tgz(self.secrets.test_charts[i], f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}', self.secrets.chart_names[i], logging)
 
 
     def process_report(self, update_chart_sha=False, update_url=False, url=None,
