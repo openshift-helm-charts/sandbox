@@ -19,7 +19,7 @@ def get_name_and_version_from_report(paths):
     charts = []
     versions = []
     for path in paths:
-        if path.endswith('yaml'):
+        if path.endswith('yaml') or path.endswith('swp'):
             with open(path, 'r') as fd:
                 try:
                     report = yaml.safe_load(fd)
