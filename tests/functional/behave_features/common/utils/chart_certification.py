@@ -482,13 +482,13 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         return f"{vendor}-{suffix}"
 
     def get_chart_name_version(self):
-        if not self.test_report and not self.test_chart:
+        if not self.test_reports and not self.test_charts:
             raise AssertionError("Provide at least one of test report or test chart.")
         if self.test_report:
-            chart_name, chart_version = get_name_and_version_from_report(self.test_report)
+            chart_names, chart_versions = get_name_and_version_from_report(self.test_reports)
         else:
-            chart_name, chart_version = get_name_and_version_from_chart_tar(self.test_chart)
-        return chart_name, chart_version
+            chart_names, chart_versions = get_name_and_version_from_chart_tar(self.test_charts)
+        return chart_names, chart_versions
 
     def set_vendor(self, vendor, vendor_type):
         # use unique vendor id to avoid collision between tests
