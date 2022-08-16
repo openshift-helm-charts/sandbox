@@ -484,7 +484,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def get_chart_name_version(self):
         if not self.test_reports and not self.test_charts:
             raise AssertionError("Provide at least one of test report or test chart.")
-        if self.test_report:
+        if self.test_reports:
             chart_names, chart_versions = get_name_and_version_from_report(self.test_reports)
         else:
             chart_names, chart_versions = get_name_and_version_from_chart_tar(self.test_charts)
@@ -715,15 +715,18 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             raise AssertionError(f"Was expecting '{expect_message}' in the comment {complete_comment}")
 
     def check_index_yaml(self, check_provider_type=False):
-        super().check_index_yaml(self.secrets.base_branch, self.secrets.vendor, self.secrets.chart_name, self.secrets.chart_version, self.secrets.index_file,check_provider_type)
+        for i in range(len(self.secrets.chart_names)):
+            super().check_index_yaml(self.secrets.base_branch, self.secrets.vendor, self.secrets.chart_names[i], self.secrets.chart_versions[i], self.secrets.index_file,check_provider_type)
 
     def check_release_result(self):
-        chart_tgz = self.secrets.test_chart.split('/')[-1]
-        super().check_release_result(self.secrets.vendor, self.secrets.chart_name, self.secrets.chart_version, chart_tgz)
+        for i in range(len(self.secrets.test_charts)):
+            chart_tgz = self.secrets.test_charts[i].split('/')[-1]
+            super().check_release_result(self.secrets.vendor, self.secrets.chart_names[i], self.secrets.chart_versions[i], chart_tgz)
 
     def cleanup_release(self):
-        expected_tag = f'{self.secrets.vendor}-{self.secrets.chart_name}-{self.secrets.chart_version}'
-        super().cleanup_release(expected_tag)
+        for i in range(len(self.secrets.chart_names)):
+            expected_tag = f'{self.secrets.vendor}-{self.secrets.chart_names[i]}-{self.secrets.chart_versions[i]}'
+            super().cleanup_release(expected_tag)
 
 @dataclass
 class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
