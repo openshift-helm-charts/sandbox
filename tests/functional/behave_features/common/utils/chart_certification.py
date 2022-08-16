@@ -454,7 +454,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
     def update_test_chart(self, test_charts):
         logging.debug(f"Updating test chart: {test_charts}")
-        self.test_chart = test_charts
+        self.test_charts = test_charts
         chart_names, chart_versions = self.get_chart_name_version()
         logging.debug(f"Got chart_name: {chart_names} and chart_version: {chart_versions} from the chart")
         self.secrets.test_charts = self.test_charts
