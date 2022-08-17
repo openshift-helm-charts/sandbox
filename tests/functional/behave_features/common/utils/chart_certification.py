@@ -683,15 +683,15 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def push_chart(self, is_tarball: bool, add_non_chart_file=False):
         # Push chart to test_repo:pr_branch
         if is_tarball:
-            for i in range(len(self.chart_directories)):
+            for i in range(len(self.secrets.test_charts)):
                 chart_tar = self.secrets.test_charts[i].split('/')[-1]
                 self.temp_repo.git.add(f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}/{chart_tar}')
         else:
             if add_non_chart_file:
-                for i in range(len(self.chart_directories)):
+                for i in range(len(self.secrets.test_charts)):
                     self.temp_repo.git.add(f'{self.chart_directories[i]}/')
             else:
-                for i in range(len(self.chart_directories)):
+                for i in range(len(self.secrets.test_charts)):
                     self.temp_repo.git.add(f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}/src')
         self.temp_repo.git.commit(
             '-m', f"Adding {self.secrets.vendor} {self.secrets.chart_names} {self.secrets.chart_versions} chart")
