@@ -449,7 +449,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.base_branch = f'{base_branch_without_uuid}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_names[0]}-{self.secrets.chart_versions[0]}'
         self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
         for chart_name in self.secrets.chart_names:
-            self.chart_directories.append(f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{chart_name}')
+            if chart_name not in self.chart_directories:
+                self.chart_directories.append(f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{chart_name}')
         logging.debug(f"Updating chart_directories: {self.chart_directories}")
 
     def update_test_chart(self, test_charts):
