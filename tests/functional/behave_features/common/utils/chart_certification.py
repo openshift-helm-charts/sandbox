@@ -577,7 +577,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
     def process_report(self, update_chart_sha=False, update_url=False, url=None,
                        update_versions=False,supported_versions=None,tested_version=None,kube_version=None,
-                       update_provider_delivery=False, provider_delivery=False, missing_check=None,unset_package_digest=False):
+                       update_provider_delivery=False, provider_delivery=False, missing_check=None,unset_package_digest=False, is_second=False):
 
         with SetDirectory(Path(self.temp_dir.name)):
             # Copy report to temporary location and push to test_repo:pr_branch
@@ -608,7 +608,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                             'branch': self.secrets.base_branch}
                     content = Template(tmpl).substitute(values)
 
-                    report_path = f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}/' + self.secrets.test_reports[i].split('/')[-1]
+                    if is_second:
+                        report_path = f'{self.chart_directories[i+1]}/{self.secrets.chart_versions[i+1]}/' + self.secrets.test_reports[i].split('/')[-1]
+                    else:
+                        report_path = f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}/' + self.secrets.test_reports[i].split('/')[-1]
 
                     try:
                         report = yaml.safe_load(content)

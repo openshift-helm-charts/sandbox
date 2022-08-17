@@ -127,7 +127,7 @@ def user_has_created_error_free_chart_src_and_report(context, chart_path, report
     context.workflow_test.setup_temp_dir()
     context.workflow_test.process_owners_file()
     context.workflow_test.process_chart(is_tarball=False)
-    context.workflow_test.process_report()
+    context.workflow_test.process_report(is_second=True)
     context.workflow_test.push_chart(is_tarball=False)
 
 @when(u'the user sends a pull request with the report')
