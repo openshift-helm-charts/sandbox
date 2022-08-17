@@ -450,7 +450,6 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
         for chart_name in self.secrets.chart_names:
             self.chart_directories.append(f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{chart_name}')
-        self.chart_directories = list(set(self.chart_directories))
         logging.debug(f"Updating chart_directories: {self.chart_directories}")
 
     def update_test_chart(self, test_charts):
@@ -469,6 +468,25 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         chart_names, chart_versions = get_name_and_version_from_report(test_reports)
         logging.debug(f"Got chart_names: {chart_names} and chart_versions: {chart_versions} from the report")
         self.secrets.test_reports = self.test_reports
+        self.secrets.chart_names.extend(chart_names)
+        self.secrets.chart_versions.extend(chart_versions)
+        self.update_chart_directories()
+    
+    def update_test_chart_and_report(self, test_charts, test_reports):
+        logging.debug(f"Updating test chart: {test_charts}")
+        logging.debug(f"Updating test reports: {test_reports}")
+        
+        self.test_charts = test_charts
+        self.secrets.test_charts = self.test_charts
+        chart_names, chart_versions = get_name_and_version_from_chart_tar(test_charts)
+        logging.debug(f"Got chart_name: {chart_names} and chart_version: {chart_versions} from the chart")
+        self.secrets.chart_names.extend(chart_names)
+        self.secrets.chart_versions.extend(chart_versions)
+
+        self.test_reports = test_reports
+        self.secrets.test_reports = self.test_reports
+        chart_names, chart_versions = get_name_and_version_from_report(test_reports)
+        logging.debug(f"Got chart_names: {chart_names} and chart_versions: {chart_versions} from the report")
         self.secrets.chart_names.extend(chart_names)
         self.secrets.chart_versions.extend(chart_versions)
         self.update_chart_directories()
@@ -507,7 +525,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
             self.set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
             self.temp_repo.git.checkout('-b', self.secrets.base_branch)
-            for i in range(len(self.chart_directories)):
+            for i in range(len(self.secrets.chart_versions)):
                 pathlib.Path(
                     f'{self.chart_directories[i]}/{self.secrets.chart_versions[i]}').mkdir(parents=True, exist_ok=True)
 

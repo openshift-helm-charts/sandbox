@@ -120,8 +120,7 @@ def user_has_created_error_free_report(context, chart_path_1, chart_path_2):
 
 @given(u'user wants to send two charts one with source "{chart_path}" and other with report "{report_path}"')
 def user_has_created_error_free_chart_src_and_report(context, chart_path, report_path):
-    context.workflow_test.update_test_chart([chart_path])
-    context.workflow_test.update_test_report([report_path])
+    context.workflow_test.update_test_chart_and_report([chart_path], [report_path])
 
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
