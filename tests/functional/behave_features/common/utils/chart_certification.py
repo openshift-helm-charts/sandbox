@@ -455,21 +455,21 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def update_test_chart(self, test_charts):
         logging.debug(f"Updating test chart: {test_charts}")
         self.test_charts = test_charts
-        chart_names, chart_versions = self.get_chart_name_version()
+        chart_names, chart_versions = get_name_and_version_from_chart_tar(test_charts)
         logging.debug(f"Got chart_name: {chart_names} and chart_version: {chart_versions} from the chart")
         self.secrets.test_charts = self.test_charts
-        self.secrets.chart_names = chart_names
-        self.secrets.chart_versions = chart_versions
+        self.secrets.chart_names.extend(chart_names)
+        self.secrets.chart_versions.extend(chart_versions)
         self.update_chart_directories()
 
     def update_test_report(self, test_reports):
         logging.debug(f"Updating test reports: {test_reports}")
         self.test_reports = test_reports
-        chart_names, chart_versions = self.get_chart_name_version()
+        chart_names, chart_versions = get_name_and_version_from_report(test_reports)
         logging.debug(f"Got chart_names: {chart_names} and chart_versions: {chart_versions} from the report")
         self.secrets.test_reports = self.test_reports
-        self.secrets.chart_names = chart_names
-        self.secrets.chart_versions = chart_versions
+        self.secrets.chart_names.extend(chart_names)
+        self.secrets.chart_versions.extend(chart_versions)
         self.update_chart_directories()
 
     def get_unique_vendor(self, vendor):
@@ -482,15 +482,6 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             pr_num = os.environ["PR_NUMBER"]
             suffix = f"{suffix}-{pr_num}"
         return f"{vendor}-{suffix}"
-
-    def get_chart_name_version(self):
-        if not self.test_reports and not self.test_charts:
-            raise AssertionError("Provide at least one of test report or test chart.")
-        if self.test_reports:
-            chart_names, chart_versions = get_name_and_version_from_report(self.test_reports)
-        else:
-            chart_names, chart_versions = get_name_and_version_from_chart_tar(self.test_charts)
-        return chart_names, chart_versions
 
     def set_vendor(self, vendor, vendor_type):
         # use unique vendor id to avoid collision between tests

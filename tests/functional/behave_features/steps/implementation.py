@@ -118,6 +118,19 @@ def user_has_created_error_free_report(context, chart_path_1, chart_path_2):
     context.workflow_test.process_chart(is_tarball=True)
     context.workflow_test.push_chart(is_tarball=True)
 
+@given(u'user wants to send two charts one with source "{chart_path}" and other with report "{report_path}"')
+def user_has_created_error_free_chart_src_and_report(context, chart_path, report_path):
+    context.workflow_test.update_test_chart([chart_path])
+    context.workflow_test.update_test_report([report_path])
+
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file()
+    context.workflow_test.process_chart(is_tarball=False)
+    context.workflow_test.process_report()
+    context.workflow_test.push_chart(is_tarball=False)
+
 @when(u'the user sends a pull request with the report')
 @when(u'the user sends a pull request with the chart')
 @when(u'the user sends a pull request with the chart and report')
