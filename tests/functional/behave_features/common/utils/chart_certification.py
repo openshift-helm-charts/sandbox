@@ -629,14 +629,16 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def push_charts(self, add_non_chart_file=False):
         # Push chart to test_repo:pr_branch
         for chart in self.test_charts:
-            if chart.chart_type:
+            if chart.chart_type == 'tar':
                 chart_tar = chart.chart_file_path.split('/')[-1]
                 self.temp_repo.git.add(f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
-            else:
+            elif chart.chart_type == 'src':
                 if add_non_chart_file:
                     self.temp_repo.git.add(f'{chart.chart_directory}/')
                 else:
                     self.temp_repo.git.add(f'{chart.chart_directory}/{chart.chart_version}/src')
+            else:
+                raise AssertionError(f"YTD: chart_type {chart.chart_type} is yet to be supported")
         
         self.temp_repo.git.commit(
             '-m', f"Adding {self.secrets.vendor} {self.test_charts} charts")
