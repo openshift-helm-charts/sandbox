@@ -3,7 +3,7 @@
 import logging
 import os
 
-from setttings import *
+from common.utils.setttings import *
 
 def get_bot_name_and_token():
     bot_name = os.environ.get("BOT_NAME")
