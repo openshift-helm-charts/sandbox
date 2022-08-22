@@ -7,13 +7,13 @@ def vendor_has_valid_identity(context, vendor, vendor_type):
 
 @given(u'an error-free chart source is used in "{chart_path}"')
 def chart_source_is_used(context, chart_path):
-    context.workflow_test.update_test_chart(chart_path)
+    context.workflow_test.update_test_charts([chart_path], chart_types=['src'])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
     context.workflow_test.process_owners_file()
-    context.workflow_test.process_chart(is_tarball=False)
-    context.workflow_test.push_chart(is_tarball=False)
+    context.workflow_test.process_charts()
+    context.workflow_test.push_charts()
 
 @given(u'chart source is used in "{chart_path}"')
 def user_has_used_chart_src(context, chart_path):

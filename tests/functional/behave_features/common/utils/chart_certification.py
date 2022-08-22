@@ -9,7 +9,7 @@ import logging
 import time
 import uuid
 from tempfile import TemporaryDirectory
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from string import Template
 from pathlib import Path
 
@@ -23,6 +23,7 @@ from common.utils.secret import *
 from common.utils.set_directory import SetDirectory
 from common.utils.setttings import *
 from common.utils.chart import *
+from common.utils.env import *
 
 @dataclass
 class ChartCertificationE2ETest:
@@ -54,21 +55,6 @@ vendor:
         """
         repo.config_writer().set_value("user", "name", username).release()
         repo.config_writer().set_value("user", "email", email).release()
-
-    def get_bot_name_and_token(self):
-        bot_name = os.environ.get("BOT_NAME")
-        logging.debug(f"Enviroment variable value BOT_NAME: {bot_name}")
-        bot_token = os.environ.get("BOT_TOKEN")
-        if not bot_name and not bot_token:
-            bot_name = "github-actions[bot]"
-            bot_token = os.environ.get("GITHUB_TOKEN")
-            if not bot_token:
-                raise Exception("BOT_TOKEN environment variable not defined")
-        elif not bot_name:
-            raise Exception("BOT_TOKEN set but BOT_NAME not specified")
-        elif not bot_token:
-            raise Exception("BOT_NAME set but BOT_TOKEN not specified")
-        return bot_name, bot_token
 
     def remove_chart(self, chart_directory, chart_version, remote_repo, base_branch, bot_token):
         # Remove chart files from base branch
@@ -326,9 +312,11 @@ vendor:
 @dataclass
 class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     test_name: str = '' # Meaningful test name for this test, displayed in PR title
-    test_chart: str = ''
-    test_report: str = ''
-    chart_directory: str = ''
+    test_charts: list[Chart] = field(default_factory=list)
+    #test_report: str = ''
+    #chart_directory: str = ''
+    uuid: str = ''
+    head_sha: str = ''
     secrets: E2ETestSecretOneShot = E2ETestSecretOneShot()
 
     def __post_init__(self) -> None:
@@ -337,7 +325,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         # different processes.
         self.uuid = uuid.uuid4().hex
 
-        bot_name, bot_token = self.get_bot_name_and_token()
+        bot_name, bot_token = get_bot_name_and_token()
         test_repo = TEST_REPO
 
         #Storing current branch to checkout after scenario execution
@@ -346,8 +334,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             logging.debug(f"Active branch name : {self.secrets.active_branch}")
 
         # Create a new branch locally from detached HEAD
-        head_sha = self.repo.git.rev_parse('--short', 'HEAD')
-        unique_branch = f'{head_sha}-{self.uuid}'
+        self.head_sha = self.repo.git.rev_parse('--short', 'HEAD')
+        unique_branch = f'{self.head_sha}-{self.uuid}'
         logging.debug(f"Unique branch name : {unique_branch}")
         local_branches = [h.name for h in self.repo.heads]
         logging.debug(f"Local branch names : {local_branches}")
@@ -365,7 +353,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         if current_branch not in branch_names:
             logging.info(
                 f"{test_repo}:{current_branch} does not exists, creating with local branch")
-        self.repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
+            self.repo.git.push(f'https://x-access-token:{bot_token}@github.com/{test_repo}',
                     f'HEAD:refs/heads/{current_branch}', '-f')
 
         pretty_test_name = self.test_name.strip().lower().replace(' ', '-')
@@ -373,14 +361,14 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         logging.debug(f"Base branch name : {base_branch}")
         pr_branch = base_branch + '-pr-branch'
 
-        self.secrets.owners_file_content = self.owners_file_content
+        #self.secrets.owners_file_content = self.owners_file_content
         self.secrets.test_repo = test_repo
         self.secrets.bot_name = bot_name
         self.secrets.bot_token = bot_token
         self.secrets.base_branch = base_branch
         self.secrets.pr_branch = pr_branch
-        self.secrets.index_file = "index.yaml"
-        self.secrets.provider_delivery = False
+        #self.secrets.index_file = "index.yaml"
+        #self.secrets.provider_delivery = False
 
 
     def cleanup (self):
@@ -391,8 +379,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             self.temp_dir.cleanup()
         self.repo.git.worktree('prune')
 
-        head_sha = self.repo.git.rev_parse('--short', 'HEAD')
-        current_branch = f'{head_sha}-{self.uuid}'
+        #head_sha = self.repo.git.rev_parse('--short', 'HEAD')
+        current_branch = f'{self.head_sha}-{self.uuid}'
         logging.info(f"Delete remote '{current_branch}' branch")
         github_api(
             'delete', f'repos/{self.secrets.test_repo}/git/refs/heads/{current_branch}', self.secrets.bot_token)
@@ -431,33 +419,23 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         logging.debug(f"Updating bad version: {bad_version}")
         self.secrets.bad_version = bad_version
 
-    def update_chart_directory(self):
-        base_branch_without_uuid = "-".join(self.secrets.base_branch.split("-")[:-1])
-        vendor_without_suffix = self.secrets.vendor.split("-")[0]
-        self.secrets.base_branch = f'{base_branch_without_uuid}-{self.secrets.vendor_type}-{vendor_without_suffix}-{self.secrets.chart_name}-{self.secrets.chart_version}'
-        self.secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
-        self.chart_directory = f'charts/{self.secrets.vendor_type}/{self.secrets.vendor}/{self.secrets.chart_name}'
-        logging.debug(f"Updating chart_directory: {self.chart_directory}")
-
-    def update_test_chart(self, test_chart):
-        logging.debug(f"Updating test chart: {test_chart}")
-        self.test_chart = test_chart
-        chart_name, chart_version = self.get_chart_name_version()
-        logging.debug(f"Got chart_name: {chart_name} and chart_version: {chart_version} from the chart")
-        self.secrets.test_chart = self.test_chart
-        self.secrets.chart_name = chart_name
-        self.secrets.chart_version = chart_version
-        self.update_chart_directory()
-
-    def update_test_report(self, test_report):
-        logging.debug(f"Updating test report: {test_report}")
-        self.test_report = test_report
-        chart_name, chart_version = self.get_chart_name_version()
-        logging.debug(f"Got chart_name: {chart_name} and chart_version: {chart_version} from the report")
-        self.secrets.test_report = self.test_report
-        self.secrets.chart_name = chart_name
-        self.secrets.chart_version = chart_version
-        self.update_chart_directory()
+    def update_test_charts(self, test_charts, chart_types):
+        logging.debug(f"Updating test charts: {test_charts} with chart_types: {chart_types}")
+        num_of_charts = len(test_charts)
+        for i in range(num_of_charts):
+            if chart_types[i] == 'src':
+                chart_name, chart_version = get_name_and_version_from_chart_src(test_charts[i])
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='src')  
+            elif chart_types[i] == 'tar':
+                chart_name, chart_version = get_name_and_version_from_chart_tar(test_charts[i])
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar')
+            elif chart_types[i] == 'report':
+                chart_name, chart_version = get_name_and_version_from_report(test_charts[i])
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar')
+            else:
+                raise AssertionError('Unknow chart_type is provided')
+            test_chart.update_chart_directory(self.secrets)
+            self.test_charts.append(test_chart)
 
     def get_unique_vendor(self, vendor):
         """Set unique vendor name.
@@ -469,15 +447,6 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             pr_num = os.environ["PR_NUMBER"]
             suffix = f"{suffix}-{pr_num}"
         return f"{vendor}-{suffix}"
-
-    def get_chart_name_version(self):
-        if not self.test_report and not self.test_chart:
-            raise AssertionError("Provide at least one of test report or test chart.")
-        if self.test_report:
-            chart_name, chart_version = get_name_and_version_from_report(self.test_report)
-        else:
-            chart_name, chart_version = get_name_and_version_from_chart_tar(self.test_chart)
-        return chart_name, chart_version
 
     def set_vendor(self, vendor, vendor_type):
         # use unique vendor id to avoid collision between tests
@@ -502,11 +471,12 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
             self.set_git_username_email(self.temp_repo, self.secrets.bot_name, GITHUB_ACTIONS_BOT_EMAIL)
             self.temp_repo.git.checkout('-b', self.secrets.base_branch)
-            pathlib.Path(
-                f'{self.chart_directory}/{self.secrets.chart_version}').mkdir(parents=True, exist_ok=True)
+            for chart in self.test_charts:
+                pathlib.Path(
+                    f'{chart.chart_directory}/{chart.chart_version}').mkdir(parents=True, exist_ok=True)
 
-            self.remove_chart(self.chart_directory, self.secrets.chart_version, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
-            self.remove_owners_file(self.chart_directory, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
+                self.remove_chart(chart.chart_directory, chart.chart_version, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
+                self.remove_owners_file(chart.chart_directory, self.secrets.test_repo, self.secrets.base_branch, self.secrets.bot_token)
 
     def update_chart_version_in_chart_yaml(self, new_version):
         with SetDirectory(Path(self.temp_dir.name)):
@@ -535,19 +505,22 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 raise AssertionError(f"Failed to remove readme file : {e}")
 
     def process_owners_file(self):
-        super().create_and_push_owners_file(self.chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.secrets.chart_name,self.secrets.provider_delivery)
+        for chart in self.test_charts:
+            super().create_and_push_owners_file(chart.chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, chart.chart_name, self.secrets.provider_delivery)
 
-    def process_chart(self, is_tarball: bool):
+    def process_charts(self):
         with SetDirectory(Path(self.temp_dir.name)):
-            if is_tarball:
-                # Copy the chart tar into temporary directory for PR submission
-                chart_tar = self.secrets.test_chart.split('/')[-1]
-                shutil.copyfile(f'{self.old_cwd}/{self.secrets.test_chart}',
-                                f'{self.chart_directory}/{self.secrets.chart_version}/{chart_tar}')
-            else:
-                # Unzip files into temporary directory for PR submission
-                extract_chart_tgz(self.secrets.test_chart, f'{self.chart_directory}/{self.secrets.chart_version}', self.secrets, logging)
-
+            for chart in self.test_charts:
+                if chart.chart_type == 'tar':
+                    # Copy the chart tar into temporary directory for PR submission
+                    chart_tar = chart.chart_file_path.split('/')[-1]
+                    shutil.copyfile(f'{self.old_cwd}/{chart.chart_file_path}',
+                                f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
+                elif chart.chart_type == 'src':
+                    # Unzip files into temporary directory for PR submission
+                    extract_chart_tgz(chart.chart_file_path, f'{chart.chart_directory}/{chart.chart_version}', chart.chart_name, logging)
+                else:
+                    raise AssertionError("YTD: To be implemented for report type")
 
     def process_report(self, update_chart_sha=False, update_url=False, url=None,
                        update_versions=False,supported_versions=None,tested_version=None,kube_version=None,
@@ -652,18 +625,20 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             with open(path, 'w') as fd:
                 fd.write("This is a test file")
 
-    def push_chart(self, is_tarball: bool, add_non_chart_file=False):
+    def push_charts(self, add_non_chart_file=False):
         # Push chart to test_repo:pr_branch
-        if is_tarball:
-            chart_tar = self.secrets.test_chart.split('/')[-1]
-            self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/{chart_tar}')
-        else:
-            if add_non_chart_file:
-                self.temp_repo.git.add(f'{self.chart_directory}/')
+        for chart in self.test_charts:
+            if chart.chart_type:
+                chart_tar = chart.chart_file_path.split('/')[-1]
+                self.temp_repo.git.add(f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
             else:
-                self.temp_repo.git.add(f'{self.chart_directory}/{self.secrets.chart_version}/src')
+                if add_non_chart_file:
+                    self.temp_repo.git.add(f'{chart.chart_directory}/')
+                else:
+                    self.temp_repo.git.add(f'{chart.chart_directory}/{chart.chart_version}/src')
+        
         self.temp_repo.git.commit(
-            '-m', f"Add {self.secrets.vendor} {self.secrets.chart_name} {self.secrets.chart_version} chart")
+            '-m', f"Adding {self.secrets.vendor} {self.test_charts} charts")
 
         self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
                       f'HEAD:refs/heads/{self.secrets.pr_branch}', '-f')
@@ -701,26 +676,29 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             raise AssertionError(f"Was expecting '{expect_message}' in the comment {complete_comment}")
 
     def check_index_yaml(self, check_provider_type=False):
-        super().check_index_yaml(self.secrets.base_branch, self.secrets.vendor, self.secrets.chart_name, self.secrets.chart_version, self.secrets.index_file,check_provider_type)
+        for chart in self.test_charts:
+            super().check_index_yaml(self.secrets.base_branch, self.secrets.vendor, chart.chart_name, chart.chart_version, self.secrets.index_file, check_provider_type)
 
     def check_release_result(self):
-        chart_tgz = self.secrets.test_chart.split('/')[-1]
-        super().check_release_result(self.secrets.vendor, self.secrets.chart_name, self.secrets.chart_version, chart_tgz)
+        for chart in self.test_charts:
+            chart_tgz = chart.chart_file_path.split('/')[-1]
+            super().check_release_result(self.secrets.vendor, chart.chart_name, chart.chart_version, chart_tgz)
 
     def cleanup_release(self):
-        expected_tag = f'{self.secrets.vendor}-{self.secrets.chart_name}-{self.secrets.chart_version}'
-        super().cleanup_release(expected_tag)
+        for chart in self.test_charts:
+            expected_tag = f'{self.secrets.vendor}-{chart.chart_name}-{chart.chart_version}'
+            super().cleanup_release(expected_tag)
 
 @dataclass
 class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
     secrets: E2ETestSecretRecursive = E2ETestSecretRecursive()
 
     def __post_init__(self) -> None:
-        bot_name, bot_token = self.get_bot_name_and_token()
-        dry_run = self.get_dry_run()
-        notify_id = self.get_notify_id()
-        software_name, software_version = self.get_software_name_version()
-        vendor_type = self.get_vendor_type()
+        bot_name, bot_token = get_bot_name_and_token()
+        dry_run = get_dry_run()
+        notify_id = get_notify_id()
+        software_name, software_version = get_software_name_version()
+        vendor_type = get_vendor_type()
 
         test_repo = TEST_REPO
         base_branches = []
@@ -783,48 +761,6 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
             self.temp_repo.git.branch('-D', 'tmp')
         except git.exc.GitCommandError:
             logging.info(f"Local 'tmp' branch does not exist")
-
-    def get_dry_run(self):
-        # Accepts 'true' or 'false', depending on whether we want to notify
-        # Don't notify on dry runs, default to True
-        dry_run = False if os.environ.get("DRY_RUN") == 'false' else True
-        # Don't notify if not triggerd on PROD_REPO and PROD_BRANCH
-        if not dry_run:
-            triggered_branch = os.environ.get("GITHUB_REF").split('/')[-1]
-            triggered_repo = os.environ.get("GITHUB_REPOSITORY")
-            if triggered_repo != PROD_REPO or triggered_branch != PROD_BRANCH:
-                dry_run = True
-        return dry_run
-
-    def get_notify_id(self):
-        # Accepts comma separated Github IDs or empty strings to override people to tag in notifications
-        notify_id = os.environ.get("NOTIFY_ID")
-        if notify_id:
-            notify_id = [vt.strip() for vt in notify_id.split(',')]
-        else:
-            notify_id = ["dperaza","mmulholla"]
-        return notify_id
-
-    def get_software_name_version(self):
-        software_name = os.environ.get("SOFTWARE_NAME")
-        if not software_name:
-            raise Exception("SOFTWARE_NAME environment variable not defined")
-
-        software_version = os.environ.get("SOFTWARE_VERSION").strip('\"')
-        if not software_version:
-            raise Exception("SOFTWARE_VERSION environment variable not defined")
-        elif software_version.startswith("sha256"):
-            software_version = software_version[-8:]
-
-        return software_name, software_version
-
-    def get_vendor_type(self):
-        vendor_type = os.environ.get("VENDOR_TYPE")
-        if not vendor_type:
-            logging.info(
-                f"VENDOR_TYPE environment variable not defined, default to `all`")
-            vendor_type = 'all'
-        return vendor_type
 
     def setup_temp_dir(self):
         self.temp_dir = TemporaryDirectory(prefix='tci-')
