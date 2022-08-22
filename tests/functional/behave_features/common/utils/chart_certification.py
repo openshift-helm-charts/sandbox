@@ -518,6 +518,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                                 f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
                 elif chart.chart_type == 'src':
                     # Unzip files into temporary directory for PR submission
+                    logging.debug(f"CHART SRC FILE PATH: {chart.chart_file_path}")
                     extract_chart_tgz(chart.chart_file_path, f'{chart.chart_directory}/{chart.chart_version}', chart.chart_name, logging)
                 else:
                     raise AssertionError("YTD: To be implemented for report type")
