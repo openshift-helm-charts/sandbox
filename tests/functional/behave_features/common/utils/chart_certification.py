@@ -424,7 +424,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         num_of_charts = len(test_charts)
         for i in range(num_of_charts):
             if chart_types[i] == 'src':
-                chart_name, chart_version = get_name_and_version_from_chart_src(test_charts[i])
+                chart_name, chart_version = get_name_and_version_from_chart_tar(test_charts[i])
                 test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='src')  
             elif chart_types[i] == 'tar':
                 chart_name, chart_version = get_name_and_version_from_chart_tar(test_charts[i])
