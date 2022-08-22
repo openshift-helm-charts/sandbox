@@ -127,7 +127,7 @@ vendor:
             values = {'bot_name': self.secrets.bot_name,
                     'vendor': vendor_name, 'chart_name': chart_name,
                       "provider_delivery" : provider_delivery}
-            content = Template(self.secrets.owners_file_content).substitute(values)
+            content = Template(self.owners_file_content).substitute(values)
             logging.debug(f"OWNERS File Content: {content}")
             with open(f'{chart_directory}/OWNERS', 'w') as fd:
                 fd.write(content)
