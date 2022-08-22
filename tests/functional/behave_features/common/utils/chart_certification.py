@@ -425,13 +425,13 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         for i in range(num_of_charts):
             if chart_types[i] == 'src':
                 chart_name, chart_version = get_name_and_version_from_chart_tar(test_charts[i])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='src')  
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='src', chart_file_path=test_charts[i])  
             elif chart_types[i] == 'tar':
                 chart_name, chart_version = get_name_and_version_from_chart_tar(test_charts[i])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar')
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar', chart_file_path=test_charts[i])
             elif chart_types[i] == 'report':
                 chart_name, chart_version = get_name_and_version_from_report(test_charts[i])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar')
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar', chart_file_path=test_charts[i])
             else:
                 raise AssertionError('Unknow chart_type is provided')
             test_chart.update_chart_directory(self.secrets)
