@@ -48,14 +48,13 @@ def user_has_created_error_free_chart_tarball_and_report(context, chart_path, re
 
 @given(u'a chart tarball is used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_a_chart_tarball_and_report(context, chart_path, report_path):
-    context.workflow_test.update_test_chart(chart_path)
-    context.workflow_test.update_test_report(report_path)
+    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['tar+report'], test_reports=[report_path])
 
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
     context.workflow_test.process_owners_file()
-    context.workflow_test.process_chart(is_tarball=True)
+    context.workflow_test.process_charts()
 
 @given(u'an error-free chart source used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_error_free_chart_src_and_report(context, chart_path, report_path):
@@ -214,7 +213,7 @@ def sha_value_does_not_match(context, error):
 
 @when(u'the user sends a pull request with the chart tar and report')
 def user_sends_pull_request_with_chart_tarball_and_report(context):
-    context.workflow_test.push_chart(is_tarball=True)
+    context.workflow_test.push_charts()
     context.workflow_test.send_pull_request()
 
 ######## Test Submitted Charts Step definitions ##########
