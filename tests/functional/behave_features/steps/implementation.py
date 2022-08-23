@@ -78,6 +78,15 @@ def user_has_created_error_free_report(context, report_path):
     context.workflow_test.process_owners_file()
     context.workflow_test.process_report()
 
+@given(u'user wants to send two reports as in "{report_path_1}" and "{report_path_2}"')
+def user_has_created_error_free_report(context, report_path_1, report_path_2):
+    context.workflow_test.update_test_charts(test_charts=[], chart_types=['report', 'report'], test_reports=[report_path_1, report_path_2])
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file()
+    context.workflow_test.process_report()
+
 @given(u'a "{report_path}" is provided')
 def user_generated_a_report(context, report_path):
     context.workflow_test.update_test_charts(test_charts=[], chart_types=['report'], test_reports=[report_path])
