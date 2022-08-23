@@ -625,9 +625,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
     def add_non_chart_related_file(self):
         with SetDirectory(Path(self.temp_dir.name)):
-            path = f'{self.chart_directory}/Notes.txt'
-            with open(path, 'w') as fd:
-                fd.write("This is a test file")
+            for chart in self.test_charts:
+                path = f'{chart.chart_directory}/Notes.txt'
+                with open(path, 'w') as fd:
+                    fd.write("This is a test file")
 
     def push_charts(self, add_non_chart_file=False):
         # Push chart to test_repo:pr_branch
