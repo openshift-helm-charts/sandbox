@@ -181,12 +181,12 @@ def report_has_a_check_missing(context, check):
 
 @given(u'A "{user}" wants to submit a chart in "{chart_path}"')
 def user_wants_to_submit_a_chart(context, user, chart_path):
-    context.workflow_test.update_test_chart(chart_path)
+    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['src'])
     context.workflow_test.update_bot_name(user)
 
 @given(u'An authorized user wants to submit a chart in "{chart_path}"')
 def authorized_user_wants_to_submit_a_chart(context, chart_path):
-    context.workflow_test.update_test_chart(chart_path)
+    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['src'])
 
 @given(u'the user creates a branch to add a new chart version')
 def the_user_creates_a_branch_to_add_a_new_chart_version(context):
@@ -194,10 +194,10 @@ def the_user_creates_a_branch_to_add_a_new_chart_version(context):
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
     context.workflow_test.process_owners_file()
-    context.workflow_test.process_chart(is_tarball=False)
+    context.workflow_test.process_charts()
     if context.workflow_test.secrets.bad_version:
         context.workflow_test.update_chart_version_in_chart_yaml(context.workflow_test.secrets.bad_version)
-    context.workflow_test.push_chart(is_tarball=False)
+    context.workflow_test.push_charts()
 
 @given(u'Chart.yaml specifies a "{bad_version}"')
 def chart_yaml_specifies_bad_version(context, bad_version):
