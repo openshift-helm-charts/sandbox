@@ -361,14 +361,11 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         logging.debug(f"Base branch name : {base_branch}")
         pr_branch = base_branch + '-pr-branch'
 
-        #self.secrets.owners_file_content = self.owners_file_content
         self.secrets.test_repo = test_repo
         self.secrets.bot_name = bot_name
         self.secrets.bot_token = bot_token
         self.secrets.base_branch = base_branch
         self.secrets.pr_branch = pr_branch
-        #self.secrets.index_file = "index.yaml"
-        #self.secrets.provider_delivery = False
 
 
     def cleanup (self):
@@ -379,7 +376,6 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             self.temp_dir.cleanup()
         self.repo.git.worktree('prune')
 
-        #head_sha = self.repo.git.rev_parse('--short', 'HEAD')
         current_branch = f'{self.head_sha}-{self.uuid}'
         logging.info(f"Delete remote '{current_branch}' branch")
         github_api(
@@ -682,7 +678,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def check_pull_request_comments(self, expect_message: str):
         r = github_api(
             'get', f'repos/{self.secrets.test_repo}/issues/{self.secrets.pr_number}/comments', self.secrets.bot_token)
-        logging.info(f'STATUS_CODE: {r.status_code}')
+        logging.debug(f'STATUS_CODE: {r.status_code}')
 
         response = json.loads(r.text)
         logging.debug(f"CHECK PULL_REQUEST COMMENT RESPONSE: {response}")
@@ -747,7 +743,6 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         self.secrets.pr_branches = pr_branches
         self.secrets.dry_run = dry_run
         self.secrets.notify_id = notify_id
-        #self.secrets.owners_file_content = self.owners_file_content
         self.secrets.release_tags = list()
 
     def cleanup (self):
