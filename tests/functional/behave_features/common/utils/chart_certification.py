@@ -515,8 +515,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                     raise AssertionError(f"Failed to remove readme file : {e}")
 
     def process_owners_file(self):
-        for chart in self.test_charts:
-            super().create_and_push_owners_file(chart.chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, chart.chart_name, self.secrets.provider_delivery)
+        super().create_and_push_owners_file(self.test_charts[0].chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.test_charts[0].chart_name, self.secrets.provider_delivery)
 
     def process_charts(self):
         with SetDirectory(Path(self.temp_dir.name)):
