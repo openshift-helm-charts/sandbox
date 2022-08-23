@@ -28,7 +28,7 @@ Feature: Report only submission with provider control settings
     Then the pull request is not merged
     And user gets the "<message>" in the pull request comment
 
-    @partners @full
+    @partners @full @wip
     Examples:
       | vendor_type  | vendor    | chart_path                  | report_path               | provider_control_owners | provider_control_report | message                                                                                              |
       | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/report.yaml    | true                    | true                    | OWNERS file and/or report indicate provider controlled delivery but pull request is not report only. |
