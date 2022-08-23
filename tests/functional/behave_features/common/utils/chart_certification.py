@@ -436,7 +436,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 chart_name, chart_version = get_name_and_version_from_chart_tar(test_charts[i])
                 test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar', chart_file_path=test_charts[i])
             elif chart_types[i] == 'report':
-                chart_name, chart_version = get_name_and_version_from_report(test_charts[i])
+                chart_name, chart_version = get_name_and_version_from_report(test_reports[i])
                 test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='report', report_file_path=test_reports[i])
             elif chart_types[i] == 'tar+report':
                 chart_name, chart_version = get_name_and_version_from_report(test_reports[i])
