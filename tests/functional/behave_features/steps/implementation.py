@@ -87,6 +87,16 @@ def user_has_created_error_free_report(context, report_path_1, report_path_2):
     context.workflow_test.process_owners_file()
     context.workflow_test.process_report()
 
+@given(u'user wants to send two chart sources as in "{chart_path_1}" and "{chart_path_2}"')
+def user_wants_to_send_two_chart_sources(context, chart_path_1, chart_path_2):
+    context.workflow_test.update_test_charts(test_charts=[chart_path_1, chart_path_2], chart_types=['src', 'src'])
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file()
+    context.workflow_test.process_charts()
+    context.workflow_test.push_charts()
+
 @given(u'a "{report_path}" is provided')
 def user_generated_a_report(context, report_path):
     context.workflow_test.update_test_charts(test_charts=[], chart_types=['report'], test_reports=[report_path])
