@@ -492,21 +492,22 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
     def update_chart_version_in_chart_yaml(self, new_version):
         with SetDirectory(Path(self.temp_dir.name)):
-            path = f'{self.chart_directory}/{self.secrets.chart_version}/src/Chart.yaml'
-            with open(path, 'r') as fd:
-                try:
-                    chart = yaml.safe_load(fd)
-                except yaml.YAMLError as err:
-                    raise AssertionError(f"error parsing '{path}': {err}")
-            current_version = chart['version']
+            for chart in self.test_charts:
+                path = f'{chart.chart_directory}/{chart.chart_version}/src/Chart.yaml'
+                with open(path, 'r') as fd:
+                    try:
+                        chart = yaml.safe_load(fd)
+                    except yaml.YAMLError as err:
+                        raise AssertionError(f"error parsing '{path}': {err}")
+                current_version = chart['version']
 
-            if current_version != new_version:
-                chart['version'] = new_version
-                try:
-                    with open(path, 'w') as fd:
-                        fd.write(yaml.dump(chart))
-                except Exception as e:
-                    raise AssertionError("Failed to update version in yaml file")
+                if current_version != new_version:
+                    chart['version'] = new_version
+                    try:
+                        with open(path, 'w') as fd:
+                            fd.write(yaml.dump(chart))
+                    except Exception as e:
+                        raise AssertionError("Failed to update version in yaml file")
     
     def remove_readme_file(self):
         with SetDirectory(Path(self.temp_dir.name)):
