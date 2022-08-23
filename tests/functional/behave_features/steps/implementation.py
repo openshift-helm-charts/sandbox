@@ -99,7 +99,7 @@ def user_wants_to_send_two_chart_sources(context, chart_path_1, chart_path_2):
 
 @given(u'user wants to send two chart tars as in "{chart_path_1}" and "{chart_path_2}"')
 def user_wants_to_send_two_chart_tars(context, chart_path_1, chart_path_2):
-    context.workflow_test.update_test_chart([chart_path_1, chart_path_2], chart_types=['tar', 'tar'])
+    context.workflow_test.update_test_charts([chart_path_1, chart_path_2], chart_types=['tar', 'tar'])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
