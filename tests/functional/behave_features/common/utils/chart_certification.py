@@ -556,7 +556,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                         except Exception as e:
                             raise AssertionError("Failed to write report in json format")
 
-                elif chart.chart_file_path.endswith('yaml'):
+                elif chart.chart_file_path.endswith('yaml') or chart.chart_type == 'src' or chart.chart_type == 'tar':
                     logging.debug("Report type is yaml")
                     tmpl = open(chart.chart_file_path).read()
                     values = {'repository': self.secrets.test_repo,
