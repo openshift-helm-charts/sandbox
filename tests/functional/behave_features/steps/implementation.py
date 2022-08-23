@@ -7,7 +7,7 @@ def vendor_has_valid_identity(context, vendor, vendor_type):
 
 @given(u'an error-free chart source is used in "{chart_path}"')
 def chart_source_is_used(context, chart_path):
-    context.workflow_test.update_test_charts([chart_path], chart_types=['src'])
+    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['src'])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
@@ -17,7 +17,7 @@ def chart_source_is_used(context, chart_path):
 
 @given(u'chart source is used in "{chart_path}"')
 def user_has_used_chart_src(context, chart_path):
-    context.workflow_test.update_test_charts([chart_path], chart_types=['src'])
+    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['src'])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
@@ -26,7 +26,7 @@ def user_has_used_chart_src(context, chart_path):
 
 @given(u'an error-free chart tarball is used in "{chart_path}"')
 def user_has_created_error_free_chart_tarball(context, chart_path):
-    context.workflow_test.update_test_charts([chart_path], chart_types=['tar'])
+    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['tar'])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
@@ -36,7 +36,7 @@ def user_has_created_error_free_chart_tarball(context, chart_path):
 
 @given(u'an error-free chart tarball used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_error_free_chart_tarball_and_report(context, chart_path, report_path):
-    context.workflow_test.update_test_charts([chart_path], chart_types=['tar'])
+    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['tar+report'], test_reports=[report_path])
 
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()

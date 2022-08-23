@@ -11,10 +11,11 @@ from dataclasses import dataclass
 @dataclass
 class Chart:
     chart_file_path : str = ''
+    report_file_path : str = ''
     chart_name: str = ''
     chart_version: str = ''
     chart_directory: str = ''
-    chart_type: str = ''   #It can be anyone of 'src', 'tar' or 'report'
+    chart_type: str = ''   #It can be anyone of 'src', 'tar' or 'report', 'src+report', 'tar+report'
 
     def update_chart_directory(self, secrets):
         base_branch_without_uuid = "-".join(secrets.base_branch.split("-")[:-1])

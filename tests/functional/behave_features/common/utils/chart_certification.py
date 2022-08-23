@@ -425,7 +425,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         else:
             self.secrets.provider_delivery=False
 
-    def update_test_charts(self, test_charts, chart_types):
+    def update_test_charts(self, test_charts, chart_types, test_reports=[]):
         logging.debug(f"Updating test charts: {test_charts} with chart_types: {chart_types}")
         num_of_charts = len(test_charts)
         for i in range(num_of_charts):
@@ -437,7 +437,13 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar', chart_file_path=test_charts[i])
             elif chart_types[i] == 'report':
                 chart_name, chart_version = get_name_and_version_from_report(test_charts[i])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar', chart_file_path=test_charts[i])
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='report', report_file_path=test_reports[i])
+            elif chart_types[i] == 'tar+report':
+                chart_name, chart_version = get_name_and_version_from_report(test_reports[i])
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar+report', chart_file_path=test_charts[i], report_file_path=test_reports[i])
+            elif chart_types[i] == 'src+report':
+                chart_name, chart_version = get_name_and_version_from_report(test_reports[i])
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='src+report', chart_file_path=test_charts[i], report_file_path=test_reports[i])
             else:
                 raise AssertionError('Unknow chart_type is provided')
             test_chart.update_chart_directory(self.secrets)
@@ -518,12 +524,12 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def process_charts(self):
         with SetDirectory(Path(self.temp_dir.name)):
             for chart in self.test_charts:
-                if chart.chart_type == 'tar':
+                if chart.chart_type == 'tar' or chart.chart_type == 'tar+report':
                     # Copy the chart tar into temporary directory for PR submission
                     chart_tar = chart.chart_file_path.split('/')[-1]
                     shutil.copyfile(f'{self.old_cwd}/{chart.chart_file_path}',
                                 f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
-                elif chart.chart_type == 'src':
+                elif chart.chart_type == 'src' or chart.chart_type == 'src+report':
                     # Unzip files into temporary directory for PR submission
                     logging.debug(f"CHART SRC FILE PATH: {chart.chart_file_path}")
                     extract_chart_tgz(chart.chart_file_path, f'{chart.chart_directory}/{chart.chart_version}', chart.chart_name, logging)
@@ -541,10 +547,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
             for chart in self.test_charts:
             
-                if chart.chart_file_path.endswith('json'):
+                if chart.report_file_path.endswith('json'):
                     logging.debug("Report type is json")
-                    report_path = f'{chart.chart_directory}/{chart.chart_version}/' + chart.chart_file_path.split('/')[-1]
-                    with open(chart.chart_file_path, 'r') as fd:
+                    report_path = f'{chart.chart_directory}/{chart.chart_version}/' + chart.report_file_path.split('/')[-1]
+                    with open(chart.report_file_path, 'r') as fd:
                         try:
                             report = json.load(fd)
                         except Exception as e:
@@ -556,14 +562,14 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                         except Exception as e:
                             raise AssertionError("Failed to write report in json format")
 
-                elif chart.chart_file_path.endswith('yaml') or chart.chart_type == 'src' or chart.chart_type == 'tar':
+                elif chart.report_file_path.endswith('yaml'):
                     logging.debug("Report type is yaml")
-                    tmpl = open(chart.chart_file_path).read()
+                    tmpl = open(chart.report_file_path).read()
                     values = {'repository': self.secrets.test_repo,
                             'branch': self.secrets.base_branch}
                     content = Template(tmpl).substitute(values)
 
-                    report_path = f'{chart.chart_directory}/{chart.chart_version}/' + chart.chart_file_path.split('/')[-1]
+                    report_path = f'{chart.chart_directory}/{chart.chart_version}/' + chart.report_file_path.split('/')[-1]
 
                     try:
                         report = yaml.safe_load(content)
@@ -639,10 +645,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def push_charts(self, add_non_chart_file=False):
         # Push chart to test_repo:pr_branch
         for chart in self.test_charts:
-            if chart.chart_type == 'tar':
+            if chart.chart_type == 'tar' or chart.chart_type == 'tar+report':
                 chart_tar = chart.chart_file_path.split('/')[-1]
                 self.temp_repo.git.add(f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
-            elif chart.chart_type == 'src':
+            elif chart.chart_type == 'src' or chart.chart_type == 'src+report':
                 if add_non_chart_file:
                     self.temp_repo.git.add(f'{chart.chart_directory}/')
                 else:
