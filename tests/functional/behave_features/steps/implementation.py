@@ -17,12 +17,12 @@ def chart_source_is_used(context, chart_path):
 
 @given(u'chart source is used in "{chart_path}"')
 def user_has_used_chart_src(context, chart_path):
-    context.workflow_test.update_test_chart(chart_path)
+    context.workflow_test.update_test_charts([chart_path], chart_types=['src'])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
     context.workflow_test.process_owners_file()
-    context.workflow_test.process_chart(is_tarball=False)
+    context.workflow_test.process_charts()
 
 @given(u'an error-free chart tarball is used in "{chart_path}"')
 def user_has_created_error_free_chart_tarball(context, chart_path):
@@ -97,7 +97,7 @@ def user_sends_a_pull_request(context):
 
 @when(u'the user pushed the chart and created pull request')
 def user_pushed_the_chart_and_created_pull_request(context):
-    context.workflow_test.push_chart(is_tarball=False)
+    context.workflow_test.push_charts()
     context.workflow_test.send_pull_request()
 
 @then(u'the user sees the pull request is merged')

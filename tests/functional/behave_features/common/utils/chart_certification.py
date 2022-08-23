@@ -498,11 +498,12 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     
     def remove_readme_file(self):
         with SetDirectory(Path(self.temp_dir.name)):
-            path = f'{self.chart_directory}/{self.secrets.chart_version}/src/README.md'
-            try:
-                os.remove(path)
-            except Exception as e:
-                raise AssertionError(f"Failed to remove readme file : {e}")
+            for chart in self.test_charts:
+                path = f'{chart.chart_directory}/{chart.chart_version}/src/README.md'
+                try:
+                    os.remove(path)
+                except Exception as e:
+                    raise AssertionError(f"Failed to remove readme file : {e}")
 
     def process_owners_file(self):
         for chart in self.test_charts:
