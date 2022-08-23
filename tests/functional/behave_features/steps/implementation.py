@@ -128,7 +128,7 @@ def user_wants_to_send_multiple_chart_one_with_tar_and_other_with_report(context
     context.workflow_test.setup_temp_dir()
     context.workflow_test.process_owners_file()
     context.workflow_test.process_charts()
-    context.workflow_test.process_reports()
+    context.workflow_test.process_report()
     context.workflow_test.push_charts()
 
 @given(u'a "{report_path}" is provided')
