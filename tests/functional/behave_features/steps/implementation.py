@@ -121,7 +121,7 @@ def user_wants_to_send_multiple_chart_one_with_src_and_other_with_report(context
 
 @given(u'user wants to send two charts one with tar "{chart_path}" and other with report "{report_path}"')
 def user_wants_to_send_multiple_chart_one_with_tar_and_other_with_report(context, chart_path, report_path):
-    context.workflow_test.update_test_chart_and_report([chart_path], chart_types=['tar', 'report'], test_reports=[report_path])
+    context.workflow_test.update_test_charts([chart_path], chart_types=['tar', 'report'], test_reports=[report_path], is_multiple_with_different=True)
 
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
