@@ -59,8 +59,7 @@ def user_has_created_a_chart_tarball_and_report(context, chart_path, report_path
 
 @given(u'an error-free chart source used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_error_free_chart_src_and_report(context, chart_path, report_path):
-    context.workflow_test.update_test_chart(chart_path)
-    context.workflow_test.update_test_report(report_path)
+    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['src+report'], test_reports=[report_path])
 
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
