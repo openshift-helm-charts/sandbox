@@ -83,7 +83,7 @@ def user_has_created_error_free_report(context, report_path):
 
 @given(u'a "{report_path}" is provided')
 def user_generated_a_report(context, report_path):
-    context.workflow_test.update_test_report(report_path)
+    context.workflow_test.update_test_charts([report_path], chart_types=['report'])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
