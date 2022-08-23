@@ -421,7 +421,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         else:
             self.secrets.provider_delivery=False
 
-    def update_test_charts(self, test_charts, chart_types, test_reports=[]):
+    def update_test_charts(self, test_charts, chart_types, test_reports=[], is_multiple=False):
         logging.debug(f"Updating test charts: {test_charts} with chart_types: {chart_types}")
         num_of_charts = len(chart_types)
         for i in range(num_of_charts):
@@ -432,8 +432,12 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 chart_name, chart_version = get_name_and_version_from_chart_tar(test_charts[i])
                 test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar', chart_file_path=test_charts[i])
             elif chart_types[i] == 'report':
-                chart_name, chart_version = get_name_and_version_from_report(test_reports[i])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='report', report_file_path=test_reports[i])
+                if is_multiple == True:
+                    chart_name, chart_version = get_name_and_version_from_report(test_reports[i-1])
+                    test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='report', report_file_path=test_reports[i-1])
+                else:
+                    chart_name, chart_version = get_name_and_version_from_report(test_reports[i])
+                    test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='report', report_file_path=test_reports[i])
             elif chart_types[i] == 'tar+report':
                 chart_name, chart_version = get_name_and_version_from_report(test_reports[i])
                 test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar+report', chart_file_path=test_charts[i], report_file_path=test_reports[i])
@@ -626,7 +630,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                     raise AssertionError("Unknown report type")
 
                 self.temp_repo.git.add(report_path)
-                
+
         self.temp_repo.git.commit(
                 '-m', f"Add {self.secrets.vendor} {self.test_charts} report")
         self.temp_repo.git.push(f'https://x-access-token:{self.secrets.bot_token}@github.com/{self.secrets.test_repo}',
