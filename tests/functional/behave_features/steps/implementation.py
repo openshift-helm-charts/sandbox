@@ -36,8 +36,8 @@ def user_has_created_error_free_chart_tarball(context, chart_path):
 
 @given(u'an error-free chart tarball used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_error_free_chart_tarball_and_report(context, chart_path, report_path):
-    context.workflow_test.update_test_charts(['chart_path'], chart_types=['tar'])
-    
+    context.workflow_test.update_test_charts([chart_path], chart_types=['tar'])
+
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
