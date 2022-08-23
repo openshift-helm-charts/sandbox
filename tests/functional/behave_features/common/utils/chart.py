@@ -17,10 +17,10 @@ class Chart:
     chart_type: str = ''   #It can be anyone of 'src', 'tar' or 'report'
 
     def update_chart_directory(self, secrets):
-        #base_branch_without_uuid = "-".join(secrets.base_branch.split("-")[:-1])
-        #vendor_without_suffix = secrets.vendor.split("-")[0]
-        #secrets.base_branch = f'{base_branch_without_uuid}-{secrets.vendor_type}-{vendor_without_suffix}-{self.chart_name}-{self.chart_version}'
-        #secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
+        base_branch_without_uuid = "-".join(secrets.base_branch.split("-")[:-1])
+        vendor_without_suffix = secrets.vendor.split("-")[0]
+        secrets.base_branch = f'{base_branch_without_uuid}-{secrets.vendor_type}-{vendor_without_suffix}-{self.chart_name}-{self.chart_version}'
+        secrets.pr_branch = f'{self.secrets.base_branch}-pr-branch'
         self.chart_directory = f'charts/{secrets.vendor_type}/{secrets.vendor}/{self.chart_name}'
 
 def get_name_and_version_from_report(path):

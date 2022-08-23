@@ -730,7 +730,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         self.secrets.pr_branches = pr_branches
         self.secrets.dry_run = dry_run
         self.secrets.notify_id = notify_id
-        self.secrets.owners_file_content = self.owners_file_content
+        #self.secrets.owners_file_content = self.owners_file_content
         self.secrets.release_tags = list()
 
     def cleanup (self):
