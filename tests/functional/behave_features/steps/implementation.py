@@ -107,6 +107,18 @@ def user_wants_to_send_two_chart_tars(context, chart_path_1, chart_path_2):
     context.workflow_test.process_charts()
     context.workflow_test.push_charts()
 
+@given(u'user wants to send two charts one with source "{chart_path}" and other with report "{report_path}"')
+def user_wants_to_send_multiple_chart_one_with_src_and_other_with_report(context, chart_path, report_path):
+    context.workflow_test.update_test_charts([chart_path], chart_types=['src', 'report'], test_reports=[report_path])
+
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file()
+    context.workflow_test.process_charts()
+    context.workflow_test.process_report()
+    context.workflow_test.push_charts()
+
 @given(u'a "{report_path}" is provided')
 def user_generated_a_report(context, report_path):
     context.workflow_test.update_test_charts(test_charts=[], chart_types=['report'], test_reports=[report_path])
