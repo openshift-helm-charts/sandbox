@@ -418,6 +418,12 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def update_bad_version(self, bad_version):
         logging.debug(f"Updating bad version: {bad_version}")
         self.secrets.bad_version = bad_version
+    
+    def update_provided_delivery(self, value):
+        if value == "true":
+            self.secrets.provider_delivery=True
+        else:
+            self.secrets.provider_delivery=False
 
     def update_test_charts(self, test_charts, chart_types):
         logging.debug(f"Updating test charts: {test_charts} with chart_types: {chart_types}")

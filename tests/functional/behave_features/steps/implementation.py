@@ -36,16 +36,15 @@ def user_has_created_error_free_chart_tarball(context, chart_path):
 
 @given(u'an error-free chart tarball used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_error_free_chart_tarball_and_report(context, chart_path, report_path):
-    context.workflow_test.update_test_chart(chart_path)
-    context.workflow_test.update_test_report(report_path)
-
+    context.workflow_test.update_test_charts(['chart_path'], chart_types=['tar'])
+    
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
     context.workflow_test.process_owners_file()
-    context.workflow_test.process_chart(is_tarball=True)
+    context.workflow_test.process_charts()
     context.workflow_test.process_report()
-    context.workflow_test.push_chart(is_tarball=True)
+    context.workflow_test.push_charts()
 
 @given(u'a chart tarball is used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_a_chart_tarball_and_report(context, chart_path, report_path):
@@ -148,10 +147,7 @@ def user_sends_pull_request_with_chart_and_non_related_file(context):
 
 @given(u'provider delivery control is set to "{provider_control_owners}" in the OWNERS file')
 def provider_delivery_control_set_in_owners(context, provider_control_owners):
-    if provider_control_owners == "true":
-        context.workflow_test.secrets.provider_delivery=True
-    else:
-        context.workflow_test.secrets.provider_delivery=False
+    context.workflow_test.update_provided_delivery(provider_control_owners)
 
 @given(u'provider delivery control is set to "{provider_control_report}" in the report')
 def provider_delivery_control_set_in_report(context, provider_control_report):
