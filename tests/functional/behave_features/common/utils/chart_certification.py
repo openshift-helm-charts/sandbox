@@ -427,7 +427,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
 
     def update_test_charts(self, test_charts, chart_types, test_reports=[]):
         logging.debug(f"Updating test charts: {test_charts} with chart_types: {chart_types}")
-        num_of_charts = len(test_charts)
+        num_of_charts = len(chart_types)
         for i in range(num_of_charts):
             if chart_types[i] == 'src':
                 chart_name, chart_version = get_name_and_version_from_chart_tar(test_charts[i])
