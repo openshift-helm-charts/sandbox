@@ -421,31 +421,21 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         else:
             self.secrets.provider_delivery=False
 
-    def update_test_charts(self, test_charts, chart_types, test_reports=[], is_multiple_with_different=False):
-        logging.debug(f"Updating test charts: {test_charts} with chart_types: {chart_types}")
-        num_of_charts = len(chart_types)
-        for i in range(num_of_charts):
-            if chart_types[i] == 'src':
-                chart_name, chart_version = get_name_and_version_from_chart_tar(test_charts[i])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='src', chart_file_path=test_charts[i])  
-            elif chart_types[i] == 'tar':
-                chart_name, chart_version = get_name_and_version_from_chart_tar(test_charts[i])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar', chart_file_path=test_charts[i])
-            elif chart_types[i] == 'report':
-                if is_multiple_with_different == True:
-                    chart_name, chart_version = get_name_and_version_from_report(test_reports[i-1])
-                    test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='report', report_file_path=test_reports[i-1])
-                else:
-                    chart_name, chart_version = get_name_and_version_from_report(test_reports[i])
-                    test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='report', report_file_path=test_reports[i])
-            elif chart_types[i] == 'tar+report':
-                chart_name, chart_version = get_name_and_version_from_report(test_reports[i])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='tar+report', chart_file_path=test_charts[i], report_file_path=test_reports[i])
-            elif chart_types[i] == 'src+report':
-                chart_name, chart_version = get_name_and_version_from_report(test_reports[i])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type='src+report', chart_file_path=test_charts[i], report_file_path=test_reports[i])
+    def update_test_charts(self, test_charts):
+        logging.debug(f"Updating test charts: {test_charts}")
+        for chart in test_charts:
+            if chart[0] == 'src' or chart[0] == 'tar':
+                chart_name, chart_version = get_name_and_version_from_chart_tar(chart[1])
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], chart_file_path=chart[1])
+            elif chart[0] == 'report':
+                chart_name, chart_version = get_name_and_version_from_report(chart[1])
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], report_file_path=chart[1])
+            elif chart[0] == 'src+report' or chart[0] == 'tar+report':
+                chart_name, chart_version = get_name_and_version_from_report(chart[2])
+                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], chart_file_path=chart[1], report_file_path=chart[2])
             else:
-                raise AssertionError('Unknow chart_type is provided')
+                raise AssertionError(f"Chart_Type: {chart[0]} is not correct or yet to be handled")
+
             test_chart.update_chart_directory(self.secrets)
             self.test_charts.append(test_chart)
 

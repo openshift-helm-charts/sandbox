@@ -7,7 +7,7 @@ def vendor_has_valid_identity(context, vendor, vendor_type):
 
 @given(u'an error-free chart source is used in "{chart_path}"')
 def chart_source_is_used(context, chart_path):
-    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['src'])
+    context.workflow_test.update_test_charts(test_charts=[('src', chart_path)])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
@@ -17,7 +17,7 @@ def chart_source_is_used(context, chart_path):
 
 @given(u'chart source is used in "{chart_path}"')
 def user_has_used_chart_src(context, chart_path):
-    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['src'])
+    context.workflow_test.update_test_charts(test_charts=[('src',chart_path)])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
@@ -26,7 +26,7 @@ def user_has_used_chart_src(context, chart_path):
 
 @given(u'an error-free chart tarball is used in "{chart_path}"')
 def user_has_created_error_free_chart_tarball(context, chart_path):
-    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['tar'])
+    context.workflow_test.update_test_charts(test_charts=[('tar', chart_path)])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
@@ -36,7 +36,7 @@ def user_has_created_error_free_chart_tarball(context, chart_path):
 
 @given(u'an error-free chart tarball used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_error_free_chart_tarball_and_report(context, chart_path, report_path):
-    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['tar+report'], test_reports=[report_path])
+    context.workflow_test.update_test_charts(test_charts=[('tar+report', chart_path, report_path)])
 
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
@@ -48,7 +48,7 @@ def user_has_created_error_free_chart_tarball_and_report(context, chart_path, re
 
 @given(u'a chart tarball is used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_a_chart_tarball_and_report(context, chart_path, report_path):
-    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['tar+report'], test_reports=[report_path])
+    context.workflow_test.update_test_charts(test_charts=[('tar+report', chart_path, report_path)])
 
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
@@ -58,7 +58,7 @@ def user_has_created_a_chart_tarball_and_report(context, chart_path, report_path
 
 @given(u'an error-free chart source used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_error_free_chart_src_and_report(context, chart_path, report_path):
-    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['src+report'], test_reports=[report_path])
+    context.workflow_test.update_test_charts(test_charts=[('src+report', chart_path, report_path)])
 
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
@@ -71,7 +71,7 @@ def user_has_created_error_free_chart_src_and_report(context, chart_path, report
 @given(u'report is used in "{report_path}"')
 @given(u'an error-free report is used in "{report_path}"')
 def user_has_created_error_free_report(context, report_path):
-    context.workflow_test.update_test_charts(test_charts=[], chart_types=['report'], test_reports=[report_path])
+    context.workflow_test.update_test_charts(test_charts=[('report', report_path)])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
@@ -80,7 +80,7 @@ def user_has_created_error_free_report(context, report_path):
 
 @given(u'user wants to send two reports as in "{report_path_1}" and "{report_path_2}"')
 def user_has_created_error_free_report(context, report_path_1, report_path_2):
-    context.workflow_test.update_test_charts(test_charts=[], chart_types=['report', 'report'], test_reports=[report_path_1, report_path_2])
+    context.workflow_test.update_test_charts(test_charts=[('report', report_path_1), ('report', report_path_2)])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
@@ -89,7 +89,7 @@ def user_has_created_error_free_report(context, report_path_1, report_path_2):
 
 @given(u'user wants to send two chart sources as in "{chart_path_1}" and "{chart_path_2}"')
 def user_wants_to_send_two_chart_sources(context, chart_path_1, chart_path_2):
-    context.workflow_test.update_test_charts(test_charts=[chart_path_1, chart_path_2], chart_types=['src', 'src'])
+    context.workflow_test.update_test_charts(test_charts=[('src', chart_path_1), ('src', chart_path_2)])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
@@ -99,7 +99,7 @@ def user_wants_to_send_two_chart_sources(context, chart_path_1, chart_path_2):
 
 @given(u'user wants to send two chart tars as in "{chart_path_1}" and "{chart_path_2}"')
 def user_wants_to_send_two_chart_tars(context, chart_path_1, chart_path_2):
-    context.workflow_test.update_test_charts([chart_path_1, chart_path_2], chart_types=['tar', 'tar'])
+    context.workflow_test.update_test_charts(test_charts=[('tar', chart_path_1), ('tar', chart_path_2)])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
@@ -109,7 +109,7 @@ def user_wants_to_send_two_chart_tars(context, chart_path_1, chart_path_2):
 
 @given(u'user wants to send two charts one with source "{chart_path}" and other with report "{report_path}"')
 def user_wants_to_send_multiple_chart_one_with_src_and_other_with_report(context, chart_path, report_path):
-    context.workflow_test.update_test_charts([chart_path], chart_types=['src', 'report'], test_reports=[report_path], is_multiple_with_different=True)
+    context.workflow_test.update_test_charts(test_charts=[('src', chart_path), ('report', report_path)])
 
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
@@ -121,7 +121,7 @@ def user_wants_to_send_multiple_chart_one_with_src_and_other_with_report(context
 
 @given(u'user wants to send two charts one with tar "{chart_path}" and other with report "{report_path}"')
 def user_wants_to_send_multiple_chart_one_with_tar_and_other_with_report(context, chart_path, report_path):
-    context.workflow_test.update_test_charts([chart_path], chart_types=['tar', 'report'], test_reports=[report_path], is_multiple_with_different=True)
+    context.workflow_test.update_test_charts(test_charts=[('tar', chart_path), ('report', report_path)])
 
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
@@ -133,7 +133,7 @@ def user_wants_to_send_multiple_chart_one_with_tar_and_other_with_report(context
 
 @given(u'a "{report_path}" is provided')
 def user_generated_a_report(context, report_path):
-    context.workflow_test.update_test_charts(test_charts=[], chart_types=['report'], test_reports=[report_path])
+    context.workflow_test.update_test_charts(test_charts=[('report', report_path)])
     context.workflow_test.setup_git_context()
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
@@ -234,12 +234,12 @@ def report_has_a_check_missing(context, check):
 
 @given(u'A "{user}" wants to submit a chart in "{chart_path}"')
 def user_wants_to_submit_a_chart(context, user, chart_path):
-    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['src'])
+    context.workflow_test.update_test_charts(test_charts=[('src', chart_path)])
     context.workflow_test.update_bot_name(user)
 
 @given(u'An authorized user wants to submit a chart in "{chart_path}"')
 def authorized_user_wants_to_submit_a_chart(context, chart_path):
-    context.workflow_test.update_test_charts(test_charts=[chart_path], chart_types=['src'])
+    context.workflow_test.update_test_charts(test_charts=[('src', chart_path)])
 
 @given(u'the user creates a branch to add a new chart version')
 def the_user_creates_a_branch_to_add_a_new_chart_version(context):
