@@ -9,6 +9,7 @@ REPORT_ANNOTATIONS = "annotations"
 REPORT_RESULTS = "results"
 REPORT_DIGESTS = "digests"
 REPORT_METADATA = "metadata"
+SHA_ERROR = "Error: Digest in report did not match report content"
 
 def _get_report_info(report_path, report_info_path,info_type, profile_type, profile_version):
 
@@ -44,12 +45,18 @@ def _get_report_info(report_path, report_info_path,info_type, profile_type, prof
                 out = subprocess.run(["chart-verifier",command,info_type,os.path.abspath(report_path)],capture_output=True)
             output = out.stdout.decode("utf-8")
 
+        if SHA_ERROR in output:
+            print(f"[Error] {SHA_ERROR}")
+            sys.exit(1)
+
         try:
             report_out = json.loads(output)
         except BaseException as err:
             print(f"[ERROR] loading report output: /n{output}")
             print(f"[ERROR] exception was: {err=}, {type(err)=}")
             sys.exit(1)
+
+
 
     if not info_type in report_out:
         print(f"Error extracting {info_type} from the report:", report_out.strip())
@@ -97,6 +104,9 @@ def get_report_chart(report_path=None,report_info_path=None):
      metadata = _get_report_info(report_path,report_info_path,REPORT_METADATA,"","")
      print("[INFO] report chart : %s" % metadata["chart"])
      return metadata["chart"]
+
+def check_report_sha(report_path=None):
+    results
 
 def main():
 
