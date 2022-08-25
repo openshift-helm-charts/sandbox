@@ -11,6 +11,7 @@ class E2ETestSecret:
     bot_token: str = ''
     pr_number: int = -1
     vendor_type: str = ''
+    owners_file_content: str = ''
 
 @dataclass
 class E2ETestSecretOneShot(E2ETestSecret):
