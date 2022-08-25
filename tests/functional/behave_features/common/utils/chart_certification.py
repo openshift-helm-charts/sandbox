@@ -367,6 +367,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.base_branch = base_branch
         self.secrets.pr_branch = pr_branch
         self.secrets.owners_file_content = self.owners_file_content
+        self.secrets.index_file = "index.yaml"
+        self.secrets.provider_delivery = False
 
 
     def cleanup (self):
