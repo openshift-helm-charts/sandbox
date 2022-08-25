@@ -127,7 +127,7 @@ vendor:
             values = {'bot_name': self.secrets.bot_name,
                     'vendor': vendor_name, 'chart_name': chart_name,
                       "provider_delivery" : provider_delivery}
-            content = Template(self.owners_file_content).substitute(values)
+            content = Template(self.secrets.owners_file_content).substitute(values)
             logging.debug(f"OWNERS File Content: {content}")
             with open(f'{chart_directory}/OWNERS', 'w') as fd:
                 fd.write(content)
@@ -366,6 +366,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.bot_token = bot_token
         self.secrets.base_branch = base_branch
         self.secrets.pr_branch = pr_branch
+        self.secrets.owners_file_content = self.owners_file_content
 
 
     def cleanup (self):
@@ -741,6 +742,7 @@ class ChartCertificationE2ETestMultiple(ChartCertificationE2ETest):
         self.secrets.pr_branches = pr_branches
         self.secrets.dry_run = dry_run
         self.secrets.notify_id = notify_id
+        self.secrets.owners_file_content = self.owners_file_content
         self.secrets.release_tags = list()
 
     def cleanup (self):
