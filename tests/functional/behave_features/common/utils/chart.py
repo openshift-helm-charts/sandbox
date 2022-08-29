@@ -6,7 +6,15 @@ import tarfile
 import yaml
 import shutil
 import json
+from enum import Enum
 from dataclasses import dataclass
+
+class Chart_Type(Enum):
+    SRC = 1
+    TAR = 2
+    REPORT = 3
+    SRC_AND_REPORT = 4
+    TAR_AND_REPORT = 5
 
 @dataclass
 class Chart:
@@ -15,7 +23,7 @@ class Chart:
     chart_name: str = ''
     chart_version: str = ''
     chart_directory: str = ''
-    chart_type: str = ''   #It can be anyone of 'src', 'tar' or 'report', 'src+report', 'tar+report'
+    chart_type: Chart_Type = None
 
     def update_chart_directory(self, secrets):
         base_branch_without_uuid = "-".join(secrets.base_branch.split("-")[:-1])
