@@ -1,11 +1,7 @@
 {
-  "version": "1.4.1",
+  "version": "1.4.2",
   "info" : [
-      "Improved error message and added an exit after detecting multiple charts in a PR (#137).",
-      "Ensure GitHub labels are added (#140).",
-      "Smoke test migration to behave (#143,#149).",
-      "Enable better testing in workflow (#144).",
-      "Check OCP version support in index.yaml (#147)"
+      "Fixes the sa token creation failure in 4.11 (#152)."
   ],
   "charts" : {
     "merge": ["charts"]
