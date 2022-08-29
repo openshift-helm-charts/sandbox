@@ -427,13 +427,13 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def update_test_charts(self, test_charts):
         logging.debug(f"Updating test charts: {test_charts}")
         for chart in test_charts:
-            if chart[0] == 'src' or chart[0] == 'tar':
+            if chart[0] == Chart_Type.SRC or chart[0] == Chart_Type.TAR:
                 chart_name, chart_version = get_name_and_version_from_chart_tar(chart[1])
                 test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], chart_file_path=chart[1])
-            elif chart[0] == 'report':
+            elif chart[0] == Chart_Type.REPORT:
                 chart_name, chart_version = get_name_and_version_from_report(chart[1])
                 test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], report_file_path=chart[1])
-            elif chart[0] == 'src+report' or chart[0] == 'tar+report':
+            elif chart[0] == Chart_Type.SRC_AND_REPORT or chart[0] == Chart_Type.TAR_AND_REPORT:
                 chart_name, chart_version = get_name_and_version_from_report(chart[2])
                 test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], chart_file_path=chart[1], report_file_path=chart[2])
             else:
@@ -517,16 +517,16 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def process_charts(self):
         with SetDirectory(Path(self.temp_dir.name)):
             for chart in self.test_charts:
-                if chart.chart_type == 'tar' or chart.chart_type == 'tar+report':
+                if chart.chart_type == Chart_Type.TAR or chart.chart_type == Chart_Type.TAR_AND_REPORT:
                     # Copy the chart tar into temporary directory for PR submission
                     chart_tar = chart.chart_file_path.split('/')[-1]
                     shutil.copyfile(f'{self.old_cwd}/{chart.chart_file_path}',
                                 f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
-                elif chart.chart_type == 'src' or chart.chart_type == 'src+report':
+                elif chart.chart_type == Chart_Type.SRC or chart.chart_type == Chart_Type.SRC_AND_REPORT:
                     # Unzip files into temporary directory for PR submission
                     logging.debug(f"CHART SRC FILE PATH: {chart.chart_file_path}")
                     extract_chart_tgz(chart.chart_file_path, f'{chart.chart_directory}/{chart.chart_version}', chart.chart_name, logging)
-                elif chart.chart_type == 'report':
+                elif chart.chart_type == Chart_Type.REPORT:
                     logging.debug("Skip adding chart since chart_type is report")
                 else:
                     raise AssertionError(f"Yet To be implemented for chart_type {chart.chart_type}")
@@ -541,7 +541,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 f"Push report to '{self.secrets.test_repo}:{self.secrets.pr_branch}'")
 
             for chart in self.test_charts:
-                if chart.chart_type == 'report' or chart.chart_type == 'src+report' or chart.chart_type == 'tar+report':
+                if chart.chart_type == Chart_Type.REPORT or chart.chart_type == Chart_Type.SRC_AND_REPORT or chart.chart_type == Chart_Type.TAR_AND_REPORT:
                     if chart.report_file_path.endswith('json'):
                         logging.debug("Report type is json")
                         report_path = f'{chart.chart_directory}/{chart.chart_version}/' + chart.report_file_path.split('/')[-1]
@@ -641,15 +641,15 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
     def push_charts(self, add_non_chart_file=False):
         # Push chart to test_repo:pr_branch
         for chart in self.test_charts:
-            if chart.chart_type == 'tar' or chart.chart_type == 'tar+report':
+            if chart.chart_type == Chart_Type.TAR or chart.chart_type == Chart_Type.TAR_AND_REPORT:
                 chart_tar = chart.chart_file_path.split('/')[-1]
                 self.temp_repo.git.add(f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
-            elif chart.chart_type == 'src' or chart.chart_type == 'src+report':
+            elif chart.chart_type == Chart_Type.SRC or chart.chart_type == Chart_Type.SRC_AND_REPORT:
                 if add_non_chart_file:
                     self.temp_repo.git.add(f'{chart.chart_directory}/')
                 else:
                     self.temp_repo.git.add(f'{chart.chart_directory}/{chart.chart_version}/src')
-            elif chart.chart_type == 'report':
+            elif chart.chart_type == Chart_Type.REPORT:
                 logging.debug("Skip adding chart since chart_type is report")
             else:
                 raise AssertionError(f"YTD: chart_type {chart.chart_type} is yet to be supported")
