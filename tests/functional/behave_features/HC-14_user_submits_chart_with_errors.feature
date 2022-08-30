@@ -33,11 +33,12 @@ Feature: Chart submission with errors
     Then the pull request is not merged
     And user gets the "<message>" in the pull request comment
 
-    @partners @smoke @full
+    @partners @smoke @full @newtest
     Examples:
-      | vendor_type  | vendor    | chart_path                     | message                               | bad_version | 
-      | partners     | hashicorp | tests/data/vault-0.17.0.tgz    | doesn't match the directory structure | 9.9.9       |
-    
+      | vendor_type  | vendor    | chart_path                     | message                                            | bad_version |
+      | partners     | hashicorp | tests/data/vault-0.17.0.tgz    | doesn't match the directory structure              | 9.9.9       |
+      | partners     | hashicorp | tests/data/vault-0.17.0.tgz    | Helm chart version is not a valid semantic version | invalid-9.9.9 |
+
     @redhat @full
     Examples:
       | vendor_type  | vendor    | chart_path                     | message                               | bad_version |
