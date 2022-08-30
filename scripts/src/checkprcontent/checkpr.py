@@ -4,6 +4,7 @@ import sys
 import argparse
 
 import requests
+import semver
 import yaml
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -140,9 +141,10 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             else:
                 matches_found += 1
                 if reportpattern.match(file_path):
-                    print("[INFO] Report found")
+                    print(f"[INFO] Report found: {file_path}")
                     print("::set-output name=report-exists::true")
                     report_found = True
+                    report_path = file_path
                 if matches_found == 1:
                     pattern_match = match
                 elif pattern_match.groups() != match.groups():
@@ -183,6 +185,29 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
         category, organization, chart, version = pattern_match.groups()
         print(f"::set-output name=category::{'partner' if category == 'partners' else category}")
         print(f"::set-output name=organization::{organization}")
+
+        if not semver.VersionInfo.isvalid(version):
+            msg = f"[ERROR] Helm chart version is not a valid semantic version: {version}"
+            print(msg)
+            print(f"::set-output name=pr-content-error-message::{msg}")
+            sys.exit(1)
+
+        if report_found:
+            found_report,report_data = verifier_report.get_report_data(report_path)
+            if found_report:
+                chart_version = verifier_report.get_chart_version(report_data)
+                if chart_version != "" and not semver.VersionInfo.isvalid(chart_version):
+                    msg = f"[ERROR] Helm chart version in report is not a valid semantic version: {version}"
+                    print(msg)
+                    print(f"::set-output name=pr-content-error-message::{msg}")
+                    sys.exit(1)
+            else:
+                msg = f"[ERROR] Failed tp open report: {report_path}."
+                print(msg)
+                print(f"::set-output name=pr-content-error-message::{msg}")
+                sys.exit(1)
+
+
         print("Downloading index.yaml", category, organization, chart, version)
         r = requests.get(f'https://raw.githubusercontent.com/{repository}/{branch}/index.yaml')
         if r.status_code == 200:
@@ -191,7 +216,6 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             data = {"apiVersion": "v1",
                 "entries": {}}
 
-        crtentries = []
         entry_name = f"{organization}-{chart}"
         d = data["entries"].get(entry_name, [])
         print(f"::set-output name=chart-entry-name::{entry_name}")
