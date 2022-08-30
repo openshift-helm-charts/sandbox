@@ -84,6 +84,15 @@ def get_provider_delivery(report_data):
         pass
     return provider_delivery
 
+def get_chart_version(report_data):
+    chart_version = ""
+    try:
+        chart_version = report_data["metadata"]["chart"]["version"]
+    except Exception as err:
+        print(f"Exception getting chart version {err=}, {type(err)=}")
+        pass
+    return chart_version
+
 def get_package_digest(report_data):
     package_digest = None
     try:
