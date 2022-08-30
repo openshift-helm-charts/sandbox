@@ -105,10 +105,10 @@ jobs:
           echo "Full test in pr : {{steps.check_request.outputs.full_tests_in_pr }}"
           if ${{steps.check_if_release_pr.outputs.charts_release_branch == 'true' || steps.check_request.outputs.full_tests_in_pr == 'true' }} ; then
             echo "Release PR from dev to charts, oer PR with new full test, so running full tests"
-            ve1/bin/behave tests/functional/behave_features/ --tags=full --logging-level=WARNING --no-capture --no-color
+            ve1/bin/behave tests/functional/behave_features/ --tags=newtest --logging-level=WARNING --no-capture --no-color
           else
             echo "Not a release PR from dev to charts, so running only smoke tests"
-            ve1/bin/behave tests/functional/behave_features/ --tags=smoke --logging-level=WARNING --no-capture --no-color
+            ve1/bin/behave tests/functional/behave_features/ --tags=newtest --logging-level=WARNING --no-capture --no-color
           fi
 
       - name: (Manual) Test CI Workflow
