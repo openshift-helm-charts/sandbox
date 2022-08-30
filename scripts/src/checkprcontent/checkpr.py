@@ -141,7 +141,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             else:
                 matches_found += 1
                 if reportpattern.match(file_path):
-                    print("[INFO] Report found")
+                    print(f"[INFO] Report found: {file_path}")
                     print("::set-output name=report-exists::true")
                     report_found = True
                     report_path = file_path
@@ -196,7 +196,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             found_report,report_data = verifier_report.get_report_data(report_path)
             if found_report:
                 chart_version = verifier_report.get_chart_version(report_data)
-                if not semver.VersionInfo.isvalid(chart_version):
+                if chart_version != "" and not semver.VersionInfo.isvalid(chart_version):
                     msg = f"[ERROR] Helm chart version in report is not a valid semantic version: {version}"
                     print(msg)
                     print(f"::set-output name=pr-content-error-message::{msg}")
@@ -208,7 +208,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                 sys.exit(1)
 
 
-    print("Downloading index.yaml", category, organization, chart, version)
+        print("Downloading index.yaml", category, organization, chart, version)
         r = requests.get(f'https://raw.githubusercontent.com/{repository}/{branch}/index.yaml')
         if r.status_code == 200:
             data = yaml.load(r.text, Loader=Loader)
