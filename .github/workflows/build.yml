@@ -205,6 +205,14 @@ jobs:
             report_type: all
             fail: false
 
+      - name: check-verifier-result
+        id: check-verifier-result
+        if: ${{ steps.run-verifier.outcome != 'success' }}
+        env:
+          VERIFIER_OUT = ${{join(steps.run-verifier.outputs.*, '\n')}}
+        run: |
+          echo $VERIFIER_OUT
+
       - name: Check Report
         id: check_report
         if: ${{ steps.check_build_required.outputs.run-build == 'true' }}

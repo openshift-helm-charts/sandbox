@@ -192,20 +192,20 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
 
-        if report_found:
-            found_report,report_data = verifier_report.get_report_data(os.path.join("pr-branch",report_path))
-            if found_report:
-                chart_version = verifier_report.get_chart_version(report_data)
-                if chart_version != "" and not semver.VersionInfo.isvalid(chart_version):
-                    msg = f"[ERROR] Helm chart version in report is not a valid semantic version: {version}"
-                    print(msg)
-                    print(f"::set-output name=pr-content-error-message::{msg}")
-                    sys.exit(1)
-            else:
-                msg = f"[ERROR] Failed tp open report: {report_path}."
-                print(msg)
-                print(f"::set-output name=pr-content-error-message::{msg}")
-                sys.exit(1)
+        # if report_found:
+        #    found_report,report_data = verifier_report.get_report_data(os.path.join("pr-branch",report_path))
+        #    if found_report:
+        #        chart_version = verifier_report.get_chart_version(report_data)
+        #        if chart_version != "" and not semver.VersionInfo.isvalid(chart_version):
+        #            msg = f"[ERROR] Helm chart version in report is not a valid semantic version: {version}"
+        #           print(msg)
+        #            print(f"::set-output name=pr-content-error-message::{msg}")
+        #            sys.exit(1)
+        #    else:
+        #        msg = f"[ERROR] Failed tp open report: {report_path}."
+        #        print(msg)
+        #        print(f"::set-output name=pr-content-error-message::{msg}")
+        #        sys.exit(1)
 
 
         print("Downloading index.yaml", category, organization, chart, version)
