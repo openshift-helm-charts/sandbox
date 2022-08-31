@@ -205,6 +205,13 @@ jobs:
             report_type: all
             fail: false
 
+      - name: check-verifier-result
+        id: check-verifier-result
+        if: ${{ always() && steps.run-verifier.outcome == 'failure' }}
+        run: |
+          error_message="The chart verifier returned an error when trying to obtain a verification report for the chart."
+          echo "::set-output name=verifier_error_message::$error_message"
+
       - name: Check Report
         id: check_report
         if: ${{ steps.check_build_required.outputs.run-build == 'true' }}
@@ -241,8 +248,9 @@ jobs:
           OWNERS_ERROR_MESSAGE: ${{ steps.check_pr_content.outputs.owners-error-message }}
           COMMUNITY_MANUAL_REVIEW: ${{ steps.check_report.outputs.community_manual_review_required }}
           OC_INSTALL_RESULT: ${{ steps.install-oc.conclusion }}
+          VERIFIER_ERROR_MESSAGE: ${{ steps.check-verifier-result.outputs.verifier_error_message }}
         run: |
-          ve1/bin/pr-comment ${{ steps.check_pr_content.outcome }} ${{ steps.check_report.conclusion }} ${{ github.repository }}
+          ve1/bin/pr-comment ${{ steps.check_pr_content.outcome }} ${{ steps.run-verifier.outcome }} ${{ steps.check_report.conclusion }}
 
       - name: Comment on PR
         if: ${{ always() && steps.check_build_required.outputs.run-build == 'true' }}
@@ -261,7 +269,7 @@ jobs:
             });
 
       - name: Add 'authorized-request' label to PR
-        if: ${{ always() && steps.check_pr_content.outcome == 'success' && steps.check_build_required.outputs.run-build == 'true' }}
+        if: ${{ always() && steps.check_pr_content.outcome == 'success' && steps.run-verifier.outcome != 'failure' && steps.check_build_required.outputs.run-build == 'true' }}
         uses: actions/github-script@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
