@@ -28,7 +28,7 @@ link next to "CI / Chart Certification" job status towards the end of this page.
 """
     if os.path.exists("./pr/errors"):
         errors = open("./pr/errors").read()
-        msg += f"""
+        msg += f""" 
 {get_verifier_errors_comment()}
 
 {errors}
@@ -36,7 +36,9 @@ link next to "CI / Chart Certification" job status towards the end of this page.
 {get_verifier_errors_trailer()}
 
 """
-    print(f"::set-output name=error-message::{errors}")
+        print(f"::set-output name=error-message::{errors}")
+    else:
+        print(f"::set-output name=error-message::{get_failure_comment()}")
     return msg
 
 def prepare_success_comment():
