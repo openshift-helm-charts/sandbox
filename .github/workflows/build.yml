@@ -77,9 +77,11 @@ jobs:
         run: |
           #set environemnt based on repository
           if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
+            echo "Use latest verifier image"
             echo "::set-output name=insecure_skip_tls_verify::false"
             echo "::set-output name=verifier-action-image::latest"
           else
+            echo "Use dev verifier image"
             echo "::set-output name=insecure_skip_tls_verify::true"
             echo "::set-output name=verifier-action-image::0.1.0"
           fi
@@ -155,6 +157,7 @@ jobs:
         uses: redhat-actions/openshift-tools-installer@v1
         with:
           source: github
+          skip_cache: true
           chart-verifier: ${{ steps.set-env.outputs.verifier-action-image }}
 
       - name: determine verify requirements
@@ -214,6 +217,7 @@ jobs:
           REPORT_GENERATED: ${{ steps.verify_requires.outputs.report_needed }}
           GENERATED_REPORT_PATH: ${{ steps.run-verifier.outputs.report_file }}
           REPORT_SUMMARY_PATH: ${{ steps.run-verifier.outputs.report_info_file }}
+          WORKFLOW_WORKING_DIRECTORY: "../pr"
         run: |
           cd pr-branch
           ../ve1/bin/chart-pr-review --directory=../pr --verify-user=${{ github.event.pull_request.user.login }} --api-url=${{ github.event.pull_request._links.self.href }}
