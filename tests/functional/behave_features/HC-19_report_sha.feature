@@ -3,8 +3,8 @@ Feature: Report sha value in report
   The sha value must match the report.
 
   Scenario Outline: [HC-19-001] A partner or redhat associate submits an error-free report with report sha value
-    Given the vendor <vendor> has a valid identity as <vendor_type>
-    And an error-free report is used in <report_path>
+    Given the vendor "<vendor>" has a valid identity as "<vendor_type>"
+    And an error-free report is used in "<report_path>"
     When the user sends a pull request with the report
     Then the user sees the pull request is merged
     And the index.yaml file is updated with an entry for the submitted chart
@@ -17,11 +17,11 @@ Feature: Report sha value in report
 
 
   Scenario Outline: [HC-19-002] A partner or redhat associate submits a report with invalid report sha value
-    Given the vendor <vendor> has a valid identity as <vendor_type>
-    And an error-free report is used in <report_path>
+    Given the vendor "<vendor>" has a valid identity as "<vendor_type>"
+    And an error-free report is used in "<report_path>"
     When the user sends a pull request with the report
     Then the pull request is not merged
-    And user gets the <message> in the pull request comment
+    And user gets the "<message>" in the pull request comment
 
     @partners @full @smoke @reportSha
     Examples:
