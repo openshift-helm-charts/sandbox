@@ -144,7 +144,6 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                     print(f"[INFO] Report found: {file_path}")
                     print("::set-output name=report-exists::true")
                     report_found = True
-                    report_path = file_path
                 if matches_found == 1:
                     pattern_match = match
                 elif pattern_match.groups() != match.groups():

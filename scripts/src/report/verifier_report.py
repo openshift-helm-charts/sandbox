@@ -24,7 +24,6 @@ These are not comprehensive lists - other certification checks will preform furt
 """
 
 import sys
-import os
 import semantic_version
 
 import yaml
@@ -83,15 +82,6 @@ def get_provider_delivery(report_data):
         print(f"Exception getting providerControlledDelivery {err=}, {type(err)=}")
         pass
     return provider_delivery
-
-def get_chart_version(report_data):
-    chart_version = ""
-    try:
-        chart_version = report_data["metadata"]["chart"]["version"]
-    except Exception as err:
-        print(f"Exception getting chart version {err=}, {type(err)=}")
-        pass
-    return chart_version
 
 def get_package_digest(report_data):
     package_digest = None
