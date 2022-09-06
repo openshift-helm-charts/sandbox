@@ -12,7 +12,7 @@ Feature: Report sha value in report
     @partners @full @reportSha
     Examples:
       | vendor_type  | vendor    | report_path               |
-      | partners     | hashicorp | tests/data/HC-16/report_sha_good/report.yaml    |
+      | partners     | hashicorp | tests/data/HC-19/report_sha_good/report.yaml    |
 
 
 
@@ -26,9 +26,9 @@ Feature: Report sha value in report
     @partners @full @smoke @reportSha
     Examples:
       | vendor_type  | vendor    | report_path                                          | message                                                                   |
-      | partners     | hashicorp | tests/data/HC-16/report_sha_bad/report.yaml          | Digest in report does not match report content  |
+      | partners     | hashicorp | tests/data/HC-19/report_sha_bad/report.yaml          | Digest in report does not match report content  |
 
     @partners @full @reportSha
     Examples:
       | vendor_type  | vendor    | report_path                                          | message
-      | partners     | hashicorp | tests/data/HC-16/report_edited_sha_bad/report.yaml   | Digest in report does not match report content  |
+      | partners     | hashicorp | tests/data/HC-19/report_edited_sha_bad/report.yaml   | Digest in report does not match report content  |
