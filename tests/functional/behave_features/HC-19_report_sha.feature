@@ -30,4 +30,5 @@ Feature: Report sha value in report
 
     @partners @full @reportSha
     Examples:
+      | vendor_type  | vendor    | report_path                                          | message
       | partners     | hashicorp | tests/data/HC-16/report_edited_sha_bad/report.yaml   | Digest in report does not match report content  |
