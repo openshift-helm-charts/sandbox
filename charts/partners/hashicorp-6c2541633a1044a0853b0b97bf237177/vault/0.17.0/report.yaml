@@ -41,7 +41,7 @@ metadata:
     profile:
       VendorType: partner
       version: v1.1
-    providerControlledDelivery: false
+    providerControlledDelivery: true
     supportedOpenShiftVersions: '>=4.2'
     testedOpenShiftVersion: '4.9'
     verifier-version: 1.4.0
