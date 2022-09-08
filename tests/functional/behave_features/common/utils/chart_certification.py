@@ -424,18 +424,30 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         else:
             self.secrets.provider_delivery=False
 
-    def update_test_charts(self, test_charts):
+    def update_test_charts(self, test_charts, chart_version=''):
         logging.debug(f"Updating test charts: {test_charts}")
         for chart in test_charts:
             if chart[0] == Chart_Type.SRC or chart[0] == Chart_Type.TAR:
-                chart_name, chart_version = get_name_and_version_from_chart_tar(chart[1])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], chart_file_path=chart[1])
+                if chart_version == '':
+                    chart_name, chart_version = get_name_and_version_from_chart_tar(chart[1])
+                    test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], chart_file_path=chart[1])
+                else:
+                    chart_name, _ = get_name_and_version_from_chart_tar(chart[1])
+                    test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], chart_file_path=chart[1])
             elif chart[0] == Chart_Type.REPORT:
-                chart_name, chart_version = get_name_and_version_from_report(chart[1])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], report_file_path=chart[1])
+                if chart_version == '':
+                    chart_name, chart_version = get_name_and_version_from_report(chart[1])
+                    test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], report_file_path=chart[1])
+                else:
+                    chart_name, _ = get_name_and_version_from_report(chart[1])
+                    test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], report_file_path=chart[1])
             elif chart[0] == Chart_Type.SRC_AND_REPORT or chart[0] == Chart_Type.TAR_AND_REPORT:
-                chart_name, chart_version = get_name_and_version_from_report(chart[2])
-                test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], chart_file_path=chart[1], report_file_path=chart[2])
+                if chart_version == '':
+                    chart_name, chart_version = get_name_and_version_from_report(chart[2])
+                    test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], chart_file_path=chart[1], report_file_path=chart[2])
+                else:
+                    chart_name, _ = get_name_and_version_from_report(chart[2])
+                    test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], chart_file_path=chart[1], report_file_path=chart[2])
             else:
                 raise AssertionError(f"Chart_Type: {chart[0]} is not correct or yet to be handled")
 
