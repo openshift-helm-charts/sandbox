@@ -242,6 +242,10 @@ def user_wants_to_submit_a_chart(context, user, chart_path):
 def authorized_user_wants_to_submit_a_chart(context, chart_path):
     context.workflow_test.update_test_charts(test_charts=[(Chart_Type.SRC, chart_path)])
 
+@given(u'a chart source used in "{chart_path}" and directory structure contains "{bad_version}"')
+def a_user_wants_to_submit_a_chart_with_bad_semver(context, chart_path, bad_version):
+    context.workflow_test.update_test_charts(test_charts=[(Chart_Type.SRC, chart_path)], chart_version=bad_version)
+
 @given(u'the user creates a branch to add a new chart version')
 def the_user_creates_a_branch_to_add_a_new_chart_version(context):
     context.workflow_test.setup_git_context()
