@@ -20,12 +20,14 @@ def get_verifier_errors_trailer():
     return "Please run the [chart-verifier](https://github.com/redhat-certification/chart-verifier) \
 and ensure all mandatory checks pass."
 
+def get_look_at_job_output_comment():
+    return f"""To see the console output with the error messages, click the "Details" \
+link next to "CI / Chart Certification" job status towards the end of this page."""
+
 def prepare_failure_comment():
     msg = f"""\
 {get_failure_comment()}
-To see the console output with the error messages, click the "Details"
-link next to "CI / Chart Certification" job status towards the end of this page.
-"""
+{get_look_at_job_output_comment()}"""
     if os.path.exists("./pr/errors"):
         errors = open("./pr/errors").read()
         msg += f"""
@@ -55,6 +57,17 @@ def prepare_pr_content_failure_comment():
         msg += f"{owners_error_msg}\n\n"
     return msg
 
+def prepare_run_verifier_failure_comment():
+    verifier_error_msg = os.environ.get("VERIFIER_ERROR_MESSAGE", "")
+    print(f"::set-output name=error-message::{verifier_error_msg}")
+    msg = f"""   
+{verifier_error_msg}
+
+{get_look_at_job_output_comment()}
+"""
+    return msg
+
+
 def prepare_community_comment():
     msg = f"{get_community_review_message()}\n\n"
     if os.path.exists("./pr/errors"):
@@ -82,8 +95,8 @@ def get_comment_footer(vendor_label, chart_name):
 
 def main():
     pr_content_result = sys.argv[1]
-    verify_result = sys.argv[2]
-    repository = sys.argv[3]
+    run_verifier_result = sys.argv[2]
+    verify_result = sys.argv[3]
     issue_number = open("./pr/NR").read().strip()
     vendor_label = open("./pr/vendor").read().strip()
     chart_name = open("./pr/chart").read().strip()
@@ -91,6 +104,9 @@ def main():
     oc_install_result = os.environ.get("OC_INSTALL_RESULT", False)
     if pr_content_result == "failure":
         msg += prepare_pr_content_failure_comment()
+        print(f"::set-output name=pr_passed::false")
+    elif run_verifier_result == "failure":
+        msg += prepare_run_verifier_failure_comment()
         print(f"::set-output name=pr_passed::false")
     elif verify_result == "failure":
         community_manual_review = os.environ.get("COMMUNITY_MANUAL_REVIEW",False)

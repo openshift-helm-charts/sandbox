@@ -37,7 +37,8 @@ Feature: Chart submission with errors
     Examples:
       | vendor_type  | vendor    | chart_path                     | message                               | bad_version | 
       | partners     | hashicorp | tests/data/vault-0.17.0.tgz    | doesn't match the directory structure | 9.9.9       |
-    
+      | partners     | hashicorp | tests/data/vault-0.17.0.tgz    | The chart verifier returned an error  | abc-9.9.9       |
+
     @redhat @full
     Examples:
       | vendor_type  | vendor    | chart_path                     | message                               | bad_version |
