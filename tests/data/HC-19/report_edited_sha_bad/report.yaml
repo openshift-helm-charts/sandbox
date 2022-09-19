@@ -3,9 +3,9 @@ kind: verify-report
 metadata:
     tool:
         verifier-version: 1.9.0
-        reportDigest:  uint64:17691208852129424495
+        reportDigest: uint64:17691208852129424495
         profile:
-            VendorType: community
+            VendorType: partner
             version: v1.1
         chart-uri: https://github.com/openshift-helm-charts/development/blob/main/tests/data/vault-0.17.0.tgz?raw=true
         digests:
@@ -13,7 +13,7 @@ metadata:
             package: 9cb7e3a5d82537f512319c754ccd6e9a4be08118b34849609d0fc261934d062a
         lastCertifiedTimestamp: "2022-06-13T10:43:25.314602-04:00"
         testedOpenShiftVersion: "4.11"
-        supportedOpenShiftVersions: '>=4.2'
+        supportedOpenShiftVersions: '>=4.3'
         providerControlledDelivery: false
     chart:
         name: vault

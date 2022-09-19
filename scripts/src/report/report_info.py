@@ -120,9 +120,6 @@ def get_report_chart(report_path=None,report_info_path=None):
      print("[INFO] report chart : %s" % metadata["chart"])
      return metadata["chart"]
 
-def check_report_sha(report_path=None):
-    results
-
 def main():
 
     print("\n\n\n\nDocker image results:\n")
