@@ -437,6 +437,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             elif chart[0] == Chart_Type.REPORT:
                 if chart_version == '':
                     chart_name, chart_version = get_name_and_version_from_report(chart[1])
+                    logging.info(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> CHART_VERSION: {chart_version}")
                     test_chart = Chart(chart_name=chart_name, chart_version=chart_version, chart_type=chart[0], report_file_path=chart[1])
                 else:
                     chart_name, _ = get_name_and_version_from_report(chart[1])
