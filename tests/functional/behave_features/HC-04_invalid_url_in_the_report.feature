@@ -10,8 +10,8 @@ Feature: Report contains an invalid URL
 
         @partners @smoke @full
         Examples:
-            | vendor_type  | vendor    | report_path            | message               |
-            | partners     | hashicorp | tests/data/report.yaml | Missing schema in URL |
+            | vendor_type  | vendor    | report_path                          | message               |
+            | partners     | hashicorp | tests/data/HC-04/partner/report.yaml | Missing schema in URL |
         
         # @redhat @smoke @full
         # Examples:
