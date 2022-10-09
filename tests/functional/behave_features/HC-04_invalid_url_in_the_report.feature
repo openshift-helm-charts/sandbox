@@ -18,9 +18,8 @@ Feature: Report contains an invalid URL
             | vendor_type  | vendor    | report_path                         | message               |
             | redhat       | redhat    | tests/data/HC-04/redhat/report.yaml | Missing schema in URL |
         
-        # @community @full
-        # Examples:
-        #     | vendor_type  | vendor    | report_path            | invalid_url                         | message               |
-        #     | community    | redhat    | tests/data/report.yaml | example.com/vault-0.13.0.tgz        | Missing schema in URL |
-        #     | community    | redhat    | tests/data/report.yaml | htts://example.com/vault-0.13.0.tgz | Invalid schema        |
+        @community @full
+        Examples:
+            | vendor_type  | vendor    | report_path                            | message               |
+            | community    | redhat    | tests/data/HC-04/community/report.yaml | Missing schema in URL |
             
