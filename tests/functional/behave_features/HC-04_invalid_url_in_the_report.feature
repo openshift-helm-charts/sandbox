@@ -13,27 +13,10 @@ Feature: Report contains an invalid URL
             | vendor_type  | vendor    | report_path                          | message               |
             | partners     | hashicorp | tests/data/HC-04/partner/report.yaml | Missing schema in URL |
         
-        # @redhat @smoke @full
-        # Examples:
-        #     | vendor_type  | vendor    | report_path            | invalid_url                         | message               |
-        #     | redhat       | redhat    | tests/data/report.yaml | htts://example.com/vault-0.13.0.tgz | Invalid schema        |
-        
-        # @community @smoke @full
-        # Examples:
-        #     | vendor_type  | vendor    | report_path            | invalid_url                         | message               |
-        #     | community    | redhat    | tests/data/report.yaml | https:example.comvault-0.13.0.tgz   | Invalid URL           |
-        
-        # @partners @full
-        # Examples:
-        #     | vendor_type  | vendor    | report_path            | invalid_url                         | message               |
-        #     | partners     | hashicorp | tests/data/report.yaml | htts://example.com/vault-0.13.0.tgz | Invalid schema        |
-        #     | partners     | hashicorp | tests/data/report.yaml | https:example.comvault-0.13.0.tgz   | Invalid URL           |
-        
-        # @redhat @full
-        # Examples:
-        #     | vendor_type  | vendor    | report_path            | invalid_url                         | message               |
-        #     | redhat       | redhat    | tests/data/report.yaml | example.com/vault-0.13.0.tgz        | Missing schema in URL |
-        #     | redhat       | redhat    | tests/data/report.yaml | https:example.comvault-0.13.0.tgz   | Invalid URL           |
+        @redhat @full
+        Examples:
+            | vendor_type  | vendor    | report_path                         | message               |
+            | redhat       | redhat    | tests/data/HC-04/redhat/report.yaml | Missing schema in URL |
         
         # @community @full
         # Examples:
