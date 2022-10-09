@@ -11,13 +11,13 @@ Feature: Report only submission
     
         @partners @smoke @full
         Examples:
-            | vendor_type  | vendor    | report_path            |
-            | partners     | hashicorp | tests/data/report.yaml |
+            | vendor_type  | vendor    | report_path                           |
+            | partners     | hashicorp | tests/data/common/partner/report.yaml |
         
         @redhat @full
         Examples:
-            | vendor_type  | vendor    | report_path            |
-            | redhat       | redhat    | tests/data/report.yaml |
+            | vendor_type  | vendor    | report_path                          |
+            | redhat       | redhat    | tests/data/common/redhat/report.yaml |
 
     Scenario Outline: [HC-12-002] A community user submits an error-free report
         Given the vendor "<vendor>" has a valid identity as "<vendor_type>"
@@ -28,5 +28,5 @@ Feature: Report only submission
 
         @community @smoke @full
         Examples:
-            | vendor_type | vendor  | report_path            | message                                                                                     |
-            | community   | redhat  | tests/data/report.yaml | Community charts require maintainer review and approval, a review will be conducted shortly |
+            | vendor_type | vendor  | report_path                             | message                                                                                     |
+            | community   | redhat  | tests/data/common/community/report.yaml | Community charts require maintainer review and approval, a review will be conducted shortly |
