@@ -543,9 +543,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 else:
                     raise AssertionError(f"Yet To be implemented for chart_type {chart.chart_type}")
 
-    def process_report(self, update_chart_sha=False, update_url=False, url=None,
-                       update_versions=False,supported_versions=None,tested_version=None,kube_version=None,
-                       update_provider_delivery=False, provider_delivery=False, missing_check=None,unset_package_digest=False):
+    def process_report(self):
 
         with SetDirectory(Path(self.temp_dir.name)):
             # Copy report to temporary location and push to test_repo:pr_branch
