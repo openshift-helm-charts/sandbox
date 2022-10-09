@@ -568,6 +568,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                         #         fd.write(json.dumps(report, indent=4))
                         #     except Exception as e:
                         #         raise AssertionError("Failed to write report in json format")
+                        shutil.copyfile(f'{chart.report_file_path}', f'{report_path}')
 
                     elif chart.report_file_path.endswith('yaml'):
                         logging.debug("Report type is yaml")
@@ -577,6 +578,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                         # content = Template(tmpl).substitute(values)
 
                         report_path = f'{chart.chart_directory}/{chart.chart_version}/' + chart.report_file_path.split('/')[-1]
+                        shutil.copyfile(f'{chart.report_file_path}', f'{report_path}')
 
                         # try:
                         #     report = yaml.safe_load(content)
