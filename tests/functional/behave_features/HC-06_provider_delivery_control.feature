@@ -17,20 +17,19 @@ Feature: Report only submission with provider control settings
       | vendor_type  | vendor    | report_path                             | index_file                        | provider_control_owners |
       | partners     | hashicorp | tests/data/HC-06/partner/report.yaml    | unpublished-certified-charts.yaml | true                    |
 
-  # @external-feedback 
-  # Scenario Outline: [HC-06-002] A partner associate submits an error-free report and chart with provider controlled delivery
-  #   Given the vendor "<vendor>" has a valid identity as "<vendor_type>"
-  #   And provider delivery control is set to "<provider_control_owners>" in the OWNERS file
-  #   And an error-free chart tarball used in "<chart_path>" and report in "<report_path>"
-  #   And provider delivery control is set to "<provider_control_report>" in the report
-  #   When the user sends a pull request with the report
-  #   Then the pull request is not merged
-  #   And user gets the "<message>" in the pull request comment
+  @external-feedback 
+  Scenario Outline: [HC-06-002] A partner associate submits an error-free report and chart with provider controlled delivery
+    Given the vendor "<vendor>" has a valid identity as "<vendor_type>"
+    And provider delivery control is set to "<provider_control_owners>" in the OWNERS file
+    And an error-free chart tarball used in "<chart_path>" and report in "<report_path>"
+    When the user sends a pull request with the report
+    Then the pull request is not merged
+    And user gets the "<message>" in the pull request comment
 
-  #   @partners @full
-  #   Examples:
-  #     | vendor_type  | vendor    | chart_path                  | report_path               | provider_control_owners | provider_control_report | message                                                                                              |
-  #     | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/report.yaml    | true                    | true                    | OWNERS file and/or report indicate provider controlled delivery but pull request is not report only. |
+    @partners @full
+    Examples:
+      | vendor_type  | vendor    | chart_path                         | report_path                          | provider_control_owners | message                                                                                              |
+      | partners     | hashicorp | tests/data/common/vault-0.17.0.tgz | tests/data/HC-06/partner/report.yaml | true                    | OWNERS file and/or report indicate provider controlled delivery but pull request is not report only. |
 
   # @external-feedback
   # Scenario Outline: [HC-06-003] A partner associate submits an error-free report with inconsistent provider controlled delivery setting
