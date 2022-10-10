@@ -10,17 +10,17 @@ Feature: Report does not include a check
 
         @partners @smoke @full
         Examples:
-            | vendor_type  | vendor    | report_path                          | message                                            |
-	        | partners     | hashicorp | tests/data/HC-11/partner/report.yaml | Missing mandatory check : v1.0/helm-lint           |
+            | vendor_type  | vendor    | report_path                          | message                                  |
+	        | partners     | hashicorp | tests/data/HC-11/partner/report.yaml | Missing mandatory check : v1.0/helm-lint |
 	      
         @community @full
         Examples:
-            | vendor_type  | vendor    | report_path            | check                  | message                                            |
-            | community    | redhat    | tests/data/report.yaml | v1.0/helm-lint         | Missing mandatory check : v1.0/helm-lint           |
+            | vendor_type  | vendor    | report_path                            | message                                  |
+            | community    | redhat    | tests/data/HC-11/community/report.yaml | Missing mandatory check : v1.0/helm-lint |
 	      
         @partners @full
         Examples:
-            | vendor_type  | vendor    | report_path                                           | message                                            |
-            | partners     | hashicorp | tests/data/HC-11/partner_not_contain_crds/report.yaml | Missing mandatory check : v1.0/not-contains-crds   |
+            | vendor_type  | vendor    | report_path                                           | message                                          |
+            | partners     | hashicorp | tests/data/HC-11/partner_not_contain_crds/report.yaml | Missing mandatory check : v1.0/not-contains-crds |
             # Commented this scenario, since it is failing , raised bug : https://issues.redhat.com/browse/HELM-289 , we can uncomment again when the issue fixed 
 	          #| redhat       | redhat    | tests/data/report.yaml |v1.0/helm-lint          | Missing mandatory check : v1.0/helm-lint           |
