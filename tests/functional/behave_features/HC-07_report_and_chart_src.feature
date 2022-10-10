@@ -12,8 +12,8 @@ Feature: Chart source submission with report
 
         @partners @smoke @full
         Examples:
-            | vendor_type  | vendor    | chart_path                     | report_path               |
-            | partners     | hashicorp | tests/data/vault-0.17.0.tgz    | tests/data/report.yaml    |
+            | vendor_type  | vendor    | chart_path                         | report_path                           |
+            | partners     | hashicorp | tests/data/common/vault-0.17.0.tgz | tests/data/common/partner/report.yaml |
         
         @redhat @full
         Examples:
