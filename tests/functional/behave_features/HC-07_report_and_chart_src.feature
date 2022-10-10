@@ -17,8 +17,8 @@ Feature: Chart source submission with report
         
         @redhat @full
         Examples:
-            | vendor_type  | vendor    | chart_path                     | report_path               |
-            | redhat       | redhat    | tests/data/vault-0.17.0.tgz    | tests/data/report.yaml    |
+            | vendor_type  | vendor    | chart_path                         | report_path                          |
+            | redhat       | redhat    | tests/data/common/vault-0.17.0.tgz | tests/data/common/redhat/report.yaml |
 
     Scenario Outline: [HC-07-002] A community user submits an error-free chart source with report
         Given the vendor "<vendor>" has a valid identity as "<vendor_type>"
