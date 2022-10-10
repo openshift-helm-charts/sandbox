@@ -29,5 +29,5 @@ Feature: Chart source submission with report
 
         @community @smoke @full
         Examples:
-            | vendor_type | vendor  | chart_path                  | report_path            | message                                                                                     |
-            | community   | redhat  | tests/data/vault-0.17.0.tgz | tests/data/report.yaml | Community charts require maintainer review and approval, a review will be conducted shortly |
+            | vendor_type | vendor  | chart_path                         | report_path                             | message                                                                                     |
+            | community   | redhat  | tests/data/common/vault-0.17.0.tgz | tests/data/common/community/report.yaml | Community charts require maintainer review and approval, a review will be conducted shortly |
