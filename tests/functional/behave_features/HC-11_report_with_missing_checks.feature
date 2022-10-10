@@ -20,7 +20,7 @@ Feature: Report does not include a check
 	      
         @partners @full
         Examples:
-            | vendor_type  | vendor    | report_path            | check                  | message                                            |
-            | partners     | hashicorp | tests/data/report.yaml | v1.0/not-contains-crds | Missing mandatory check : v1.0/not-contains-crds   |
+            | vendor_type  | vendor    | report_path                                           | message                                            |
+            | partners     | hashicorp | tests/data/HC-11/partner_not_contain_crds/report.yaml | Missing mandatory check : v1.0/not-contains-crds   |
             # Commented this scenario, since it is failing , raised bug : https://issues.redhat.com/browse/HELM-289 , we can uncomment again when the issue fixed 
 	          #| redhat       | redhat    | tests/data/report.yaml |v1.0/helm-lint          | Missing mandatory check : v1.0/helm-lint           |
