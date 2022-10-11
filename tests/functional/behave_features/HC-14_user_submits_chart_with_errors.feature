@@ -60,5 +60,5 @@ Feature: Chart submission with errors
 
     @partners @smoke @full @wip
     Examples:
-      | vendor_type  | vendor    | chart_path                     | message                                            | bad_version |
-      | partners     | hashicorp | tests/data/vault-0.17.0.tgz    | Helm chart version is not a valid semantic version | abc-0.17.0  |
+      | vendor_type  | vendor    | chart_path                         | message                                            | bad_version |
+      | partners     | hashicorp | tests/data/common/vault-0.17.0.tgz | Helm chart version is not a valid semantic version | abc-0.17.0  |
