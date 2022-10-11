@@ -31,17 +31,17 @@ Feature: Multiple charts submission in one PR
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
     
-        @partners @full @wip
+        @partners @full
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @redhat @full
+        @redhat @full @wip
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | redhat       | redhat    | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @community @full
+        @community @full @wip
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | community    | redhat    | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
@@ -53,17 +53,17 @@ Feature: Multiple charts submission in one PR
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
     
-        @partners @full
+        @partners @full @wip
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @redhat @full @smoke
+        @redhat @full @smoke @wip
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | redhat       | redhat    | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @community @full
+        @community @full @wip
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | community    | redhat    | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
