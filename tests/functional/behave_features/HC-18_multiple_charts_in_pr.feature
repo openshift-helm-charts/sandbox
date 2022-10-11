@@ -11,18 +11,18 @@ Feature: Multiple charts submission in one PR
     
         @partners @full @smoke
         Examples:
-            | vendor_type  | vendor    | report_path_1          | report_path_2           | message                                                                         |
-            | partners     | hashicorp | tests/data/report.yaml | tests/data/report2.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
+            | vendor_type  | vendor    | report_path_1                         | report_path_2                        | message                                                                         |
+            | partners     | hashicorp | tests/data/common/partner/report.yaml | tests/data/HC-18/partner/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
         @redhat @full
         Examples:
-            | vendor_type  | vendor    | report_path_1          | report_path_2           | message                                                                         |
-            | redhat       | redhat    | tests/data/report.yaml | tests/data/report2.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
+            | vendor_type  | vendor    | report_path_1                        | report_path_2                       | message                                                                         |
+            | redhat       | redhat    | tests/data/common/redhat/report.yaml | tests/data/HC-18/redhat/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
         @community @full
         Examples:
-            | vendor_type  | vendor    | report_path_1          | report_path_2           | message                                                                         |
-            | community    | redhat    | tests/data/report.yaml | tests/data/report2.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
+            | vendor_type  | vendor    | report_path_1                           | report_path_2                          | message                                                                         |
+            | community    | redhat    | tests/data/common/community/report.yaml | tests/data/HC-18/community/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
 
     Scenario Outline: [HC-18-002] A user submits a PR with multiple chart sources
         Given the vendor "<vendor>" has a valid identity as "<vendor_type>"
@@ -31,7 +31,7 @@ Feature: Multiple charts submission in one PR
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
     
-        @partners @full
+        @partners @full @wip
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
@@ -77,18 +77,18 @@ Feature: Multiple charts submission in one PR
     
         @partners @full
         Examples:
-            | vendor_type  | vendor    | chart_path                  | report_path             | message                                                                         |
-            | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/report2.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
+            | vendor_type  | vendor    | chart_path                  | report_path                          | message                                                                         |
+            | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/HC-18/partner/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
         @redhat @full
         Examples:
-            | vendor_type  | vendor    | chart_path                  | report_path             | message                                                                         |
-            | redhat       | redhat    | tests/data/vault-0.17.0.tgz | tests/data/report2.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
+            | vendor_type  | vendor    | chart_path                  | report_path                         | message                                                                         |
+            | redhat       | redhat    | tests/data/vault-0.17.0.tgz | tests/data/HC-18/redhat/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
         @community @full @smoke
         Examples:
-            | vendor_type  | vendor    | chart_path                  | report_path             | message                                                                         |
-            | community    | redhat    | tests/data/vault-0.17.0.tgz | tests/data/report2.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
+            | vendor_type  | vendor    | chart_path                  | report_path                            | message                                                                         |
+            | community    | redhat    | tests/data/vault-0.17.0.tgz | tests/data/HC-18/community/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
 
     Scenario Outline: [HC-18-005] A user submits a PR with multiple chart one with tar and other with report
         Given the vendor "<vendor>" has a valid identity as "<vendor_type>"
@@ -99,15 +99,15 @@ Feature: Multiple charts submission in one PR
     
         @partners @full
         Examples:
-            | vendor_type  | vendor    | chart_path                  | report_path             | message                                                                         |
-            | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/report2.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
+            | vendor_type  | vendor    | chart_path                  | report_path                          | message                                                                         |
+            | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/HC-18/partner/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
         @redhat @full
         Examples:
-            | vendor_type  | vendor    | chart_path                  | report_path             | message                                                                         |
-            | redhat       | redhat    | tests/data/vault-0.17.0.tgz | tests/data/report2.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
+            | vendor_type  | vendor    | chart_path                  | report_path                         | message                                                                         |
+            | redhat       | redhat    | tests/data/vault-0.17.0.tgz | tests/data/HC-18/redhat/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
         @community @full
         Examples:
-            | vendor_type  | vendor    | chart_path                  | report_path             | message                                                                         |
-            | community    | redhat    | tests/data/vault-0.17.0.tgz | tests/data/report2.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
+            | vendor_type  | vendor    | chart_path                  | report_path                            | message                                                                         |
+            | community    | redhat    | tests/data/vault-0.17.0.tgz | tests/data/HC-18/community/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
