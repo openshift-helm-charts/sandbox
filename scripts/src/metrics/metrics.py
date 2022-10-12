@@ -14,7 +14,12 @@ from indexfile import index
 from pullrequest import prepare_pr_comment as pr_comment
 
 file_pattern = re.compile(r"charts/([\w-]+)/([\w-]+)/([\w\.-]+)/([\w\.-]+)/.*")
-ignore_users=["zonggen","mmulholla","dperaza4dustbit","openshift-helm-charts-bot","baijum","tisutisu","rhrivero"]
+ignore_users=["zonggen","mmulholla","dperaza4dustbit","openshift-helm-charts-bot","baijum","tisutisu","rhrivero","Kartikey-star"]
+pr_submission="PR Submission v1.0"
+pr_merged="PR Merged v1.0"
+pr_outcome="PR Outcome v1.0"
+id_prefix="helm-test-metric-pr"
+charts="charts"
 
 def parse_response(response):
     result = []
@@ -263,7 +268,7 @@ def check_and_get_pr_content(pr,repo):
         return "not-chart","","","",""
 
     return get_pr_content(pr)
-    
+
 
 def process_pr(write_key,repo,message_file,pr_number,action):
     pr = repo.get_pull(int(pr_number))
@@ -316,9 +321,10 @@ def send_summary_metric(write_key,num_submissions,num_merged,num_abandoned,num_i
 def send_outcome_metric(write_key,type,provider,chart,pr_number,outcome,num_fails):
 
     properties = { "type": type, "provider": provider, "chart" : chart, "pr" : pr_number, "outcome" : outcome, "failures" :  num_fails}
-    id = f"helm-metric-{provider}"
+    #id = f"helm-metric-{provider}"
+    id = f"{id_prefix}-{type}-{provider}"
 
-    send_metric(write_key,id,"PR Outcome",properties)
+    send_metric(write_key,id,pr_outcome,properties)
 
 
 def send_check_metric(write_key,type,partner,chart,pr_number,check):
@@ -330,17 +336,20 @@ def send_check_metric(write_key,type,partner,chart,pr_number,check):
 
 def send_merge_metric(write_key,type,partner,chart,duration,pr_number,num_builds,pr_content):
 
-    id = f"helm-metric-{partner}"
+    #id = f"helm-metric-{partner}"
+    id = f"{id_prefix}-{type}-{partner}"
     properties = { "type" : type, "provider": partner, "chart" : chart, "pr" : pr_number, "builds" :num_builds, "duration" : duration, "content" : pr_content}
 
-    send_metric(write_key,id,"PR Merged",properties)
+    send_metric(write_key,id,pr_merged,properties)
 
 def send_submission_metric(write_key,type,partner,chart,pr_number,pr_content):
 
-    id = f"helm-metric-{partner}"
-    properties = { "type" : type, "provider": partner, "chart" : chart, "pr" : pr_number, "pr content": pr_content}
+    #id = f"helm-metric-{partner}"
+    update=getChartUpdate(type,partner,chart)
+    id = f"{id_prefix}-{type}-{partner}"
+    properties = { "type" : type, "provider": partner, "chart" : chart, "pr" : pr_number, "pr content": pr_content,"update": update}
 
-    send_metric(write_key,id,"PR Submission",properties)
+    send_metric(write_key,id,pr_submission,properties)
 
 def on_error(error,items):
     print("An error occurred creating metrics:", error)
@@ -363,6 +372,16 @@ def check_rate_limit(g,force):
     if force or rate_limit.core.remaining < 10:
         print(f"[INFO] rate limit info: {rate_limit.core}")
 
+def getChartUpdate(type,partner,chart):
+    cwd = os.getcwd()
+    # Print the current working directory
+    print(f"Current working directory: {cwd}")
+    directoryPath=os.path.join(cwd, charts,type, partner,chart)
+    # Checking if the directory contains only the OWNERS file
+    if len(os.listdir(directoryPath)) == 1:
+        return "new chart"
+    else:
+        return "new version"
 
 
 def main():
