@@ -14,8 +14,8 @@ from indexfile import index
 from pullrequest import prepare_pr_comment as pr_comment
 
 file_pattern = re.compile(r"charts/([\w-]+)/([\w-]+)/([\w\.-]+)/([\w\.-]+)/.*")
-ignore_users=["zonggen","mmulholla","dperaza4dustbit","openshift-helm-charts-bot","baijum","tisutisu","rhrivero"]
-
+ignore_users=["zonggen","mmulholla","dperaza4dustbit","openshift-helm-charts-bot","baijum","tisutisu","rhrivero","Kartikey-star"]
+chart_downloads_event="Chart Downloads v1.0"
 def parse_response(response):
     result = []
     for obj in response:
@@ -43,6 +43,7 @@ def get_release_metrics():
 
 def send_release_metrics(write_key, downloads):
     metrics={}
+    chart_downloads=[]
     for release in downloads:
         _,provider,chart,_ = index.get_chart_info(release.get('name'))
         if len(provider)>0:
@@ -57,7 +58,29 @@ def send_release_metrics(write_key, downloads):
 
     for provider in metrics:
         for chart in metrics[provider]:
-            send_metric(write_key,provider,f"{chart} downloads", metrics[provider][chart])
+            number_of_downloads=0
+            for key,value in metrics[provider][chart].items():
+                chart_downloads.append({"downloads":number_of_downloads,"name":key,"provider":provider})
+    chart_downloads.sort(key = lambda i: i[0],reverse=True)
+
+    for x in range(len(chart_downloads)):
+        send_download_metric(write_key,chart_downloads[x]["provider"],chart_downloads[x]["downloads"],chart_downloads[x]["name"],x+1)
+
+    for x in range(5):
+        send_top_five_metric(write_key,chart_downloads[x]["provider"],chart_downloads[x]["downloads"],chart_downloads[x]["name"],x+1)
+        # send_metric(write_key,provider,f"{chart} downloads", metrics[provider][chart])
+
+def send_download_metric(write_key,partner,downloads,artifact_name,rank):
+    id = f"helm-test-metrics-downloads-{partner}-{artifact_name}"
+    properties = {"downloads":downloads,"rank":rank,"name":artifact_name }
+
+    send_metric(write_key,id,chart_downloads_event,properties)
+
+def send_top_five_metric(write_key,partner,downloads,artifact_name,rank):
+    id = f"helm-test-metrics-downloads-top5"
+    properties = {"downloads":downloads,"rank":rank,"name":artifact_name }
+
+    send_metric(write_key,id,chart_downloads_event,properties)
 
 def send_pull_request_metrics(write_key,g):
 
@@ -263,7 +286,6 @@ def check_and_get_pr_content(pr,repo):
         return "not-chart","","","",""
 
     return get_pr_content(pr)
-    
 
 def process_pr(write_key,repo,message_file,pr_number,action):
     pr = repo.get_pull(int(pr_number))
@@ -346,7 +368,6 @@ def on_error(error,items):
     print("An error occurred creating metrics:", error)
     print("error with items:",items)
     sys.exit(1)
-
 
 def send_metric(write_key,id,event,properties):
 
