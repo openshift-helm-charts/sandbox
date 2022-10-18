@@ -1,0 +1,63 @@
+name: Metrics for owners file
+
+on:
+  push:
+    branches: [ owner_metrics ]
+
+jobs:
+  owners-metrics:
+    name: Send Owner Metrics
+    runs-on: ubuntu-20.04
+    env:
+      SEGMENT_WRITE_KEY: ${{ secrets.SEGMENT_WRITE_KEY }}
+      SEGMENT_TEST_WRITE_KEY: ${{ secrets.SEGMENT_TEST_WRITE_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # - name: Exit if push is not from redhat-mercury-bot
+      #   id: check_bot_required
+      #   run: |
+      #     # exit if  not pushed by mercury bot
+      #     if [ "$GITHUB_PUSHER == "redhat-mercury-bot"}" == "false" ]; then
+      #       echo "The push is not from redhat mercury bot - do not continue."
+      #       exit 0
+
+      - name: Set up Python 3.x Part 1
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - name: Set up Python 3.x Part 2
+        run: |
+          # set up python
+          python3 -m venv ve1
+          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
+          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+
+      - name: Add owner metrics
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
+              WRITE_KEY=${{ secrets.SEGMENT_WRITE_KEY }}
+              ID_PREFIX="helm-metric-pr"
+              echo "Use segment production write key"
+          else
+              WRITE_KEY=${{ secrets.SEGMENT_TEST_WRITE_KEY }}
+              ID_PREFIX="helm-test-metric-pr"
+              echo "Use segment test write key"
+          fi
+
+          if [ "${WRITE_KEY}" != "" ]; then
+              echo "add owner metric"
+              ve1/bin/pushowners --write-key="${WRITE_KEY}" \
+                                --metric-type="push_request" \
+                                --repository="${GITHUB_REPOSITORY}" \
+                                --added="${{ github.event.head_commit.added }}" \
+                                --modified="${{ github.event.head_commit.modified }}" \
+                                --commits="${{ $GITHUB_PUSHER }}" \
+                                --prefix="${ID_PREFIX}"
+          else
+              echo "Do not collect metrics, required segment write key is not set"
+          fi
