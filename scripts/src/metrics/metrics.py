@@ -20,6 +20,7 @@ pr_merged="PR Merged v1.0"
 pr_outcome="PR Outcome v1.0"
 id_prefix="helm-test-metric-pr"
 charts="charts"
+branchKey="BRANCH"
 
 def parse_response(response):
     result = []
@@ -373,8 +374,8 @@ def check_rate_limit(g,force):
         print(f"[INFO] rate limit info: {rate_limit.core}")
 
 def getChartUpdate(type,partner,chart):
-    cwd = os.getcwd()
-    # Print the current working directory
+    cwd = os.getenv(branchKey)
+    # Print the current working directory from environment variable
     print(f"Current working directory: {cwd}")
     directoryPath=os.path.join(cwd, charts,type, partner,chart)
     # Checking if the directory contains only the OWNERS file
