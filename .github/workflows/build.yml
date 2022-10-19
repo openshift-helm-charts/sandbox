@@ -356,7 +356,6 @@ jobs:
 
       - name: Add metrics
         if: always() && steps.check_build_required.outputs.run-build == 'true'
-        working-directory: ./pr-branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
