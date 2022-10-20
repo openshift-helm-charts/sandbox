@@ -66,8 +66,8 @@ def send_release_metrics(write_key, downloads):
                 break
             for key,value in metrics[provider][chart].items():
                 chart_downloads.append({"downloads":value,"name":key,"provider":provider})
-    chart_downloads.sort(key = lambda i: i[0],reverse=True)
-    chart_downloads_latest.sort(key = lambda i: i[0],reverse=True)
+    chart_downloads.sort(key = lambda k : k['downloads'],reverse=True)
+    chart_downloads_latest.sort(key = lambda k : k['downloads'],reverse=True)
 
     for x in range(len(chart_downloads)):
         send_download_metric(write_key,chart_downloads[x]["provider"],chart_downloads[x]["downloads"],chart_downloads[x]["name"],x+1)
