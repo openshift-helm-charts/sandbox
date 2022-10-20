@@ -322,7 +322,6 @@ def send_summary_metric(write_key,num_submissions,num_merged,num_abandoned,num_i
 def send_outcome_metric(write_key,type,provider,chart,pr_number,outcome,num_fails):
 
     properties = { "type": type, "provider": provider, "chart" : chart, "pr" : pr_number, "outcome" : outcome, "failures" :  num_fails}
-    #id = f"helm-metric-{provider}"
     id = f"{id_prefix}-{type}-{provider}"
 
     send_metric(write_key,id,pr_outcome,properties)
@@ -337,7 +336,6 @@ def send_check_metric(write_key,type,partner,chart,pr_number,check):
 
 def send_merge_metric(write_key,type,partner,chart,duration,pr_number,num_builds,pr_content):
 
-    #id = f"helm-metric-{partner}"
     id = f"{id_prefix}-{type}-{partner}"
     properties = { "type" : type, "provider": partner, "chart" : chart, "pr" : pr_number, "builds" :num_builds, "duration" : duration, "content" : pr_content}
 
@@ -345,7 +343,6 @@ def send_merge_metric(write_key,type,partner,chart,duration,pr_number,num_builds
 
 def send_submission_metric(write_key,type,partner,chart,pr_number,pr_content):
 
-    #id = f"helm-metric-{partner}"
     update=getChartUpdate(type,partner,chart)
     id = f"{id_prefix}-{type}-{partner}"
     properties = { "type" : type, "provider": partner, "chart" : chart, "pr" : pr_number, "pr content": pr_content,"update": update}
