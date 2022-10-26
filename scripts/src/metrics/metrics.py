@@ -14,7 +14,7 @@ from indexfile import index
 from pullrequest import prepare_pr_comment as pr_comment
 
 file_pattern = re.compile(r"charts/([\w-]+)/([\w-]+)/([\w\.-]+)/([\w\.-]+)/.*")
-ignore_users=["zonggen","mmulholla","dperaza4dustbit","openshift-helm-charts-bot","baijum","tisutisu","rhrivero","Kartikey-star"]
+ignore_users=["zonggen","mmulholla","dperaza4dustbit","openshift-helm-charts-bot","baijum","tisutisu","rhrivero"]
 pr_submission="PR Submission v1.0"
 pr_merged="PR Merged v1.0"
 pr_outcome="PR Outcome v1.0"
