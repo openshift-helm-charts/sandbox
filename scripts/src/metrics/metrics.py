@@ -12,10 +12,11 @@ from github import Github
 sys.path.append('../')
 from indexfile import index
 from pullrequest import prepare_pr_comment as pr_comment
+from collections import OrderedDict
 
 file_pattern = re.compile(r"charts/([\w-]+)/([\w-]+)/([\w\.-]+)/([\w\.-]+)/.*")
-ignore_users=["zonggen","mmulholla","dperaza4dustbit","openshift-helm-charts-bot","baijum","tisutisu","rhrivero"]
-
+ignore_users=["zonggen","mmulholla","dperaza4dustbit","openshift-helm-charts-bot","baijum","tisutisu","rhrivero","Kartikey-star"]
+chart_downloads_event="Chart Downloads v1.0"
 def parse_response(response):
     result = []
     for obj in response:
@@ -43,6 +44,8 @@ def get_release_metrics():
 
 def send_release_metrics(write_key, downloads):
     metrics={}
+    chart_downloads=[]
+    chart_downloads_latest=[]
     for release in downloads:
         _,provider,chart,_ = index.get_chart_info(release.get('name'))
         if len(provider)>0:
@@ -57,7 +60,33 @@ def send_release_metrics(write_key, downloads):
 
     for provider in metrics:
         for chart in metrics[provider]:
-            send_metric(write_key,provider,f"{chart} downloads", metrics[provider][chart])
+            ordered_download_perChart = OrderedDict(sorted(metrics[provider][chart].items(),key = lambda i: i[1],reverse=True))
+            for key,value in ordered_download_perChart.items():
+                chart_downloads_latest.append({"downloads":value,"name":key,"provider":provider})
+                break
+            for key,value in metrics[provider][chart].items():
+                chart_downloads.append({"downloads":value,"name":key,"provider":provider})
+    chart_downloads.sort(key = lambda k : k['downloads'],reverse=True)
+    chart_downloads_latest.sort(key = lambda k : k['downloads'],reverse=True)
+
+    for x in range(len(chart_downloads)):
+        send_download_metric(write_key,chart_downloads[x]["provider"],chart_downloads[x]["downloads"],chart_downloads[x]["name"],x+1)
+
+    for x in range(5):
+        send_top_five_metric(write_key,chart_downloads_latest[x]["provider"],chart_downloads_latest[x]["downloads"],chart_downloads_latest[x]["name"],x+1)
+        # send_metric(write_key,provider,f"{chart} downloads", metrics[provider][chart])
+
+def send_download_metric(write_key,partner,downloads,artifact_name,rank):
+    id = f"helm-test-metrics-downloads-{partner}-{artifact_name}"
+    properties = {"downloads":downloads,"rank":rank,"name":artifact_name }
+
+    send_metric(write_key,id,chart_downloads_event,properties)
+
+def send_top_five_metric(write_key,partner,downloads,artifact_name,rank):
+    id = "helm-test-metrics-downloads-top5"
+    properties = {"downloads":downloads,"rank":rank,"name":artifact_name }
+
+    send_metric(write_key,id,chart_downloads_event,properties)
 
 def send_pull_request_metrics(write_key,g):
 
@@ -121,7 +150,7 @@ def process_report_fails(message_file):
                 if "[ERROR] Chart verifier report includes failures:" in message_line:
                     check_failures = True
                 if pr_comment.get_verifier_errors_trailer() in message_line:
-                    break;
+                    break
                 elif "Number of checks failed" in message_line:
                     body_line_parts = message_line.split(":")
                     fails = body_line_parts[1].strip()
@@ -263,7 +292,6 @@ def check_and_get_pr_content(pr,repo):
         return "not-chart","","","",""
 
     return get_pr_content(pr)
-    
 
 def process_pr(write_key,repo,message_file,pr_number,action):
     pr = repo.get_pull(int(pr_number))
@@ -346,7 +374,6 @@ def on_error(error,items):
     print("An error occurred creating metrics:", error)
     print("error with items:",items)
     sys.exit(1)
-
 
 def send_metric(write_key,id,event,properties):
 
