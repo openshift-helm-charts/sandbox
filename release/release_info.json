@@ -17,5 +17,14 @@
     "ignore" : [".github/workflows/release.yml",
                 ".github/workflows/nightly_test.yml",
                 ".github/workflows/metrics.yml"]
+  },
+  "stage" : {
+    "replace": [
+      ".github",
+      "scripts"
+    ],
+    "ignore" : [".github/workflows/release.yml",
+                ".github/workflows/nightly_test.yml",
+                ".github/workflows/metrics.yml"]
   }
 }
