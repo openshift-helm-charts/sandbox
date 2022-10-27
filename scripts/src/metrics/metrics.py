@@ -15,8 +15,14 @@ from pullrequest import prepare_pr_comment as pr_comment
 from collections import OrderedDict
 
 file_pattern = re.compile(r"charts/([\w-]+)/([\w-]+)/([\w\.-]+)/([\w\.-]+)/.*")
-ignore_users=["zonggen","mmulholla","dperaza4dustbit","openshift-helm-charts-bot","baijum","tisutisu","rhrivero","Kartikey-star"]
 chart_downloads_event="Chart Downloads v1.0"
+ignore_users=["zonggen","mmulholla","dperaza4dustbit","openshift-helm-charts-bot","baijum","tisutisu","rhrivero"]
+pr_submission="PR Submission v1.0"
+pr_merged="PR Merged v1.0"
+pr_outcome="PR Outcome v1.0"
+charts="charts"
+branchKey="BRANCH"
+
 def parse_response(response):
     result = []
     for obj in response:
@@ -74,7 +80,6 @@ def send_release_metrics(write_key, downloads):
 
     for x in range(5):
         send_top_five_metric(write_key,chart_downloads_latest[x]["provider"],chart_downloads_latest[x]["downloads"],chart_downloads_latest[x]["name"],x+1)
-        # send_metric(write_key,provider,f"{chart} downloads", metrics[provider][chart])
 
 def send_download_metric(write_key,partner,downloads,artifact_name,rank):
     id = f"helm-test-metrics-downloads-{partner}-{artifact_name}"
@@ -287,19 +292,20 @@ def get_pr_content(pr):
 
 def check_and_get_pr_content(pr,repo):
     repo_name = repo.full_name
-    if (pr.user.login in ignore_users and pr.user.login not in repo_name) or pr.draft or pr.base.ref != "main":
-        print(f"[INFO] Ignore pr, user: {pr.user.login}, draft: {pr.draft}, target_branch: {pr.base.ref}")
-        return "not-chart","","","",""
+    # if (pr.user.login in ignore_users and pr.user.login not in repo_name) or pr.draft or pr.base.ref != "main":
+    #     print(f"[INFO] Ignore pr, user: {pr.user.login}, draft: {pr.draft}, target_branch: {pr.base.ref}")
+    #     return "not-chart","","","",""
 
     return get_pr_content(pr)
 
-def process_pr(write_key,repo,message_file,pr_number,action):
+
+def process_pr(write_key,repo,message_file,pr_number,action,prefix):
     pr = repo.get_pull(int(pr_number))
 
     pr_content,type,provider,chart,version = check_and_get_pr_content(pr,repo)
     if pr_content != "not-chart":
         if action == "opened":
-            send_submission_metric(write_key,type,provider,chart,pr_number,pr_content)
+            send_submission_metric(write_key,type,provider,chart,pr_number,pr_content,prefix)
 
         pr_result = process_comment_file(message_file,pr_number)
         num_fails=0
@@ -309,7 +315,7 @@ def process_pr(write_key,repo,message_file,pr_number,action):
                 send_check_metric(write_key,type,provider,chart,pr_number,check)
         elif pr_result == "content-failure":
             num_fails = 1
-        send_outcome_metric(write_key,type,provider,chart,pr_number,pr_result,num_fails)
+        send_outcome_metric(write_key,type,provider,chart,pr_number,pr_result,num_fails,prefix)
 
         ## if pr is merged we can collect summary stats
         if pr.merged_at:
@@ -331,7 +337,7 @@ def process_pr(write_key,repo,message_file,pr_number,action):
             elif elapsed_hours > 168:
                 duration= "> 7 days"
 
-            send_merge_metric(write_key,type,provider,chart,duration,pr_number,builds_out,pr_content)
+            send_merge_metric(write_key,type,provider,chart,duration,pr_number,builds_out,pr_content,prefix)
 
 
 def send_summary_metric(write_key,num_submissions,num_merged,num_abandoned,num_in_progress,num_partners,num_charts):
@@ -341,12 +347,12 @@ def send_summary_metric(write_key,num_submissions,num_merged,num_abandoned,num_i
 
     send_metric(write_key,id,"PR Summary",properties)
 
-def send_outcome_metric(write_key,type,provider,chart,pr_number,outcome,num_fails):
+def send_outcome_metric(write_key,type,provider,chart,pr_number,outcome,num_fails,prefix):
 
     properties = { "type": type, "provider": provider, "chart" : chart, "pr" : pr_number, "outcome" : outcome, "failures" :  num_fails}
-    id = f"helm-metric-{provider}"
+    id = f"{prefix}-{type}-{provider}"
 
-    send_metric(write_key,id,"PR Outcome",properties)
+    send_metric(write_key,id,pr_outcome,properties)
 
 
 def send_check_metric(write_key,type,partner,chart,pr_number,check):
@@ -356,19 +362,20 @@ def send_check_metric(write_key,type,partner,chart,pr_number,check):
 
     send_metric(write_key,id,"PR Report Fails",properties)
 
-def send_merge_metric(write_key,type,partner,chart,duration,pr_number,num_builds,pr_content):
+def send_merge_metric(write_key,type,partner,chart,duration,pr_number,num_builds,pr_content,prefix):
+    update=getChartUpdate(type,partner,chart)
+    id = f"{prefix}-{type}-{partner}"
+    properties = { "type" : type, "provider": partner, "chart" : chart, "pr" : pr_number, "builds" :num_builds, "duration" : duration, "content" : pr_content,"update": update}
 
-    id = f"helm-metric-{partner}"
-    properties = { "type" : type, "provider": partner, "chart" : chart, "pr" : pr_number, "builds" :num_builds, "duration" : duration, "content" : pr_content}
+    send_metric(write_key,id,pr_merged,properties)
 
-    send_metric(write_key,id,"PR Merged",properties)
+def send_submission_metric(write_key,type,partner,chart,pr_number,pr_content,prefix):
 
-def send_submission_metric(write_key,type,partner,chart,pr_number,pr_content):
+    update=getChartUpdate(type,partner,chart)
+    id = f"{prefix}-{type}-{partner}"
+    properties = { "type" : type, "provider": partner, "chart" : chart, "pr" : pr_number, "pr content": pr_content,"update": update}
 
-    id = f"helm-metric-{partner}"
-    properties = { "type" : type, "provider": partner, "chart" : chart, "pr" : pr_number, "pr content": pr_content}
-
-    send_metric(write_key,id,"PR Submission",properties)
+    send_metric(write_key,id,pr_submission,properties)
 
 def on_error(error,items):
     print("An error occurred creating metrics:", error)
@@ -390,6 +397,16 @@ def check_rate_limit(g,force):
     if force or rate_limit.core.remaining < 10:
         print(f"[INFO] rate limit info: {rate_limit.core}")
 
+def getChartUpdate(type,partner,chart):
+    cwd = os.getenv(branchKey)
+    # Print the current working directory from environment variable
+    print(f"Current working directory: {cwd}")
+    directoryPath=os.path.join(cwd, charts,type, partner,chart)
+    # Checking if the directory contains only the OWNERS file
+    if len(os.listdir(directoryPath)) == 1:
+        return "new chart"
+    else:
+        return "new version"
 
 
 def main():
@@ -406,6 +423,8 @@ def main():
                         help="The event action of the pr")
     parser.add_argument("-r", "--repository", dest="repository", type=str, required=False,
                         help="The repository of the pr")
+    parser.add_argument("-p", "--prefix", dest="prefix", type=str, required=False,
+                        help="The prefix of the id in segment")
 
     args = parser.parse_args()
     print("Input arguments:")
@@ -415,6 +434,7 @@ def main():
     print(f"   --pr-number : {args.pr_number}")
     print(f"   --pr-action : {args.pr_action}")
     print(f"   --repository : {args.repository}")
+    print(f"   --prefix : {args.prefix}")
 
     if not args.write_key:
         print("Error: Segment write key not set")
@@ -424,7 +444,7 @@ def main():
 
     if args.type == "pull_request":
         repo_current = g.get_repo(args.repository)
-        process_pr(args.write_key,repo_current,args.message_file,args.pr_number,args.pr_action)
+        process_pr(args.write_key,repo_current,args.message_file,args.pr_number,args.pr_action,args.prefix)
     else:
         check_rate_limit(g,True)
         send_release_metrics(args.write_key,get_release_metrics())
