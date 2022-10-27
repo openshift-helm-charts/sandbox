@@ -3,8 +3,6 @@ name: Metrics for owners file
 on:
   push:
     branches: [ main ]
-  pull_request_target:
-    types: [opened, synchronize, reopened, edited, ready_for_review, labeled]
 
 jobs:
   owners-metrics:
@@ -50,19 +48,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # mapfile -d ',' -t added_files < <(printf '%s,' '${{ steps.files.outputs.added }}')
-          # for added_file in "${added_modified_files[@]}"; do
-          #   echo "${added_file}"
-          #   if [ "${added_file}" == "charts/*/"*/*/"OWNERS.txt" ]; then
-          #     ACTION="create"
-          #     UPDATE="new-vendor"
-          #   else
-          #     mapfile -d ',' -t modified_files < <(printf '%s,' '${{ steps.files.outputs.modified }}')
-          #     for modified_file in "${modified_files[@]}"; do
-          #       echo "${modified_file}"
-          #       if [ "${added_file}" == "charts/*/"*/*/"OWNERS.txt" ]; then
-          #         ACTION="update"
-          #         UPDATE="existing-vendor"
           if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
               WRITE_KEY=${{ secrets.SEGMENT_WRITE_KEY }}
               ID_PREFIX="helm-metric-pr"
