@@ -358,12 +358,15 @@ jobs:
         if: always() && steps.check_build_required.outputs.run-build == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIRECTORY_PATH: ${{secrets.BRANCH}}
         run: |
           if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
               WRITE_KEY=${{ secrets.SEGMENT_WRITE_KEY }}
+              ID_PREFIX="helm-metric-pr"
               echo "Use segment production write key"
           else
               WRITE_KEY=${{ secrets.SEGMENT_TEST_WRITE_KEY }}
+              ID_PREFIX="helm-test-metric-pr"
               echo "Use segment test write key"
           fi
 
@@ -374,7 +377,8 @@ jobs:
                               --message-file="${{ steps.pr_comment.outputs.message-file }}" \
                               --pr-number="${{ github.event.number }}" \
                               --pr-action="${{ github.event.action }}" \
-                              --repository="${GITHUB_REPOSITORY}"
+                              --repository="${GITHUB_REPOSITORY}" \
+                              --prefix="${ID_PREFIX}"
           else
               echo "Do not collect metrics, required segment write key is not set"
           fi
