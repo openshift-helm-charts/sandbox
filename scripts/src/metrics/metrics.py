@@ -292,9 +292,9 @@ def get_pr_content(pr):
 
 def check_and_get_pr_content(pr,repo):
     repo_name = repo.full_name
-    if (pr.user.login in ignore_users and pr.user.login not in repo_name) or pr.draft or pr.base.ref != "main":
-        print(f"[INFO] Ignore pr, user: {pr.user.login}, draft: {pr.draft}, target_branch: {pr.base.ref}")
-        return "not-chart","","","",""
+    # if (pr.user.login in ignore_users and pr.user.login not in repo_name) or pr.draft or pr.base.ref != "main":
+    #     print(f"[INFO] Ignore pr, user: {pr.user.login}, draft: {pr.draft}, target_branch: {pr.base.ref}")
+    #     return "not-chart","","","",""
 
     return get_pr_content(pr)
 
