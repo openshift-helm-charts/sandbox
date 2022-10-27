@@ -261,7 +261,7 @@ def get_pr_content(pr):
             type,org,chart,version = match.groups()
             if type == "partners":
                 type = "partner"
-            print(f"[INFO] Found PR {pr.number}:{pr.user.login}: type: {type},org: {org},chart: {chart},version: {version}, #files: {len(pr_chart_submission_files)}, file match: {pr_chart_submission_files[0]}")
+            print(f"[INFO] F    {pr.number}:{pr.user.login}: type: {type},org: {org},chart: {chart},version: {version}, #files: {len(pr_chart_submission_files)}, file match: {pr_chart_submission_files[0]}")
             tgz_found = False
             report_found = False
             src_found = False
@@ -398,8 +398,7 @@ def check_rate_limit(g,force):
         print(f"[INFO] rate limit info: {rate_limit.core}")
 
 def getChartUpdate(type,partner,chart):
-    cwd = os.getenv(branchKey)
-    print(os.getenv("CLUSTER_TOKEN"))
+    cwd = os.environ.get("directory_path")
     # Print the current working directory from environment variable
     print(f"Current working directory: {cwd}")
     directoryPath=os.path.join(cwd, charts,type, partner,chart)

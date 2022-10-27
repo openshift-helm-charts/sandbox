@@ -358,6 +358,7 @@ jobs:
         if: always() && steps.check_build_required.outputs.run-build == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIRECTORY_PATH: ${{secrets.BRANCH}}
         run: |
           if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
               WRITE_KEY=${{ secrets.SEGMENT_WRITE_KEY }}
