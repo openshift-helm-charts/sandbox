@@ -60,7 +60,6 @@ jobs:
               ve1/bin/pushowners --write-key="${WRITE_KEY}" \
                                 --metric-type="push_request" \
                                 --repository="${GITHUB_REPOSITORY}" \
-                                --ref="{{ github.event.ref }}"
                                 --added="${{ github.event.head_commit.added }}" \
                                 --modified="${{ github.event.head_commit.modified }}" \
                                 --prefix="${ID_PREFIX}"

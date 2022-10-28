@@ -65,8 +65,6 @@ def main():
                         help="segment write key")
     parser.add_argument("-t", "--metric-type", dest="type", type=str, required=True,
                         help="metric type, releases or pull_request")
-    parser.add_argument("-m", "--message-file", dest="message_file", type=str, required=False,
-                        help="message for metric")
     parser.add_argument("-n", "--added", dest="added", nargs="*", required=False,
                         help="files added")
     parser.add_argument("-a", "--modified", dest="modified", nargs="*", required=False,
@@ -75,10 +73,6 @@ def main():
                         help="The repository of the pr")
     parser.add_argument("-p", "--prefix", dest="prefix", type=str, required=False,
                         help="The prefix of the id in segment")
-    parser.add_argument("-u", "--update", dest="update", type=str, required=False,
-                        help="tells whether the push id for a new or existing vendor")
-    parser.add_argument("-c", "--action", dest="action", type=str, required=False,
-                        help="whether we are creating or updating owners file")
 
 
     args = parser.parse_args()
@@ -89,8 +83,6 @@ def main():
     print(f"   --modified : {args.modified}")
     print(f"   --repository : {args.repository}")
     print(f"   --prefix : {args.prefix}")
-    print(f"   --action : {args.action}")
-    print(f"   --update : {args.update}")
 
     if not args.write_key:
         print("Error: Segment write key not set")
