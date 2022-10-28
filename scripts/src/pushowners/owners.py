@@ -88,7 +88,7 @@ def main():
         print("Error: Segment write key not set")
         sys.exit(1)
 
-    users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update=process_pr(args.added,args.modified)
+    users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update = process_pr(args.added,args.modified)
     send_owner_metric(args.write_key,args.prefix,users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update)
 
 if __name__ == '__main__':
