@@ -21,7 +21,6 @@ pr_submission="PR Submission v1.0"
 pr_merged="PR Merged v1.0"
 pr_outcome="PR Outcome v1.0"
 charts="charts"
-branchKey="BRANCH"
 
 def parse_response(response):
     result = []
