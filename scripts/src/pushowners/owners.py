@@ -2,6 +2,7 @@ import argparse
 import re
 from github import Github
 import yaml
+import analytics
 
 def getFileContent(files):
     users_included="No"
