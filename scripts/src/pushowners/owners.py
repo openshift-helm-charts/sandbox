@@ -56,7 +56,7 @@ def process_pr(added,modified):
 def send_owner_metric(write_key,prefix,users_included,provider_delivery,partner,chart_name,type,action,update):
 
     id = f"{prefix}-{type}-{partner}"
-    properties = { "type" : type, "vendor": partner, "chart" : chart, "users_included" : users_included, "provider_delivery" :provider_delivery, "action" : action, "update" : update}
+    properties = { "type" : type, "vendor": partner, "chart" : chart_name, "users_included" : users_included, "provider_delivery" :provider_delivery, "action" : action, "update" : update}
 
     send_metric(write_key,id,"owners v1.0",properties)
 
