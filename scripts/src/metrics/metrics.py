@@ -299,13 +299,13 @@ def check_and_get_pr_content(pr,repo):
     return get_pr_content(pr)
 
 
-def process_pr(write_key,repo,message_file,pr_number,action,prefix):
+def process_pr(write_key,repo,message_file,pr_number,action,prefix,pr_directory):
     pr = repo.get_pull(int(pr_number))
 
     pr_content,type,provider,chart,version = check_and_get_pr_content(pr,repo)
     if pr_content != "not-chart":
         if action == "opened":
-            send_submission_metric(write_key,type,provider,chart,pr_number,pr_content,prefix)
+            send_submission_metric(write_key,type,provider,chart,pr_number,pr_content,prefix,pr_directory)
 
         pr_result = process_comment_file(message_file,pr_number)
         num_fails=0
@@ -362,16 +362,16 @@ def send_check_metric(write_key,type,partner,chart,pr_number,check):
 
     send_metric(write_key,id,"PR Report Fails",properties)
 
-def send_merge_metric(write_key,type,partner,chart,duration,pr_number,num_builds,pr_content,prefix):
-    update=getChartUpdate(type,partner,chart)
+def send_merge_metric(write_key,type,partner,chart,duration,pr_number,num_builds,pr_content,prefix,pr_directory):
+    update=getChartUpdate(type,partner,chart,pr_directory)
     id = f"{prefix}-{type}-{partner}"
     properties = { "type" : type, "provider": partner, "chart" : chart, "pr" : pr_number, "builds" :num_builds, "duration" : duration, "content" : pr_content,"update": update}
 
     send_metric(write_key,id,pr_merged,properties)
 
-def send_submission_metric(write_key,type,partner,chart,pr_number,pr_content,prefix):
+def send_submission_metric(write_key,type,partner,chart,pr_number,pr_content,prefix,pr_directory):
 
-    update=getChartUpdate(type,partner,chart)
+    update=getChartUpdate(type,partner,chart,pr_directory)
     id = f"{prefix}-{type}-{partner}"
     properties = { "type" : type, "provider": partner, "chart" : chart, "pr" : pr_number, "pr content": pr_content,"update": update}
 
@@ -397,8 +397,8 @@ def check_rate_limit(g,force):
     if force or rate_limit.core.remaining < 10:
         print(f"[INFO] rate limit info: {rate_limit.core}")
 
-def getChartUpdate(type,partner,chart):
-    cwd = os.environ.get("directory_path")
+def getChartUpdate(type,partner,chart,cwd):
+    #cwd = os.environ.get("directory_path")
     # Print the current working directory from environment variable
     print(f"Current working directory: {cwd}")
     directoryPath=os.path.join(cwd, charts,type, partner,chart)
@@ -425,6 +425,8 @@ def main():
                         help="The repository of the pr")
     parser.add_argument("-p", "--prefix", dest="prefix", type=str, required=False,
                         help="The prefix of the id in segment")
+    parser.add_argument("-d", "--pr_dir", dest="pr_dir", type=str, required=False,
+                        help="Directory of pull request code.")
 
     args = parser.parse_args()
     print("Input arguments:")
@@ -435,6 +437,7 @@ def main():
     print(f"   --pr-action : {args.pr_action}")
     print(f"   --repository : {args.repository}")
     print(f"   --prefix : {args.prefix}")
+    print(f"   --pr_dir : {args.pr_dir}")
 
     if not args.write_key:
         print("Error: Segment write key not set")
@@ -444,7 +447,7 @@ def main():
 
     if args.type == "pull_request":
         repo_current = g.get_repo(args.repository)
-        process_pr(args.write_key,repo_current,args.message_file,args.pr_number,args.pr_action,args.prefix)
+        process_pr(args.write_key,repo_current,args.message_file,args.pr_number,args.pr_action,args.prefix,args.pr_dir)
     else:
         check_rate_limit(g,True)
         send_release_metrics(args.write_key,get_release_metrics())
