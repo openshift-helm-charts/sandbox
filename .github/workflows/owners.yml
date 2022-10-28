@@ -35,12 +35,6 @@ jobs:
           cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
           cd scripts && ../ve1/bin/python3 setup.py install && cd ..
 
-      - name: Get files in push request
-        id: files
-        uses: jitterbit/get-changed-files@v1
-        with:
-          format: 'csv'
-
       - name: Add owner metrics
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -9,6 +9,7 @@ sys.path.append('../')
 def getFileContent(files):
     users_included="No"
     provider_delivery="No"
+    vendor_name:str,chart_name:str,vendor_type:str
     for changed_file in files:
         # Load the YAML file
         with open(changed_file) as file:
@@ -32,6 +33,7 @@ def getFileContent(files):
 def process_pr(added,modified):
     added_files=len(added)
     modified_files=len(modified)
+    users_included:str,provider_delivery:str,vendor_name:str,chart_name:str,vendor_type:str
     if added_files==0 and modified_files!=0:
         action="update"
         update="existing-vendor"
