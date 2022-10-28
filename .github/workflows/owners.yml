@@ -56,7 +56,7 @@ jobs:
           fi
 
           if [ "${WRITE_KEY}" != "" ]; then
-              echo "add PR run metric"
+              echo "add owner metric"
               ve1/bin/pushowners --write-key="${WRITE_KEY}" \
                                 --metric-type="push_request" \
                                 --repository="${GITHUB_REPOSITORY}" \
