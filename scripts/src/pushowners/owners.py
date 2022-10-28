@@ -40,6 +40,8 @@ def process_pr(added,modified):
     vendor_name=""
     chart_name=""
     vendor_type=""
+    action=""
+    update=""
     if added_files==0 and modified_files!=0:
         action="update"
         update="existing-vendor"
