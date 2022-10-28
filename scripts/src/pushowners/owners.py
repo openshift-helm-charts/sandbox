@@ -3,6 +3,7 @@ import re
 from github import Github
 import yaml
 import analytics
+sys.path.append('../')
 
 def getFileContent(files):
     users_included="No"
@@ -26,8 +27,6 @@ def getFileContent(files):
                 vendor_type=path_as_list[i+1]
                 break
     return users_included,provider_delivery,vendor_name,chart_name,vendor_type
-
-
 
 def process_pr(added,modified):
     added_files=len(added)
