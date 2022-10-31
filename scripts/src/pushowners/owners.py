@@ -7,7 +7,7 @@ import analytics
 sys.path.append('../')
 
 def getFileContent(files):
-    files=['charts/redhat/redhat/check/OWNERS']
+    files=['./charts/redhat/redhat/check/OWNERS']
     print("reached Here")
     users_included="No"
     provider_delivery="No"
