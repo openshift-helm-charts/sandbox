@@ -15,14 +15,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      # - name: Exit if push is not from redhat-mercury-bot
-      #   id: check_bot_required
-      #   run: |
-      #     # exit if  not pushed by mercury bot
-      #     echo "${{ github.event.pusher.name}}"
-      #     if [ "{"${{ github.event.pusher.name}}" == "redhat-mercury-bot"}" == "false" ]; then
-      #       echo "The push is not from redhat mercury bot - do not continue."
-      #       exit 0
+      - name: Exit if push is not from redhat-mercury-bot
+        id: check_push_by_bot
+        run: |
+          # exit if  not pushed by mercury bot
+          echo "${{ github.event.pusher.name}}"
+          if [ "{"${{ github.event.pusher.name}}" == "redhat-mercury-bot"}" == "false" ]; then
+            echo "The push is not from redhat mercury bot - do not continue."
+            exit 0
 
       - name: Set up Python 3.x Part 1
         uses: actions/setup-python@v2
