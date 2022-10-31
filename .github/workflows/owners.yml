@@ -19,7 +19,8 @@ jobs:
       #   id: check_bot_required
       #   run: |
       #     # exit if  not pushed by mercury bot
-      #     if [ "{""${{ github.event.pusher.name}}" == "redhat-mercury-bot"}" == "false" ]; then
+      #     echo "${{ github.event.pusher.name}}"
+      #     if [ "{"${{ github.event.pusher.name}}" == "redhat-mercury-bot"}" == "false" ]; then
       #       echo "The push is not from redhat mercury bot - do not continue."
       #       exit 0
 
