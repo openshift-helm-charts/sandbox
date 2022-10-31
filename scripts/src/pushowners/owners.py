@@ -28,7 +28,7 @@ def getFileContent(files):
                 elif key=='chart':
                     chart_name=value['name']
         path_as_list=changed_file.split("/")
-        for i in (range(len(path_as_list)) -1):
+        for i in (range(len(path_as_list) - 1)):
             if path_as_list[i]=='charts':
                 vendor_type=path_as_list[i+1]
                 break
