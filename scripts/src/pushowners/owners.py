@@ -14,6 +14,7 @@ def getFileContent(files):
     vendor_type=""
     for changed_file in files:
         # Load the YAML file
+        print(changed_file)
         with open(changed_file) as file:
             documents = yaml.full_load(file)
             for key, value in documents.items():
