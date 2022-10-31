@@ -44,12 +44,12 @@ def process_pr(added,modified):
     vendor_type=""
     action=""
     update=""
-    if modified_files!=0:
+    if modified_files!=0 and modified[0]!='':
         action="update"
         update="existing-vendor"
         users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(modified)
         print(users_included,provider_delivery,vendor_name,chart_name,vendor_type,"1")
-    elif added_files!=0:
+    elif added_files!=0 and added[0]!='':
         action="create"
         update="new-vendor"
         users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(added)
