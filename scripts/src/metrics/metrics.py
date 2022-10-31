@@ -314,6 +314,7 @@ def process_pr(write_key,repo,message_file,pr_number,action,prefix,pr_directory)
                 send_check_metric(write_key,type,provider,chart,pr_number,check)
         elif pr_result == "content-failure":
             num_fails = 1
+        getChartUpdate(type,provider,chart,pr_directory)
         send_outcome_metric(write_key,type,provider,chart,pr_number,pr_result,num_fails,prefix)
 
         ## if pr is merged we can collect summary stats
@@ -400,6 +401,8 @@ def getChartUpdate(type,partner,chart,cwd):
 
     directoryPath=os.path.join(cwd, charts,type, partner,chart)
     # Checking if the directory contains only the OWNERS file
+    print(os.listdir(directoryPath))
+    print(len(os.listdir(directoryPath)))
     if len(os.listdir(directoryPath)) == 1:
         return "new chart"
     else:
