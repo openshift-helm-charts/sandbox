@@ -22,7 +22,7 @@ def getFileContent(files):
                 print(type(key),value)
                 if key=='providerDelivery' and value=='True':
                     provider_delivery="Yes"
-                elif key=='users' and len(users)!=0:
+                elif key=='users' and len(key)!=0:
                     users_included="Yes"
                 elif key=='vendor':
                     vendor_name=value['name']
