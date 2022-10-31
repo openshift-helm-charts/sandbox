@@ -27,7 +27,7 @@ def getFileContent(files):
                 elif key=='chart':
                     chart_name=value['name']
         path_as_list=changed_file.split("/")
-        for i in range(len(path_as_list)):
+        for i in (range(len(path_as_list)) -1):
             if path_as_list[i]=='charts':
                 vendor_type=path_as_list[i+1]
                 break
@@ -36,8 +36,6 @@ def getFileContent(files):
 def process_pr(added,modified):
     added_files=len(added)
     modified_files=len(modified)
-    print(added_files)
-    print(modified_files)
     users_included=""
     provider_delivery=""
     vendor_name=""
@@ -45,14 +43,12 @@ def process_pr(added,modified):
     vendor_type=""
     action=""
     update=""
-    if added_files==0 and modified_files!=0:
-        print("Here")
+    if modified_files!=0:
         action="update"
         update="existing-vendor"
         users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(modified)
         print(users_included,provider_delivery,vendor_name,chart_name,vendor_type,"1")
-    elif added_files!=0 and modified_files==0:
-        print("there")
+    elif added_files!=0:
         action="create"
         update="new-vendor"
         users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(added)
