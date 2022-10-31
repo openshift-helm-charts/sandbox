@@ -19,7 +19,7 @@ jobs:
       #   id: check_bot_required
       #   run: |
       #     # exit if  not pushed by mercury bot
-      #     if [ "$GITHUB_PUSHER == "redhat-mercury-bot"}" == "false" ]; then
+      #     if [ "{""${{ github.event.pusher.name}}" == "redhat-mercury-bot"}" == "false" ]; then
       #       echo "The push is not from redhat mercury bot - do not continue."
       #       exit 0
 
@@ -51,10 +51,7 @@ jobs:
 
           if [ "${WRITE_KEY}" != "" ]; then
               echo "add owner metric"
-              echo "${GITHUB_PUSHER}"
-              echo "${GITHUB_SENDER}"
-              echo "${GITHUB_COMMITS}"
-              echo "${GITHUB_REPOSITORY}"
+              echo "${{ github.event.commits}}"
               echo "${{ github.event.pusher.name}}"
               ve1/bin/pushowners --write-key="${WRITE_KEY}" \
                                 --metric-type="push_request" \
