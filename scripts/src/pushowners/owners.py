@@ -18,8 +18,8 @@ def getFileContent(files):
         # Load the YAML file
         with open(changed_file) as file:
             documents = yaml.full_load(file)
-            print(documents.items)
             for key, value in documents.items():
+                print(key,value)
                 if key=="providerDelivery" and value=="True":
                     provider_delivery="Yes"
                 elif key=="users" and len(users)!=0:
