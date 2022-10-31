@@ -20,7 +20,7 @@ jobs:
         run: |
           # exit if  not pushed by mercury bot
           echo "${{ github.event.pusher.name}}"
-          if [ "{"${{ github.event.pusher.name}}" == "redhat-mercury-bot"}" == "false" ]; then
+          if [ "${{ github.event.pusher.name}}" != "redhat-mercury-bot" ]; then
             echo "The push is not from redhat mercury bot - do not continue."
             exit 0
 
