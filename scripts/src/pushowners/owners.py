@@ -7,8 +7,6 @@ import analytics
 sys.path.append('../')
 
 def getFileContent(files):
-    files=['./charts/redhat/redhat/check/OWNERS']
-    print("reached Here")
     users_included="No"
     provider_delivery="No"
     vendor_name=""
@@ -112,7 +110,6 @@ def main():
         sys.exit(1)
 
     users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update = process_pr(args.added,args.modified)
-    getFileContent(['scripts/src/pushowners/owners.py'])
     send_owner_metric(args.write_key,args.prefix,users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update)
 
 if __name__ == '__main__':
