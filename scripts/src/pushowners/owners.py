@@ -7,6 +7,8 @@ import analytics
 sys.path.append('../')
 
 def getFileContent(files):
+    files=['charts/redhat/redhat/check/OWNERS']
+    print("reached Here")
     users_included="No"
     provider_delivery="No"
     vendor_name=""
@@ -49,11 +51,13 @@ def process_pr(added,modified):
         action="update"
         update="existing-vendor"
         users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(modified)
+        print(users_included,provider_delivery,vendor_name,chart_name,vendor_type,"1")
     elif added_files!=0 and modified_files==0:
         print("there")
         action="create"
         update="new-vendor"
         users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(added)
+        print(users_included,provider_delivery,vendor_name,chart_name,vendor_type,"2")
     return users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update
 
 
