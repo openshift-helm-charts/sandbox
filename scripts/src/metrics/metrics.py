@@ -301,9 +301,9 @@ def check_and_get_pr_content(pr,repo):
 def process_pr(write_key,repo,message_file,pr_number,action,prefix,pr_directory):
     pr = repo.get_pull(int(pr_number))
     pr_content,type,provider,chart,version = check_and_get_pr_content(pr,repo)
-    print("Reached Here")
+    print(f"Reached Here")
     getChartUpdate(type,provider,chart,pr_directory)
-    print("___")
+    print(f"___")
     if pr_content != "not-chart":
         if action == "opened":
             send_submission_metric(write_key,type,provider,chart,pr_number,pr_content,prefix,pr_directory)
