@@ -20,17 +20,17 @@ def getFileContent(files):
             documents = yaml.full_load(file)
             for key, value in documents.items():
                 print(type(key),value)
-                if key=="providerDelivery" and value=="True":
+                if key=='providerDelivery' and value=='True':
                     provider_delivery="Yes"
-                elif key=="users" and len(users)!=0:
+                elif key=='users' and len(users)!=0:
                     users_included="Yes"
-                elif key=="vendor":
+                elif key=='vendor':
                     vendor_name=value['name']
-                elif key=="chart":
+                elif key=='chart':
                     chart_name=value['name']
         path_as_list=changed_file.split("/")
         for i in range(len(path_as_list)):
-            if path_as_list[i]=="charts":
+            if path_as_list[i]=='charts':
                 vendor_type=path_as_list[i+1]
                 break
     return users_included,provider_delivery,vendor_name,chart_name,vendor_type
