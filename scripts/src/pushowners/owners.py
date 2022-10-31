@@ -88,8 +88,6 @@ def main():
                         help="The repository of the pr")
     parser.add_argument("-p", "--prefix", dest="prefix", type=str, required=False,
                         help="The prefix of the id in segment")
-    parser.add_argument("-z", "--commits", dest="commits", nargs="*", required=False,
-                        help="files modified")
 
 
     args = parser.parse_args()
@@ -100,7 +98,6 @@ def main():
     print(f"   --modified : {args.modified}")
     print(f"   --repository : {args.repository}")
     print(f"   --prefix : {args.prefix}")
-    print(f"   --commits : {args.commits}")
 
     if not args.write_key:
         print("Error: Segment write key not set")

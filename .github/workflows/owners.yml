@@ -36,25 +36,17 @@ jobs:
           cd scripts && ../ve1/bin/python3 setup.py install && cd ..
 
       - uses: jitterbit/get-changed-files@v1
-        id: abc
+        id: filesChangedOrModified
         with:
           format: space-delimited
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Printing
+      - name: Printing changes made
         run: |
-          echo "All:"
-          echo "${{ steps.abc.outputs.all }}"
           echo "Added:"
-          echo "${{ steps.abc.outputs.added }}"
-          echo "Removed:"
-          echo "${{ steps.abc.outputs.removed }}"
-          echo "Renamed:"
-          echo "${{ steps.abc.outputs.renamed }}"
+          echo "${{ steps.filesChangedOrModified.outputs.added }}"
           echo "Modified:"
-          echo "${{ steps.abc.outputs.modified }}"
-          echo "Added+Modified:"
-          echo "${{ steps.abc.outputs.added_modified }}"
+          echo "${{ steps.filesChangedOrModified.outputs.modified }}"
 
       - name: Add owner metrics
         env:
@@ -79,9 +71,8 @@ jobs:
               ve1/bin/pushowners --write-key="${WRITE_KEY}" \
                                 --metric-type="push_request" \
                                 --repository="${GITHUB_REPOSITORY}" \
-                                --added="${{ github.event.head_commit.added }}" \
-                                --modified="${{ github.event.head_commit.modified }}" \
-                                --commits="${{ github.event.commits}}" \
+                                --added="${{ steps.filesChangedOrModified.outputs.added }}" \
+                                --modified="${{ steps.filesChangedOrModified.outputs.modified }}" \
                                 --prefix="${ID_PREFIX}"
           else
               echo "Do not collect metrics, required segment write key is not set"
