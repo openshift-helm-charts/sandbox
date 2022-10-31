@@ -51,6 +51,8 @@ jobs:
 
           if [ "${WRITE_KEY}" != "" ]; then
               echo "add owner metric"
+              echo "${{ github.event.head_commit.added }}"
+              echo "${{ github.event.head_commit.modified }}"
               echo "${{ github.event.commits}}"
               echo "${{ github.event.pusher.name}}"
               ve1/bin/pushowners --write-key="${WRITE_KEY}" \
