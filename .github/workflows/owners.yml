@@ -52,8 +52,10 @@ jobs:
           if [ "${WRITE_KEY}" != "" ]; then
               echo "add owner metric"
               echo "${GITHUB_PUSHER}"
+              echo "${GITHUB_SENDER}"
               echo "${GITHUB_COMMITS}"
               echo "${GITHUB_REPOSITORY}"
+              echo "${{ github.event.pusher}}"
               ve1/bin/pushowners --write-key="${WRITE_KEY}" \
                                 --metric-type="push_request" \
                                 --repository="${GITHUB_REPOSITORY}" \
