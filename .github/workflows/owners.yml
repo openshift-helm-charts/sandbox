@@ -51,12 +51,14 @@ jobs:
 
           if [ "${WRITE_KEY}" != "" ]; then
               echo "add owner metric"
+              echo "${GITHUB_PUSHER}"
+              echo "${GITHUB_COMMITS}"
               ve1/bin/pushowners --write-key="${WRITE_KEY}" \
                                 --metric-type="push_request" \
                                 --repository="${GITHUB_REPOSITORY}" \
                                 --added="${{ github.event.head_commit.added }}" \
                                 --modified="${{ github.event.head_commit.modified }}" \
-                                --commits="${{ $GITHUB_PUSHER }}" \
+                                --commits="${GITHUB_PUSHER}" \
                                 --prefix="${ID_PREFIX}"
           else
               echo "Do not collect metrics, required segment write key is not set"
