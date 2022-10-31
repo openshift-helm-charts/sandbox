@@ -60,7 +60,7 @@ jobs:
                                 --repository="${GITHUB_REPOSITORY}" \
                                 --added="${{ github.event.head_commit.added }}" \
                                 --modified="${{ github.event.head_commit.modified }}" \
-                                --commits="${GITHUB_PUSHER}" \
+                                --commits="${{ github.event.commits}}" \
                                 --prefix="${ID_PREFIX}"
           else
               echo "Do not collect metrics, required segment write key is not set"
