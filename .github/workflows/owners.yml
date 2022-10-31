@@ -55,7 +55,7 @@ jobs:
               echo "${GITHUB_SENDER}"
               echo "${GITHUB_COMMITS}"
               echo "${GITHUB_REPOSITORY}"
-              echo "${{ github.event.pusher}}"
+              echo "${{ github.event.pusher.name}}"
               ve1/bin/pushowners --write-key="${WRITE_KEY}" \
                                 --metric-type="push_request" \
                                 --repository="${GITHUB_REPOSITORY}" \
