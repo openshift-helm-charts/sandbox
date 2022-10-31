@@ -53,6 +53,7 @@ jobs:
               echo "add owner metric"
               echo "${GITHUB_PUSHER}"
               echo "${GITHUB_COMMITS}"
+              echo "${GITHUB_REPOSITORY}"
               ve1/bin/pushowners --write-key="${WRITE_KEY}" \
                                 --metric-type="push_request" \
                                 --repository="${GITHUB_REPOSITORY}" \
