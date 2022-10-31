@@ -35,6 +35,8 @@ def getFileContent(files):
 def process_pr(added,modified):
     added_files=len(added)
     modified_files=len(modified)
+    print(added_files)
+    print(modified_files)
     users_included=""
     provider_delivery=""
     vendor_name=""
@@ -43,10 +45,12 @@ def process_pr(added,modified):
     action=""
     update=""
     if added_files==0 and modified_files!=0:
+        print("Here")
         action="update"
         update="existing-vendor"
         users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(modified)
     elif added_files!=0 and modified_files==0:
+        print("there")
         action="create"
         update="new-vendor"
         users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(added)
