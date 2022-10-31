@@ -41,7 +41,7 @@ jobs:
           format: space-delimited
           token: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Printing
+      - name: Printing
         run: |
           echo "All:"
           echo "${{ steps.abc.outputs.all }}"
