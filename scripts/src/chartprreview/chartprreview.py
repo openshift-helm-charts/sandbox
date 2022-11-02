@@ -20,6 +20,7 @@ except ImportError:
 sys.path.append('../')
 from report import report_info
 from report import verifier_report
+from signedchart import signedchart
 
 def write_error_log(directory, *msg):
     os.makedirs(directory, exist_ok=True)
@@ -344,9 +345,19 @@ def main():
             print(f"[ERROR] {msg}")
             write_error_log(args.directory, msg)
             sys.exit(1)
-        else:
-            print("[INFO] Submitted report passed validity check!")
 
+        print("[INFO] Submitted report passed validity check!")
+        owners_file = submitted_report_path = os.path.join("charts", category, organization, chart, "OWNERS")
+        pgp_key_in_owners = signedchart.get_pgp_key_from_owners(owners_file)
+        if pgp_key_in_owners:
+            if signedchart.check_report_for_signed_chart(submitted_report_path):
+                if not signedchart.check_pgp_public_key(pgp_key_in_owners,submitted_report_path):
+                    msg = f"PGP key in OWNERS file does not match with key digest in report."
+                    print(f"[ERROR] {msg}")
+                    write_error_log(args.directory, msg)
+                    sys.exit(1)
+                else:
+                    print("[INFO] PGP key in OWNERS file matches with key digest in report.")
 
     report_generated = os.environ.get("REPORT_GENERATED")
     generated_report_path = os.environ.get("GENERATED_REPORT_PATH")
