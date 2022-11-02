@@ -53,8 +53,12 @@ def _get_report_info(report_path, report_info_path,info_type, profile_type, prof
         else:
             print(f"[INFO] Generate report info using chart-verifier on path : {os.path.abspath(report_path)}")
             if set_values:
+                cmd_with_set_values = ' '.join(["chart-verifier",command,info_type,"--set",set_values,os.path.abspath(report_path)])
+                print(f'CMD with set values: {cmd_with_set_values}')
                 out = subprocess.run(["chart-verifier",command,info_type,"--set",set_values,os.path.abspath(report_path)],capture_output=True)
             else:
+                cmd_without_set_values = ' '.join(["chart-verifier",command,info_type,os.path.abspath(report_path)])
+                print(f'CMD without set values: {cmd_without_set_values}')
                 out = subprocess.run(["chart-verifier",command,info_type,os.path.abspath(report_path)],capture_output=True)
             stderr = out.stderr.decode("utf-8")
             if stderr:
