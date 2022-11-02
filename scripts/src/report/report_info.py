@@ -56,6 +56,10 @@ def _get_report_info(report_path, report_info_path,info_type, profile_type, prof
                 out = subprocess.run(["chart-verifier",command,info_type,"--set",set_values,os.path.abspath(report_path)],capture_output=True)
             else:
                 out = subprocess.run(["chart-verifier",command,info_type,os.path.abspath(report_path)],capture_output=True)
+            stderr = out.stderr.decode("utf-8")
+            if stderr:
+                print(f'Error executing chart-verifier command: {stderr}')
+                sys.exit(1)
             output = out.stdout.decode("utf-8")
 
         if SHA_ERROR in output:
