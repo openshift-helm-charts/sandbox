@@ -21,6 +21,9 @@ def getFileContent(changed_file):
     vendor_name=owners_file.get_vendor(owner_data)
     chart_name=owners_file.get_chart(owner_data)
     vendor_type=getVendorType(changed_file)
+    print("------")
+    print(owner_data)
+    print(users_included,provider_delivery,vendor_name,chart_name,vendor_type)
     return users_included,provider_delivery,vendor_name,chart_name,vendor_type
 
 def process_pr(added_file,modified_file):
