@@ -8,13 +8,9 @@ except ImportError:
 
 
 def get_owner_data(category, organization, chart):
-    try:
-        with open(os.path.join("charts", category, organization, chart, "OWNERS")) as owner_data:
-            owner_content = yaml.load(owner_data,Loader=Loader)
-        return True,owner_content
-    except Exception as err:
-        print(f"Exception loading OWNERS file: {err}")
-        return False,""
+    path=os.path.join("charts", category, organization, chart, "OWNERS")
+    status,owner_content=get_owner_data_from_file(path)
+    return status,owner_content
 
 def get_owner_data_from_file(owner_path):
     try:
