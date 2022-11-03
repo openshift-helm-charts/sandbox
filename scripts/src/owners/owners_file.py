@@ -41,7 +41,7 @@ def get_chart(owner_data):
 def get_provider_delivery(owner_data):
     provider_delivery = False
     try:
-        provider_delivery = owner_data["providerDelivery"]
+        provider_delivery = owner_data['providerDelivery']
     except Exception:
         pass
     return provider_delivery

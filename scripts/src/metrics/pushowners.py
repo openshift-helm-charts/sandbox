@@ -18,13 +18,20 @@ def getFileContent(changed_file):
     owner_data=owners_file.get_owner_data_from_file(changed_file)
     users_included=owners_file.get_users_included(owner_data)
     provider_delivery=owners_file.get_provider_delivery(owner_data)
+    if provider_delivery == False:
+        provider="No"
+    else:
+        provider="Yes"
     vendor_name=owners_file.get_vendor(owner_data)
     chart_name=owners_file.get_chart(owner_data)
     vendor_type=getVendorType(changed_file)
     print("------")
     print(owner_data)
     print(users_included,provider_delivery,vendor_name,chart_name,vendor_type)
-    return users_included,provider_delivery,vendor_name,chart_name,vendor_type
+    print(owner_data['chart']['name'])
+    print(owner_data['vendor']['name'])
+    print(owner_data['providerDelivery'])
+    return users_included,provider,vendor_name,chart_name,vendor_type
 
 def process_pr(added_file,modified_file):
     if modified_file!='':
