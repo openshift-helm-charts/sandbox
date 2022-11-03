@@ -68,13 +68,19 @@ def make_required_changes(release_info_dir,origin,destination):
 
     print(f"Make required changes from {origin} to {destination}")
 
-    repository = "development"
-    if "charts" in origin or "development" in destination:
-        repository = "charts"
+    if "charts" in origin and "dev" in destination:
+        from_repository = "charts"
+        to_repository = "developement"
+    elif "dev" in origin and "charts" in destination:
+        from_repository = "development"
+        to_repository = "charts"
     elif "dev" in origin and "stage" in destination:
-        repository = "stage"
+        from_repository = "development"
+        to_repository = "stage"
+    else:
+        sys.exit("Wrong arguments while calling make_required_changes")
 
-    replaces = release_info.get_replaces(repository,release_info_dir)
+    replaces = release_info.get_replaces(from_repository,to_repository,release_info_dir)
 
     for replace in replaces:
         replace_this=f"{destination}/{replace}"
@@ -88,7 +94,7 @@ def make_required_changes(release_info_dir,origin,destination):
             print(f"Replace file {replace_this} with {with_this}")
             shutil.copy2(with_this,replace_this)
 
-    merges =  release_info.get_merges(repository,release_info_dir)
+    merges =  release_info.get_merges(from_repository,to_repository,release_info_dir)
 
     for merge in merges:
         merge_this = f"{origin}/{merge}"
@@ -102,7 +108,7 @@ def make_required_changes(release_info_dir,origin,destination):
             shutil.copy2(merge_this,into_this)
 
 
-    ignores = release_info.get_ignores(repository,release_info_dir)
+    ignores = release_info.get_ignores(from_repository,to_repository,release_info_dir)
     for ignore in ignores:
         ignore_this = f"{destination}/{ignore}"
         if os.path.isdir(ignore_this):
