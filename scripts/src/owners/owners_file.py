@@ -16,6 +16,31 @@ def get_owner_data(category, organization, chart):
         print(f"Exception loading OWNERS file: {err}")
         return False,""
 
+def get_owner_data_from_file(owner_path):
+    try:
+        with open(owner_path) as owner_data:
+            owner_content = yaml.load(owner_data,Loader=Loader)
+        return True,owner_content
+    except Exception as err:
+        print(f"Exception loading OWNERS file: {err}")
+        return False,""
+
+def get_vendor(owner_data):
+    vendor=""
+    try:
+        vendor = owner_data['vendor']['name']
+    except Exception:
+        pass
+    return vendor
+
+def get_chart(owner_data):
+    chart=""
+    try:
+        chart = owner_data['chart']['name']
+    except Exception:
+        pass
+    return chart
+
 
 def get_provider_delivery(owner_data):
     provider_delivery = False
@@ -25,26 +50,15 @@ def get_provider_delivery(owner_data):
         pass
     return provider_delivery
 
-def getFileContent(changed_file):
+def get_users_included(owner_data):
     users_included="No"
-    provider_delivery="No"
-    vendor_name=""
-    chart_name=""
-    vendor_type=""
-    with open(changed_file) as file:
-        documents = yaml.full_load(file)
-        for key, value in documents.items():
-            if key=='providerDelivery' and value=='True':
-                provider_delivery="Yes"
-            elif key=='users' and len(key)!=0:
-                users_included="Yes"
-            elif key=='vendor':
-                vendor_name=value['name']
-            elif key=='chart':
-                chart_name=value['name']
-        path_as_list=changed_file.split("/")
-        for i in (range(len(path_as_list) - 1)):
-            if path_as_list[i]=='charts':
-                vendor_type=path_as_list[i+1]
-    return users_included,provider_delivery,vendor_name,chart_name,vendor_type
+    try:
+        users = owner_data['users']
+        if len(users)!=0:
+            return "Yes"
+    except Exception:
+        pass
+    return users_included
+
+
 

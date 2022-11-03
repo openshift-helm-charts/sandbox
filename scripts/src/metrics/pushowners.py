@@ -7,23 +7,33 @@ import analytics
 sys.path.append('../')
 from owners import owners_file
 
+def getVendorType(changed_file):
+    path_as_list=changed_file.split("/")
+    for i in (range(len(path_as_list) - 1)):
+        if path_as_list[i]=='charts':
+            vendor_type=path_as_list[i+1]
+            return vendor_type
+
+def getFileContent(changed_file):
+    owner_data=owners_file.get_owner_data_from_file(changed_file)
+    users_included=owners_file.get_users_included(owner_data)
+    provider_delivery=owners_file.get_provider_delivery(owner_data)
+    vendor_name=owners_file.get_vendor(owner_data)
+    chart_name=owners_file.get_chart(owner_data)
+    vendor_type=getVendorType(changed_file)
+    return users_included,provider_delivery,vendor_name,chart_name,vendor_type
+
 def process_pr(added_file,modified_file):
-    users_included=""
-    provider_delivery=""
-    vendor_name=""
-    chart_name=""
-    vendor_type=""
-    action=""
-    update=""
     if modified_file!='':
         action="update"
         update="existing-vendor"
-        users_included,provider_delivery,vendor_name,chart_name,vendor_type=owners_file.getFileContent(modified_file)
+        users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(modified_file)
+        return users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update
     elif added_file!='':
         action="create"
         update="new-vendor"
-        users_included,provider_delivery,vendor_name,chart_name,vendor_type=owners_file.getFileContent(added_file)
-    return users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update
+        users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(added_file)
+        return users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update
 
 
 def send_owner_metric(write_key,prefix,users_included,provider_delivery,partner,chart_name,type,action,update):
