@@ -54,6 +54,7 @@ jobs:
           if [[ "${{ steps.filesChangedOrModified.outputs.added[0] }}" == *"$SUB"* ]] || [[ "${{ steps.filesChangedOrModified.outputs.modified[0] }}" == *"$SUB"* ]] ; then
           echo "OWNERS files have been modified or added"
           else
+          echo "reached here"
           echo "OWNERS files not pushed"
           exit 0
           fi
