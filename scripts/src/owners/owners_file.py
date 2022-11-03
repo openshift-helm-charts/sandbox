@@ -8,14 +8,16 @@ except ImportError:
 
 
 def get_owner_data(category, organization, chart):
+    return get_owner_data_from_file(os.path.join("charts", category, organization, chart, "OWNERS"))
+
+def get_owner_data_from_file(owner_path):
     try:
-        with open(os.path.join("charts", category, organization, chart, "OWNERS")) as owner_data:
+        with open(owner_path) as owner_data:
             owner_content = yaml.load(owner_data,Loader=Loader)
         return True,owner_content
     except Exception as err:
         print(f"Exception loading OWNERS file: {err}")
         return False,""
-
 
 def get_provider_delivery(owner_data):
     provider_delivery = False
@@ -24,4 +26,13 @@ def get_provider_delivery(owner_data):
     except Exception:
         pass
     return provider_delivery
+
+def get_pgp_public_key(owner_data):
+    pgp_public_key = "null"
+    try:
+        pgp_public_key = owner_data["publicPgpKey"]
+    except Exception:
+        pass
+    return pgp_public_key
+
 
