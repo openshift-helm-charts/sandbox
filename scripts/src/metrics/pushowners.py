@@ -28,7 +28,7 @@ def getFileContent(changed_file):
     print("------")
     print(owner_data)
     print(users_included,provider_delivery,vendor_name,chart_name,vendor_type)
-    print(owner_data['chart']['name'])
+    print(dict(owner_data['chart']['name']))
     print(owner_data['vendor']['name'])
     print(owner_data['providerDelivery'])
     return users_included,provider,vendor_name,chart_name,vendor_type
