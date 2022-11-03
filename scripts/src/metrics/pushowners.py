@@ -5,36 +5,9 @@ import yaml
 import sys
 import analytics
 sys.path.append('../')
+from owners import owners_file
 
-def getFileContent(files):
-    users_included="No"
-    provider_delivery="No"
-    vendor_name=""
-    chart_name=""
-    vendor_type=""
-    for changed_file in files:
-        # Load the YAML file
-        with open(changed_file) as file:
-            documents = yaml.full_load(file)
-            for key, value in documents.items():
-                if key=='providerDelivery' and value=='True':
-                    provider_delivery="Yes"
-                elif key=='users' and len(key)!=0:
-                    users_included="Yes"
-                elif key=='vendor':
-                    vendor_name=value['name']
-                elif key=='chart':
-                    chart_name=value['name']
-        path_as_list=changed_file.split("/")
-        for i in (range(len(path_as_list) - 1)):
-            if path_as_list[i]=='charts':
-                vendor_type=path_as_list[i+1]
-                break
-    return users_included,provider_delivery,vendor_name,chart_name,vendor_type
-
-def process_pr(added,modified):
-    added_files=len(added)
-    modified_files=len(modified)
+def process_pr(added_file,modified_file):
     users_included=""
     provider_delivery=""
     vendor_name=""
@@ -42,14 +15,14 @@ def process_pr(added,modified):
     vendor_type=""
     action=""
     update=""
-    if modified_files!=0 and modified[0]!='':
+    if modified_file!='':
         action="update"
         update="existing-vendor"
-        users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(modified)
-    elif added_files!=0 and added[0]!='':
+        users_included,provider_delivery,vendor_name,chart_name,vendor_type=owners_file.getFileContent(modified_file)
+    elif added_file!='':
         action="create"
         update="new-vendor"
-        users_included,provider_delivery,vendor_name,chart_name,vendor_type=getFileContent(added)
+        users_included,provider_delivery,vendor_name,chart_name,vendor_type=owners_file.getFileContent(added_file)
     return users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update
 
 
@@ -102,7 +75,7 @@ def main():
         print("Error: Segment write key not set")
         sys.exit(1)
 
-    users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update = process_pr(args.added,args.modified)
+    users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update = process_pr(args.added[0],args.modified[0])
     send_owner_metric(args.write_key,args.prefix,users_included,provider_delivery,vendor_name,chart_name,vendor_type,action,update)
 
 if __name__ == '__main__':

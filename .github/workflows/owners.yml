@@ -48,6 +48,15 @@ jobs:
           echo "Modified:"
           echo "${{ steps.filesChangedOrModified.outputs.modified }}"
 
+      - name: Quit if files pushed are not
+        run: |
+          if [[ "${{ steps.filesChangedOrModified.outputs.added[0] }}" =~ .*"$SUB".* ]] || [[ "${{ steps.filesChangedOrModified.outputs.modified[0] }}" =~ .*"$SUB".* ]] ; then
+          echo "OWNERS files have been modified or added"
+          else
+          echo "OWNERS files not pushed"
+          exit 0
+          fi
+
       - name: Add owner metrics
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -64,10 +73,6 @@ jobs:
 
           if [ "${WRITE_KEY}" != "" ]; then
               echo "add owner metric"
-              echo "${{ github.event.head_commit.added }}"
-              echo "${{ github.event.head_commit.modified }}"
-              echo "${{ github.event.commits}}"
-              echo "${{ github.event.pusher.name}}"
               ve1/bin/pushowners --write-key="${WRITE_KEY}" \
                                 --metric-type="push_request" \
                                 --repository="${GITHUB_REPOSITORY}" \
