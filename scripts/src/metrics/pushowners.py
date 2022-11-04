@@ -26,8 +26,7 @@ def getFileContent(changed_file):
         vendor_name=owners_file.get_vendor(owner_data)
         chart_name=owners_file.get_chart(owner_data)
         vendor_type=getVendorType(changed_file)
-        print(owner_data['vendor']['name'])
-        print(owner_data['providerDelivery'])
+        print(owner_data)
         return users_included,provider,vendor_name,chart_name,vendor_type
     else:
         print("Exception loading OWNERS file")
