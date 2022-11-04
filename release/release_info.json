@@ -1,21 +1,35 @@
 {
-  "version": "1.4.2",
+  "version": "1.4.3",
   "info" : [
-      "Fixes the sa token creation failure in 4.11 (#152)."
+      "Testing a dummy release to check release changes"
   ],
   "charts" : {
-    "merge": ["charts"]
+    "development": {
+      "merge": ["charts"]
+    }
   },
   "development" : {
-    "replace": [
-      ".github",
-      "scripts",
-      "assets",
-      "docs",
-      "tests"
-    ],
-    "ignore" : [".github/workflows/release.yml",
-                ".github/workflows/nightly_test.yml",
-                ".github/workflows/metrics.yml"]
+    "charts": {
+      "replace": [
+        ".github",
+        "scripts",
+        "assets",
+        "docs",
+        "tests"
+      ],
+      "ignore" : [".github/workflows/release.yml",
+                  ".github/workflows/nightly_test.yml",
+                  ".github/workflows/metrics.yml"]
+    },
+    "stage" : {
+      "replace": [
+        ".github",
+        "scripts"
+      ],
+      "ignore" : [".github/workflows/release.yml",
+                  ".github/workflows/nightly_test.yml",
+                  ".github/workflows/metrics.yml",
+                  ".github/workflows/version_check.yml"]
+    }
   }
 }
