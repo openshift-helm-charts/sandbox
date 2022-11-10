@@ -404,6 +404,6 @@ def main():
         if not tag:
             print("[ERROR] Internal error: missing chart name with version (tag)")
             sys.exit(1)
-        print(f"tag={tag}") >> $GITHUB_OUTPUT
+        print(f"::set-output name=tag::{tag}")
 
     update_index_and_push(indexfile,indexdir, args.repository, branch, category, organization, chart, version, chart_url, chart_entry, args.pr_number, provider_delivery)
