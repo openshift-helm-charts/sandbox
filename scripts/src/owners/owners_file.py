@@ -37,7 +37,6 @@ def get_chart(owner_data):
         pass
     return chart
 
-
 def get_provider_delivery(owner_data):
     provider_delivery = False
     try:
@@ -56,5 +55,12 @@ def get_users_included(owner_data):
         pass
     return users_included
 
+def get_pgp_public_key(owner_data):
+    pgp_public_key = "null"
+    try:
+        pgp_public_key = owner_data["publicPgpKey"]
+    except Exception:
+        pass
+    return pgp_public_key
 
 
