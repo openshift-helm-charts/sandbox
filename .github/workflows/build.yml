@@ -369,7 +369,7 @@ jobs:
               echo "Use segment test write key"
           fi
 
-          if [ "${WRITE_KEY}" != "" ]; then
+          if [ "${WRITE_KEY}" != "None" ]; then
               echo "add PR run metric"
               ve1/bin/metrics --write-key="${WRITE_KEY}" \
                               --metric-type="pull_request" \
