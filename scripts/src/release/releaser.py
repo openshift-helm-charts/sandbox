@@ -70,7 +70,7 @@ def make_required_changes(release_info_dir,origin,destination):
 
     if "charts" in origin and "dev" in destination:
         from_repository = "charts"
-        to_repository = "developement"
+        to_repository = "development"
     elif "dev" in origin and "charts" in destination:
         from_repository = "development"
         to_repository = "charts"
