@@ -349,7 +349,9 @@ jobs:
         continue-on-error: true
         with:
           tag_name: ${{ steps.release-charts.outputs.tag }}
-          files: pr-branch/report.yaml
+          files: |
+              ${{ steps.release-charts.outputs.report_file }}
+              ${{ steps.release-charts.outputs.public_key_file }}
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -369,7 +371,7 @@ jobs:
               echo "Use segment test write key"
           fi
 
-          if [ "${WRITE_KEY}" != "" ]; then
+          if [ "${WRITE_KEY}" == "No metrics" ]; then
               echo "add PR run metric"
               ve1/bin/metrics --write-key="${WRITE_KEY}" \
                               --metric-type="pull_request" \
