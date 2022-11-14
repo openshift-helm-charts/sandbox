@@ -201,8 +201,8 @@ def main():
     os.chdir(start_directory)
 
     print(f"make changes to stage from development")
-    os.chdir(args.stage_dir)
     make_required_changes(args.pr_dir,args.dev_dir,args.stage_dir)
+    os.chdir(args.stage_dir)
     stage_repository=f"{organization}{gitutils.STAGE_REPO}"
     print(f"create stage pull request, repository: {stage_repository}, branch: {args.target_branch} ")
     branch_name = f"{STAGE_PR_BRANCH_NAME_PREFIX}{args.version}"
