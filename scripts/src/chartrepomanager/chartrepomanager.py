@@ -112,14 +112,17 @@ def prepare_chart_tarball_for_release(category, organization, chart, version,sig
             pass
         shutil.copy(path, f".cr-release-packages/{new_prov_file_name}")
         shutil.copy(path, prov_file_name)
+        return get_key_file(category, organization, chart, version)
+    return ""
 
-        owners_path = os.path.join("charts", category, organization, chart, "OWNERS")
-        key_in_owners = signedchart.get_pgp_key_from_owners(owners_path)
-        if key_in_owners:
-            key_file_name = f"{new_chart_file_name}.key"
-            print(f"[INFO] Signed chart - add public key file : {key_file_name}")
-            signedchart.create_public_key_file(key_in_owners,key_file_name)
-            return key_file_name
+def get_key_file(category, organization, chart, version):
+    owners_path = os.path.join("charts", category, organization, chart, "OWNERS")
+    key_in_owners = signedchart.get_pgp_key_from_owners(owners_path)
+    if key_in_owners:
+        key_file_name = f"{organization}-{chart}-{version}.tgz.key"
+        print(f"[INFO] Signed chart - add public key file : {key_file_name}")
+        signedchart.create_public_key_file(key_in_owners,key_file_name)
+        return key_file_name
     return ""
 
 
@@ -367,6 +370,7 @@ def main():
         indexfile = "index.yaml"
 
 
+    public_key_file = ""
     print("[INFO] Report Content : ", os.environ.get("REPORT_CONTENT"))
     if chart_source_exists or chart_tarball_exists:
         if chart_source_exists:
@@ -397,6 +401,9 @@ def main():
         chart_entry = create_index_from_chart(indexdir, args.repository, branch, category, organization, chart, version, chart_url)
     else:
         report_path = os.path.join("charts", category, organization, chart, version, "report.yaml")
+        print(f"[INFO] Report only PR: {report_path}")
+        if signedchart.check_report_for_signed_chart(report_path):
+            public_key_file = get_key_file(category, organization, chart, version)
         print("[INFO] Creating index from report")
         chart_entry, chart_url = create_index_from_report(category, report_path)
 
