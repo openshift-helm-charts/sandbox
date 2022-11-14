@@ -82,12 +82,11 @@ def prepare_chart_source_for_release(category, organization, chart, version):
     print(out.stdout.decode("utf-8"))
     print(out.stderr.decode("utf-8"))
     chart_file_name = f"{chart}-{version}.tgz"
-    new_chart_file_name = f"{organization}-{chart}-{version}.tgz"
     try:
-        os.remove(os.path.join(".cr-release-packages", new_chart_file_name))
+        os.remove(os.path.join(".cr-release-packages", chart_file_name))
     except FileNotFoundError:
         pass
-    shutil.copy(f"{chart}-{version}.tgz" , f".cr-release-packages/{new_chart_file_name}")
+    shutil.copy(f"{chart}-{version}.tgz" , f".cr-release-packages/{chart_file_name}")
 
 def prepare_chart_tarball_for_release(category, organization, chart, version,signed_chart):
     print("[INFO] prepare chart tarball for release. %s, %s, %s, %s" % (category, organization, chart, version))
