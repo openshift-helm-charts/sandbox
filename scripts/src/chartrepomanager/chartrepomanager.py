@@ -92,25 +92,23 @@ def prepare_chart_source_for_release(category, organization, chart, version):
 def prepare_chart_tarball_for_release(category, organization, chart, version,signed_chart):
     print("[INFO] prepare chart tarball for release. %s, %s, %s, %s" % (category, organization, chart, version))
     chart_file_name = f"{chart}-{version}.tgz"
-    new_chart_file_name = f"{organization}-{chart}-{version}.tgz"
     path = os.path.join("charts", category, organization, chart, version, chart_file_name)
     try:
-        os.remove(os.path.join(".cr-release-packages", new_chart_file_name))
+        os.remove(os.path.join(".cr-release-packages", chart_file_name))
     except FileNotFoundError:
         pass
-    shutil.copy(path, f".cr-release-packages/{new_chart_file_name}")
+    shutil.copy(path, f".cr-release-packages/{chart_file_name}")
     shutil.copy(path, chart_file_name)
 
     if signed_chart:
         print("[INFO] Signed chart - include PROV file")
         prov_file_name = f"{chart_file_name}.prov"
-        new_prov_file_name = f"{new_chart_file_name}.prov"
         path = os.path.join("charts", category, organization, chart, version, prov_file_name)
         try:
-            os.remove(os.path.join(".cr-release-packages", new_prov_file_name))
+            os.remove(os.path.join(".cr-release-packages", prov_file_name))
         except FileNotFoundError:
             pass
-        shutil.copy(path, f".cr-release-packages/{new_prov_file_name}")
+        shutil.copy(path, f".cr-release-packages/{prov_file_name}")
         shutil.copy(path, prov_file_name)
         return get_key_file(category, organization, chart, version)
     return ""
@@ -119,7 +117,7 @@ def get_key_file(category, organization, chart, version):
     owners_path = os.path.join("charts", category, organization, chart, "OWNERS")
     key_in_owners = signedchart.get_pgp_key_from_owners(owners_path)
     if key_in_owners:
-        key_file_name = f"{organization}-{chart}-{version}.tgz.key"
+        key_file_name = f"{chart}-{version}.tgz.key"
         print(f"[INFO] Signed chart - add public key file : {key_file_name}")
         signedchart.create_public_key_file(key_in_owners,key_file_name)
         return key_file_name
