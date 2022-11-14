@@ -402,6 +402,7 @@ def main():
     else:
         report_path = os.path.join("charts", category, organization, chart, version, "report.yaml")
         print(f"[INFO] Report only PR: {report_path}")
+        shutil.copy(report_path, "report.yaml")
         if signedchart.check_report_for_signed_chart(report_path):
             public_key_file = get_key_file(category, organization, chart, version)
         print("[INFO] Creating index from report")
