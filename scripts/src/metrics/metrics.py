@@ -47,7 +47,7 @@ def get_release_metrics():
         result.extend(response_json)
     return parse_response(result)
 
-def send_release_metrics(write_key, downloads):
+def send_release_metrics(write_key, downloads, prefix):
     metrics={}
     chart_downloads=[]
     chart_downloads_latest=[]
@@ -75,19 +75,19 @@ def send_release_metrics(write_key, downloads):
     chart_downloads_latest.sort(key = lambda k : k['downloads'],reverse=True)
 
     for x in range(len(chart_downloads)):
-        send_download_metric(write_key,chart_downloads[x]["provider"],chart_downloads[x]["downloads"],chart_downloads[x]["name"],x+1)
+        send_download_metric(write_key,chart_downloads[x]["provider"],chart_downloads[x]["downloads"],chart_downloads[x]["name"],x+1,prefix)
 
     for x in range(5):
-        send_top_five_metric(write_key,chart_downloads_latest[x]["provider"],chart_downloads_latest[x]["downloads"],chart_downloads_latest[x]["name"],x+1)
+        send_top_five_metric(write_key,chart_downloads_latest[x]["provider"],chart_downloads_latest[x]["downloads"],chart_downloads_latest[x]["name"],x+1,prefix)
 
-def send_download_metric(write_key,partner,downloads,artifact_name,rank):
-    id = f"helm-test-metrics-downloads-{partner}-{artifact_name}"
+def send_download_metric(write_key,partner,downloads,artifact_name,rank,prefix):
+    id = f"{prefix}-{partner}-{artifact_name}"
     properties = {"downloads":downloads,"rank":rank,"name":artifact_name }
 
     send_metric(write_key,id,chart_downloads_event,properties)
 
-def send_top_five_metric(write_key,partner,downloads,artifact_name,rank):
-    id = "helm-test-metrics-downloads-top5"
+def send_top_five_metric(write_key,partner,downloads,artifact_name,rank,prefix):
+    id = f"{prefix}-top5"
     properties = {"downloads":downloads,"rank":rank,"name":artifact_name }
 
     send_metric(write_key,id,chart_downloads_event,properties)
@@ -449,7 +449,7 @@ def main():
         process_pr(args.write_key,repo_current,args.message_file,args.pr_number,args.pr_action,args.prefix,args.pr_dir)
     else:
         check_rate_limit(g,True)
-        send_release_metrics(args.write_key,get_release_metrics())
+        send_release_metrics(args.write_key,get_release_metrics(),args.prefix)
         check_rate_limit(g,True)
         send_pull_request_metrics(args.write_key,g)
         check_rate_limit(g,True)

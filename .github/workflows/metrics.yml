@@ -44,13 +44,16 @@ jobs:
               if [[ "${{github.event.inputs.production-data}}" == "true" ]]; then
                   echo "Workflow dispatch using production write key"
                   WRITE_KEY=${SEGMENT_WRITE_KEY}
+                  ID_PREFIX="helm-metric-downloads"
               else
                   echo "Workflow dispatch using test write key"
                   WRITE_KEY=${SEGMENT_TEST_WRITE_KEY}
+                  ID_PREFIX="helm-test-metric-downloads"
               fi
           elif [[ "${{github.repository}}" == "openshift-helm-charts/development" ]]; then
               echo "Scheduled dispatch using production write key"
               WRITE_KEY=${SEGMENT_WRITE_KEY}
+              ID_PREFIX="helm-metric-downloads"
               if [ "${SEGMENT_WRITE_KEY}" != "" ]; then
                   WRITE_KEY=${SEGMENT_WRITE_KEY}
               else
@@ -63,7 +66,7 @@ jobs:
           fi
 
           if [ "${WRITE_KEY}" != "" ]; then
-              ve1/bin/metrics --write-key=${WRITE_KEY} --metric-type=nightly
+              ve1/bin/metrics --write-key=${WRITE_KEY} --metric-type=nightly --prefix="${ID_PREFIX}"
           else
               echo "Do not collect metrics, required segment write key is not set"
           fi
