@@ -195,7 +195,7 @@ vendor:
             release = get_release_by_tag(self.secrets, expected_tag)
             logging.info(f"Released '{expected_tag}' successfully")
 
-            expected_chart_asset = f'{vendor}-{chart_tgz}'
+            expected_chart_asset = f'{chart_tgz}'
             required_assets = [expected_chart_asset]
             logging.info(f"Check '{required_assets}' is in release assets")
             release_id = release['id']
