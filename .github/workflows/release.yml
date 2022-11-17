@@ -109,6 +109,15 @@ jobs:
           repository: ${{ github.event.pull_request.base.repo.full_name }}
           token: ${{ secrets.BOT_TOKEN }}
           path: "dev-repo"
+      
+      - name: Checkout stage repo
+        if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          repository: "openshift-helm-charts/stage"
+          token: ${{ secrets.BOT_TOKEN }}
+          path: "stage-repo"
 
       - name: Set up Python 3.x Part 1
         if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
@@ -142,6 +151,7 @@ jobs:
                              --pr_dir="./pr-branch" \
                              --development_dir="./dev-repo" \
                              --charts_dir="./charts-repo" \
+                             --stage_dir="./stage-repo" \
                              --dev_pr_body="${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}" \
                              --target_branch="${{ github.event.pull_request.base.ref }}" \
                              --target_repository="${{ github.event.pull_request.base.repo.full_name }}"
@@ -152,6 +162,7 @@ jobs:
           REPOSITORIES_SYNCED: ${{ steps.check_version_updated.outputs.release_updated }}
           CHART_PR_ERROR: ${{ steps.sync_repositories.outputs.charts_pr_error }}
           DEV_PR_ERROR: ${{ steps.sync_repositories.outputs.dev_pr_error }}
+          STAGE_PR_ERROR: ${{ steps.sync_repositories.outputs.stage_pr_error }}
           DEV_PR_NOT_NEEDED: ${{ steps.sync_repositories.outputs.dev_pr_not_needed }}
           DEV_PR_FOR_RELEASE: ${{ steps.check_created_release_pr.outputs.dev_release_branch }}
         run: |
@@ -163,6 +174,9 @@ jobs:
                   exit 1
               elif [ "${DEV_PR_ERROR}" == 'true' ]; then
                   echo "Error creating development pull request"
+                  exit 1
+              elif [ "${STAGE_PR_ERROR}" == 'true' ]; then
+                  echo "Error creating stage pull request"
                   exit 1
               else
                   echo "At least one PR was created - merge this one"
