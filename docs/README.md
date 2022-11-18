@@ -212,7 +212,7 @@ fails.
 
 #### Report for a Signed chart
 
-For a signed chart, if a pgp public key was provided to the chart verifier when generating the report, a digest of the key is included in the report. If a base 64 encoded pgp public key is then included in the OWNERS file a check is made to conform the digest of the decoded key in the OWNERS file matches the key digest in the report, and if the match fails the PR will fail. However, if the key digests match, and there are no other errors when processing the PR, a release is generated containing the public key and the report:
+For a signed chart, if a pgp public key was provided to the chart verifier when generating the report, a digest of the key is included in the report. If a base64 encoded pgp public key is then included in the OWNERS file a check is made to confirm the digest of the decoded key in the OWNERS file matches the key digest in the report, and if the match fails the PR will fail. However, if the key digests match, and there are no other errors when processing the PR, a release is generated containing the public key and the report:
 
 ```
 awesome-0.1.0.tgz.key
@@ -473,7 +473,7 @@ messages.
 
 ## Signed chart failures
 
-Signed chart failures can occur when a base 64 encoded pgp public key is included in the OWNERS file.
+Signed chart failures can occur when a base64 encoded pgp public key is included in the OWNERS file.
 
 If the pull request includes a chart verifier report you may see a failure for example:
 
