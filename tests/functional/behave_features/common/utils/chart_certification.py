@@ -543,7 +543,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                                 f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
                     if include_prov_file == True:
                         prov_file_dir = '/'.join(chart.chart_file_path.split('/')[:-1])
-                        prov_file_name = chart_tar[:-4] + '.prov'
+                        prov_file_name = chart_tar + '.prov'
                         logging.debug(f'PROV FILE DIR: {prov_file_dir}')
                         logging.debug(f'PROV FILE NAME: {prov_file_name}')
                         shutil.copyfile(f'{self.old_cwd}/{prov_file_dir}/{prov_file_name}',
