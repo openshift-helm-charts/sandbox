@@ -596,7 +596,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         for chart in self.test_charts:
             if chart.chart_type == Chart_Type.TAR or chart.chart_type == Chart_Type.TAR_AND_REPORT:
                 chart_tar = chart.chart_file_path.split('/')[-1]
-                self.temp_repo.git.add(f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
+                self.temp_repo.git.add(f'{chart.chart_directory}/{chart.chart_version}/')
             elif chart.chart_type == Chart_Type.SRC or chart.chart_type == Chart_Type.SRC_AND_REPORT:
                 if add_non_chart_file:
                     self.temp_repo.git.add(f'{chart.chart_directory}/')
