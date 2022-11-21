@@ -128,7 +128,8 @@ vendor:
             if public_key_file != None:
                 with open(public_key_file, 'r') as f:
                     content = f.read()
-                public_key_value = base64.b64encode(content.encode('utf-8'))
+                encoded_content = content.encode('utf-8')
+                public_key_value = base64.b64encode(encoded_content).decode('utf-8')
             else:
                 public_key_value = 'null'
             values = {'bot_name': self.secrets.bot_name, 'public_key': public_key_value,
