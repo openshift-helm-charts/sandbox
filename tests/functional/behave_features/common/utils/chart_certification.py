@@ -8,6 +8,7 @@ import shutil
 import logging
 import time
 import uuid
+import base64
 from tempfile import TemporaryDirectory
 from dataclasses import dataclass, field
 from string import Template
@@ -31,7 +32,7 @@ class ChartCertificationE2ETest:
 chart:
   name: ${chart_name}
   shortDescription: Test chart for testing chart submission workflows.
-publicPgpKey: null
+publicPgpKey: ${public_key}
 providerDelivery: ${provider_delivery}
 users:
 - githubUsername: ${bot_name}
@@ -121,10 +122,17 @@ vendor:
             raise AssertionError(f"error sending pull request, response was: {r.text}")
         return j['number']
 
-    def create_and_push_owners_file(self, chart_directory, base_branch, vendor_name, vendor_type, chart_name, provider_delivery=False):
+    def create_and_push_owners_file(self, chart_directory, base_branch, vendor_name, vendor_type, chart_name, provider_delivery=False, public_key_file=None):
         with SetDirectory(Path(self.temp_dir.name)):
             # Create the OWNERS file from the string template
-            values = {'bot_name': self.secrets.bot_name,
+            if public_key_file != None:
+                with open(public_key_file, 'r') as f:
+                    content = f.read()
+                encoded_content = content.encode('utf-8')
+                public_key_value = base64.b64encode(encoded_content).decode('utf-8')
+            else:
+                public_key_value = 'null'
+            values = {'bot_name': self.secrets.bot_name, 'public_key': public_key_value,
                     'vendor': vendor_name, 'chart_name': chart_name,
                       "provider_delivery" : provider_delivery}
             content = Template(self.secrets.owners_file_content).substitute(values)
@@ -189,17 +197,30 @@ vendor:
         else:
             return False
 
-    def check_release_result(self, vendor, chart_name, chart_version, chart_tgz, failure_type='error'):
+    def check_release_result(self, vendor, chart_name, chart_version, chart_tgz, failure_type='error', release_type=Release_Type.CHART_ONLY):
         expected_tag = f'{vendor}-{chart_name}-{chart_version}'
         try:
             release = get_release_by_tag(self.secrets, expected_tag)
             logging.info(f"Released '{expected_tag}' successfully")
 
-            expected_chart_asset = f'{chart_tgz}'
-            required_assets = [expected_chart_asset]
+            required_assets = []
+            key_file = chart_tgz + '.key'
+            prov_file = chart_tgz + '.prov'
+            if release_type == Release_Type.CHART_ONLY:
+                required_assets.append(chart_tgz)
+            elif release_type == Release_Type.REPORT_ONLY:
+                required_assets.append('report.yaml')
+            elif release_type == Release_Type.CHART_AND_REPORT:
+                required_assets.extend([chart_tgz, 'report.yaml'])
+            elif release_type == Release_Type.REPORT_AND_KEY:
+                required_assets.extend(['report.yaml', key_file])
+            elif release_type == Release_Type.CHART_REPORT_PROV_AND_KEY:
+                required_assets = [chart_tgz, 'report.yaml', prov_file, key_file]
+            else:
+                sys.exit('Trying to check wrong release type')
             logging.info(f"Check '{required_assets}' is in release assets")
             release_id = release['id']
-            get_release_assets(self.secrets, release_id, required_assets)
+            check_release_assets(self.secrets, release_id, required_assets)
             return True
         except Exception as e:
             if failure_type == 'error':
@@ -523,10 +544,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                 except Exception as e:
                     raise AssertionError(f"Failed to remove readme file : {e}")
 
-    def process_owners_file(self):
-        super().create_and_push_owners_file(self.test_charts[0].chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.test_charts[0].chart_name, self.secrets.provider_delivery)
+    def process_owners_file(self, public_key_file=None):
+        super().create_and_push_owners_file(self.test_charts[0].chart_directory, self.secrets.base_branch, self.secrets.vendor, self.secrets.vendor_type, self.test_charts[0].chart_name, self.secrets.provider_delivery, public_key_file)
 
-    def process_charts(self):
+    def process_charts(self, include_prov_file=False):
         with SetDirectory(Path(self.temp_dir.name)):
             for chart in self.test_charts:
                 if chart.chart_type == Chart_Type.TAR or chart.chart_type == Chart_Type.TAR_AND_REPORT:
@@ -534,6 +555,13 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                     chart_tar = chart.chart_file_path.split('/')[-1]
                     shutil.copyfile(f'{self.old_cwd}/{chart.chart_file_path}',
                                 f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
+                    if include_prov_file == True:
+                        prov_file_dir = '/'.join(chart.chart_file_path.split('/')[:-1])
+                        prov_file_name = chart_tar + '.prov'
+                        logging.debug(f'PROV FILE DIR: {prov_file_dir}')
+                        logging.debug(f'PROV FILE NAME: {prov_file_name}')
+                        shutil.copyfile(f'{self.old_cwd}/{prov_file_dir}/{prov_file_name}',
+                                f'{chart.chart_directory}/{chart.chart_version}/{prov_file_name}')
                 elif chart.chart_type == Chart_Type.SRC or chart.chart_type == Chart_Type.SRC_AND_REPORT:
                     # Unzip files into temporary directory for PR submission
                     logging.debug(f"CHART SRC FILE PATH: {chart.chart_file_path}")
@@ -582,7 +610,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         for chart in self.test_charts:
             if chart.chart_type == Chart_Type.TAR or chart.chart_type == Chart_Type.TAR_AND_REPORT:
                 chart_tar = chart.chart_file_path.split('/')[-1]
-                self.temp_repo.git.add(f'{chart.chart_directory}/{chart.chart_version}/{chart_tar}')
+                self.temp_repo.git.add(f'{chart.chart_directory}/{chart.chart_version}/')
             elif chart.chart_type == Chart_Type.SRC or chart.chart_type == Chart_Type.SRC_AND_REPORT:
                 if add_non_chart_file:
                     self.temp_repo.git.add(f'{chart.chart_directory}/')
@@ -635,10 +663,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         for chart in self.test_charts:
             super().check_index_yaml(self.secrets.base_branch, self.secrets.vendor, chart.chart_name, chart.chart_version, self.secrets.index_file, check_provider_type)
 
-    def check_release_result(self):
+    def check_release_result(self, release_type):
         for chart in self.test_charts:
             chart_tgz = chart.chart_file_path.split('/')[-1]
-            super().check_release_result(self.secrets.vendor, chart.chart_name, chart.chart_version, chart_tgz)
+            super().check_release_result(self.secrets.vendor, chart.chart_name, chart.chart_version, chart_tgz, release_type=release_type)
 
     def cleanup_release(self):
         for chart in self.test_charts:
