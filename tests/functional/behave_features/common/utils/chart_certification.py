@@ -128,7 +128,7 @@ vendor:
             if public_key_file != None:
                 with open(public_key_file, 'r') as f:
                     content = f.read()
-                public_key_value = base64.b64encode(content.decode('utf-8'))
+                public_key_value = base64.b64encode(content.encode('utf-8'))
             else:
                 public_key_value = 'null'
             values = {'bot_name': self.secrets.bot_name, 'public_key': public_key_value,
@@ -544,6 +544,8 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
                     if include_prov_file == True:
                         prov_file_dir = '/'.join(chart.chart_file_path.split('/')[:-1])
                         prov_file_name = chart_tar[:-3] + '.prov'
+                        logging.debug(f'PROV FILE DIR: {prov_file_dir}')
+                        logging.debug(f'PROV FILE NAME: {prov_file_name}')
                         shutil.copyfile(f'{self.old_cwd}/{prov_file_dir}/{prov_file_name}',
                                 f'{chart.chart_directory}/{chart.chart_version}/{prov_file_name}')
                 elif chart.chart_type == Chart_Type.SRC or chart.chart_type == Chart_Type.SRC_AND_REPORT:
