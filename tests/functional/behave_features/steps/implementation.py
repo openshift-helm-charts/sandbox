@@ -1,5 +1,5 @@
 from behave import given, when, then
-from common.utils.chart import Chart, Chart_Type
+from common.utils.chart import Chart, Chart_Type, Release_Type
 
 ############### Common step definitions ###############
 @given(u'the vendor "{vendor}" has a valid identity as "{vendor_type}"')
@@ -35,6 +35,26 @@ def user_has_created_error_free_chart_tarball(context, chart_path):
     context.workflow_test.process_charts()
     context.workflow_test.push_charts()
 
+@given(u'a signed chart tarball is used in "{chart_path}" and public key in "{public_key_file}"')
+def user_has_created_signed_chart_tarball(context, chart_path, public_key_file):
+    context.workflow_test.update_test_charts(test_charts=[(Chart_Type.TAR, chart_path)])
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file(public_key_file=public_key_file)
+    context.workflow_test.process_charts(include_prov_file=True)
+    context.workflow_test.push_charts()
+
+@given(u'signed chart tar used in "{chart_path}"')
+def user_has_created_signed_chart_tarball(context, chart_path):
+    context.workflow_test.update_test_charts(test_charts=[(Chart_Type.TAR, chart_path)])
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file()
+    context.workflow_test.process_charts(include_prov_file=True)
+    context.workflow_test.push_charts()
+
 @given(u'an error-free chart tarball used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_error_free_chart_tarball_and_report(context, chart_path, report_path):
     context.workflow_test.update_test_charts(test_charts=[(Chart_Type.TAR_AND_REPORT, chart_path, report_path)])
@@ -45,6 +65,29 @@ def user_has_created_error_free_chart_tarball_and_report(context, chart_path, re
     context.workflow_test.process_owners_file()
     context.workflow_test.process_charts()
     context.workflow_test.process_report()
+    context.workflow_test.push_charts()
+
+@given(u'a signed chart tar is used in "{chart_path}", report in "{report_path}" and public key in "{public_key_file}"')
+def user_has_created_error_free_chart_tarball_and_report(context, chart_path, report_path, public_key_file):
+    context.workflow_test.update_test_charts(test_charts=[(Chart_Type.TAR_AND_REPORT, chart_path, report_path)])
+
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file(public_key_file=public_key_file)
+    context.workflow_test.process_charts(include_prov_file=True)
+    context.workflow_test.process_report()
+    context.workflow_test.push_charts()
+
+@given(u'unsigned chart tarball is used in "{chart_path}" and public key used "{public_key_file}" in owners')
+def user_has_created_error_free_chart_tarball(context, chart_path, public_key_file):
+    context.workflow_test.update_test_charts(test_charts=[(Chart_Type.TAR, chart_path)])
+
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file(public_key_file=public_key_file)
+    context.workflow_test.process_charts()
     context.workflow_test.push_charts()
 
 @given(u'a chart tarball is used in "{chart_path}" and report in "{report_path}"')
@@ -77,6 +120,15 @@ def user_has_created_error_free_report(context, report_path):
     context.workflow_test.setup_gh_pages_branch()
     context.workflow_test.setup_temp_dir()
     context.workflow_test.process_owners_file()
+    context.workflow_test.process_report()
+
+@given(u'signed chart report used in "{report_path}" and public key in "{public_key_file}"')
+def user_has_created_error_free_report(context, report_path, public_key_file):
+    context.workflow_test.update_test_charts(test_charts=[(Chart_Type.REPORT, report_path)])
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file(public_key_file=public_key_file)
     context.workflow_test.process_report()
 
 @given(u'user wants to send two reports as in "{report_path_1}" and "{report_path_2}"')
@@ -161,9 +213,25 @@ def pull_request_is_merged(context):
 def index_yaml_updated_with_submitted_chart(context):
     context.workflow_test.check_index_yaml()
 
+@then(u'a release is published with report only')
+def release_is_published(context):
+    context.workflow_test.check_release_result(release_type=Release_Type.REPORT_ONLY)
+
 @then(u'a release is published with corresponding report and chart tarball')
 def release_is_published(context):
-    context.workflow_test.check_release_result()
+    context.workflow_test.check_release_result(release_type=Release_Type.CHART_AND_REPORT)
+
+@then(u'a release is published with corresponding report, tarball, prov and key')
+def release_is_published_for_signed_chart(context):
+    context.workflow_test.check_release_result(release_type=Release_Type.CHART_REPORT_PROV_AND_KEY)
+
+@then(u'a release is published with corresponding report and key')
+def release_is_published_for_signed_chart(context):
+    context.workflow_test.check_release_result(release_type=Release_Type.REPORT_AND_KEY)
+
+@then(u'a release is published with corresponding report, chart tar and prov file')
+def release_is_published_for_signed_chart_and_report(context):
+    context.workflow_test.check_release_result(release_type=Release_Type.CHART_PROV_AND_REPORT)
 
 @then(u'the pull request is not merged')
 def pull_request_is_not_merged(context):

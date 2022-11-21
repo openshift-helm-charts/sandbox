@@ -8,6 +8,7 @@ Feature: Report only submission
         When the user sends a pull request with the report
         Then the user sees the pull request is merged
         And the index.yaml file is updated with an entry for the submitted chart
+        And a release is published with report only
     
         @partners @smoke @full
         Examples:
