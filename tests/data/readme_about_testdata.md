@@ -96,3 +96,11 @@ chart-verifier verify https://github.com/openshift-helm-charts/development/blob/
 Modify the reportDigest value itself in report.yaml and copy to tests/data/HC-19/report_sha_bad/
 
 ```
+
+### HC-10
+
+[susdas@susdas partner]$ helm package --sign --key 'Sushanta Das' --keyring /home/susdas/.gnupg/secring.gpg vault/
+Password for key "Sushanta Das (Key generated in loaner laptop) <susdas@redhat.com>" >  
+Successfully packaged chart and saved it to: /home/susdas/go/src/github.com/tisutisu/development/tests/data/HC-10/common/partner/vault-0.17.0.tgz
+[susdas@susdas partner]$ 
+
