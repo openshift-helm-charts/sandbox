@@ -21,7 +21,8 @@ class Release_Type(Enum):
     REPORT_ONLY = 2
     CHART_AND_REPORT = 3
     REPORT_AND_KEY = 4
-    CHART_REPORT_PROV_AND_KEY = 5
+    CHART_PROV_AND_REPORT = 5
+    CHART_REPORT_PROV_AND_KEY = 6
 
 @dataclass
 class Chart:

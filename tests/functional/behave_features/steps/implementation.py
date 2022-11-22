@@ -229,6 +229,10 @@ def release_is_published_for_signed_chart(context):
 def release_is_published_for_signed_chart(context):
     context.workflow_test.check_release_result(release_type=Release_Type.REPORT_AND_KEY)
 
+@then(u'a release is published with corresponding report, chart tar and prov file')
+def release_is_published_for_signed_chart_and_report(context):
+    context.workflow_test.check_release_result(release_type=Release_Type.CHART_PROV_AND_REPORT)
+
 @then(u'the pull request is not merged')
 def pull_request_is_not_merged(context):
     context.workflow_test.check_workflow_conclusion(expect_result='failure')
