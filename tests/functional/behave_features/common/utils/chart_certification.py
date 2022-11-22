@@ -204,8 +204,6 @@ vendor:
             logging.info(f"Released '{expected_tag}' successfully")
 
             required_assets = []
-            key_file = chart_tgz + '.key'
-            prov_file = chart_tgz + '.prov'
             if release_type == Release_Type.CHART_ONLY:
                 required_assets.append(chart_tgz)
             elif release_type == Release_Type.REPORT_ONLY:
@@ -213,8 +211,11 @@ vendor:
             elif release_type == Release_Type.CHART_AND_REPORT:
                 required_assets.extend([chart_tgz, 'report.yaml'])
             elif release_type == Release_Type.REPORT_AND_KEY:
+                key_file = chart_name + '-' + chart_version + '.tgz' + '.key'
                 required_assets.extend(['report.yaml', key_file])
             elif release_type == Release_Type.CHART_REPORT_PROV_AND_KEY:
+                key_file = chart_tgz + '.key'
+                prov_file = chart_tgz + '.prov'
                 required_assets = [chart_tgz, 'report.yaml', prov_file, key_file]
             else:
                 sys.exit('Trying to check wrong release type')
