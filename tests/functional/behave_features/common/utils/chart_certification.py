@@ -213,10 +213,13 @@ vendor:
             elif release_type == Release_Type.REPORT_AND_KEY:
                 key_file = chart_name + '-' + chart_version + '.tgz' + '.key'
                 required_assets.extend(['report.yaml', key_file])
+            elif release_type == Release_Type.CHART_PROV_AND_REPORT:
+                prov_file = chart_tgz + '.prov'
+                required_assets.extend([chart_tgz, 'report.yaml', prov_file])
             elif release_type == Release_Type.CHART_REPORT_PROV_AND_KEY:
                 key_file = chart_tgz + '.key'
                 prov_file = chart_tgz + '.prov'
-                required_assets = [chart_tgz, 'report.yaml', prov_file, key_file]
+                required_assets.extend([chart_tgz, 'report.yaml', prov_file, key_file])
             else:
                 sys.exit('Trying to check wrong release type')
             logging.info(f"Check '{required_assets}' is in release assets")
