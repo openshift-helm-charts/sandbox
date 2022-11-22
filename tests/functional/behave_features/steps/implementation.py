@@ -57,7 +57,7 @@ def user_has_created_error_free_chart_tarball_and_report(context, chart_path, re
     context.workflow_test.process_report()
     context.workflow_test.push_charts()
 
-@given(u'a signed chart tarball is used in "{chart_path}", report in "{report_path}" and public key in "{public_key_file}"')
+@given(u'a signed chart tar is used in "{chart_path}", report in "{report_path}" and public key in "{public_key_file}"')
 def user_has_created_error_free_chart_tarball_and_report(context, chart_path, report_path, public_key_file):
     context.workflow_test.update_test_charts(test_charts=[(Chart_Type.TAR_AND_REPORT, chart_path, report_path)])
 
