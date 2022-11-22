@@ -175,6 +175,10 @@ def index_yaml_updated_with_submitted_chart(context):
 def release_is_published(context):
     context.workflow_test.check_release_result()
 
+@then(u'a release is published with corresponding report, tarball, prov and key')
+def release_is_published_for_signed_chart(context):
+    context.workflow_test.check_release_result(prov_and_key_included=True)
+
 @then(u'the pull request is not merged')
 def pull_request_is_not_merged(context):
     context.workflow_test.check_workflow_conclusion(expect_result='failure')

@@ -197,17 +197,21 @@ vendor:
         else:
             return False
 
-    def check_release_result(self, vendor, chart_name, chart_version, chart_tgz, failure_type='error'):
+    def check_release_result(self, vendor, chart_name, chart_version, chart_tgz, failure_type='error', prov_and_key_included=False):
         expected_tag = f'{vendor}-{chart_name}-{chart_version}'
         try:
             release = get_release_by_tag(self.secrets, expected_tag)
             logging.info(f"Released '{expected_tag}' successfully")
 
-            expected_chart_asset = f'{chart_tgz}'
-            required_assets = [expected_chart_asset]
+            if prov_and_key_included:
+                prov_file = chart_tgz + '.prov'
+                key_file = chart_tgz + '.key'
+                required_assets = [f'{chart_tgz}', 'report.yaml', f'{prov_file}', f'{key_file}']
+            else:
+                required_assets = [f'{chart_tgz}', 'report.yaml']
             logging.info(f"Check '{required_assets}' is in release assets")
             release_id = release['id']
-            get_release_assets(self.secrets, release_id, required_assets)
+            check_release_assets(self.secrets, release_id, required_assets)
             return True
         except Exception as e:
             if failure_type == 'error':
