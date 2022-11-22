@@ -101,7 +101,7 @@ def user_has_created_error_free_report(context, report_path):
     context.workflow_test.process_owners_file()
     context.workflow_test.process_report()
 
-@given(u'signed chart report is used in "{report_path}" and public key in "{public_key_file}"')
+@given(u'signed chart report used in "{report_path}" and public key in "{public_key_file}"')
 def user_has_created_error_free_report(context, report_path, public_key_file):
     context.workflow_test.update_test_charts(test_charts=[(Chart_Type.REPORT, report_path)])
     context.workflow_test.setup_git_context()
