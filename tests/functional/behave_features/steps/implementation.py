@@ -192,6 +192,10 @@ def pull_request_is_merged(context):
 def index_yaml_updated_with_submitted_chart(context):
     context.workflow_test.check_index_yaml()
 
+@then(u'a release is published with report only')
+def release_is_published(context):
+    context.workflow_test.check_release_result(release_type=Release_Type.REPORT_ONLY)
+
 @then(u'a release is published with corresponding report and chart tarball')
 def release_is_published(context):
     context.workflow_test.check_release_result(release_type=Release_Type.CHART_AND_REPORT)
