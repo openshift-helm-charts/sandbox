@@ -101,6 +101,15 @@ def user_has_created_error_free_report(context, report_path):
     context.workflow_test.process_owners_file()
     context.workflow_test.process_report()
 
+@given(u'signed chart report is used in "{report_path}" and public key in "{public_key_file}"')
+def user_has_created_error_free_report(context, report_path, public_key_file):
+    context.workflow_test.update_test_charts(test_charts=[(Chart_Type.REPORT, report_path)])
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file(public_key_file=public_key_file)
+    context.workflow_test.process_report()
+
 @given(u'user wants to send two reports as in "{report_path_1}" and "{report_path_2}"')
 def user_has_created_error_free_report(context, report_path_1, report_path_2):
     context.workflow_test.update_test_charts(test_charts=[(Chart_Type.REPORT, report_path_1), (Chart_Type.REPORT, report_path_2)])
@@ -190,6 +199,10 @@ def release_is_published(context):
 @then(u'a release is published with corresponding report, tarball, prov and key')
 def release_is_published_for_signed_chart(context):
     context.workflow_test.check_release_result(release_type=Release_Type.CHART_REPORT_PROV_AND_KEY)
+
+@then(u'a release is published with corresponding report and key')
+def release_is_published_for_signed_chart(context):
+    context.workflow_test.check_release_result(release_type=Release_Type.REPORT_AND_KEY)
 
 @then(u'the pull request is not merged')
 def pull_request_is_not_merged(context):
