@@ -69,6 +69,18 @@ def user_has_created_error_free_chart_tarball_and_report(context, chart_path, re
     context.workflow_test.process_report()
     context.workflow_test.push_charts()
 
+@given(u'unsigned chart tarball is used in "{chart_path}" and public key used "{public_key_file}" in owners')
+def user_has_created_error_free_chart_tarball_and_report(context, chart_path, public_key_file):
+    context.workflow_test.update_test_charts(test_charts=[(Chart_Type.TAR_AND_REPORT, chart_path)])
+
+    context.workflow_test.setup_git_context()
+    context.workflow_test.setup_gh_pages_branch()
+    context.workflow_test.setup_temp_dir()
+    context.workflow_test.process_owners_file(public_key_file=public_key_file)
+    context.workflow_test.process_charts()
+    context.workflow_test.process_report()
+    context.workflow_test.push_charts()
+
 @given(u'a chart tarball is used in "{chart_path}" and report in "{report_path}"')
 def user_has_created_a_chart_tarball_and_report(context, chart_path, report_path):
     context.workflow_test.update_test_charts(test_charts=[(Chart_Type.TAR_AND_REPORT, chart_path, report_path)])
