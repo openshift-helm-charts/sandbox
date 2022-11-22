@@ -654,10 +654,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         for chart in self.test_charts:
             super().check_index_yaml(self.secrets.base_branch, self.secrets.vendor, chart.chart_name, chart.chart_version, self.secrets.index_file, check_provider_type)
 
-    def check_release_result(self):
+    def check_release_result(self, prov_and_key_included=False):
         for chart in self.test_charts:
             chart_tgz = chart.chart_file_path.split('/')[-1]
-            super().check_release_result(self.secrets.vendor, chart.chart_name, chart.chart_version, chart_tgz)
+            super().check_release_result(self.secrets.vendor, chart.chart_name, chart.chart_version, chart_tgz, prov_and_key_included=False)
 
     def cleanup_release(self):
         for chart in self.test_charts:
