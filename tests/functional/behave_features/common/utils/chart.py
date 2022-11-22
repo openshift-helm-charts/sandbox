@@ -16,6 +16,13 @@ class Chart_Type(Enum):
     SRC_AND_REPORT = 4
     TAR_AND_REPORT = 5
 
+class Release_Type(Enum):
+    CHART_ONLY = 1
+    REPORT_ONLY = 2
+    CHART_AND_REPORT = 3
+    REPORT_AND_KEY = 4
+    CHART_REPORT_PROV_AND_KEY = 5
+
 @dataclass
 class Chart:
     chart_file_path : str = ''

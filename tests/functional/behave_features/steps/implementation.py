@@ -1,5 +1,5 @@
 from behave import given, when, then
-from common.utils.chart import Chart, Chart_Type
+from common.utils.chart import Chart, Chart_Type, Release_Type
 
 ############### Common step definitions ###############
 @given(u'the vendor "{vendor}" has a valid identity as "{vendor_type}"')
@@ -185,11 +185,11 @@ def index_yaml_updated_with_submitted_chart(context):
 
 @then(u'a release is published with corresponding report and chart tarball')
 def release_is_published(context):
-    context.workflow_test.check_release_result()
+    context.workflow_test.check_release_result(release_type=Release_Type.CHART_AND_REPORT)
 
 @then(u'a release is published with corresponding report, tarball, prov and key')
 def release_is_published_for_signed_chart(context):
-    context.workflow_test.check_release_result(prov_and_key_included=True)
+    context.workflow_test.check_release_result(release_type=Release_Type.CHART_REPORT_PROV_AND_KEY)
 
 @then(u'the pull request is not merged')
 def pull_request_is_not_merged(context):

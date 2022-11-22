@@ -197,18 +197,27 @@ vendor:
         else:
             return False
 
-    def check_release_result(self, vendor, chart_name, chart_version, chart_tgz, failure_type='error', prov_and_key_included=False):
+    def check_release_result(self, vendor, chart_name, chart_version, chart_tgz, failure_type='error', release_type=Release_Type.CHART_ONLY):
         expected_tag = f'{vendor}-{chart_name}-{chart_version}'
         try:
             release = get_release_by_tag(self.secrets, expected_tag)
             logging.info(f"Released '{expected_tag}' successfully")
 
-            if prov_and_key_included:
-                prov_file = chart_tgz + '.prov'
-                key_file = chart_tgz + '.key'
-                required_assets = [f'{chart_tgz}', 'report.yaml', f'{prov_file}', f'{key_file}']
+            required_assets = []
+            key_file = chart_tgz + '.key'
+            prov_file = chart_tgz + '.prov'
+            if release_type == Release_Type.CHART_ONLY:
+                required_assets.append(chart_tgz)
+            elif release_type == Release_Type.REPORT_ONLY:
+                required_assets.append('report.yaml')
+            elif release_type == Release_Type.CHART_AND_REPORT:
+                required_assets.extend([chart_tgz, 'report.yaml'])
+            elif release_type == Release_Type.REPORT_AND_KEY:
+                required_assets.extend(['report.yaml', key_file])
+            elif release_type == Release_Type.CHART_REPORT_PROV_AND_KEY:
+                required_assets = [chart_tgz, 'report.yaml', prov_file, key_file]
             else:
-                required_assets = [f'{chart_tgz}', 'report.yaml']
+                sys.exit('Trying to check wrong release type')
             logging.info(f"Check '{required_assets}' is in release assets")
             release_id = release['id']
             check_release_assets(self.secrets, release_id, required_assets)
@@ -654,10 +663,10 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         for chart in self.test_charts:
             super().check_index_yaml(self.secrets.base_branch, self.secrets.vendor, chart.chart_name, chart.chart_version, self.secrets.index_file, check_provider_type)
 
-    def check_release_result(self, prov_and_key_included=False):
+    def check_release_result(self, release_type=None):
         for chart in self.test_charts:
             chart_tgz = chart.chart_file_path.split('/')[-1]
-            super().check_release_result(self.secrets.vendor, chart.chart_name, chart.chart_version, chart_tgz, prov_and_key_included=False)
+            super().check_release_result(self.secrets.vendor, chart.chart_name, chart.chart_version, chart_tgz, release_type=None)
 
     def cleanup_release(self):
         for chart in self.test_charts:
