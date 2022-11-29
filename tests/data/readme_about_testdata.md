@@ -96,3 +96,29 @@ chart-verifier verify https://github.com/openshift-helm-charts/development/blob/
 Modify the reportDigest value itself in report.yaml and copy to tests/data/HC-19/report_sha_bad/
 
 ```
+
+### HC-10
+
+```
+Unpack the unsigned vault-0.17.0.tgz into vault/ directory
+
+Sign the chart using your private key and package it using below cmd:
+$ helm package --sign --key 'Sushanta Das' --keyring /home/susdas/.gnupg/secring.gpg vault/
+Password for key "Sushanta Das (Key generated in loaner laptop) <susdas@redhat.com>" >  
+Successfully packaged chart and saved it to: /home/susdas/go/src/github.com/tisutisu/development/tests/data/HC-10/signed_chart/vault-0.17.0.tgz
+$ 
+
+Verify the resulting chart tar and .prov file should be under tests/data/HC-10/signed_chart
+
+Also generate your public key and copy it into the same tests/data/HC-10/signed_chart directory using below cmd:
+gpg --export -a susdas@redhat.com > public_key_good.asc
+
+
+chart-verifier verify https://github.com/openshift-helm-charts/development/blob/main/tests/data/HC-10/signed_chart/vault-0.17.0.tgz?raw=true -k tests/data/HC-10/signed_chart/public_key_good.asc > report.yaml
+Copy report.yaml to tests/data/HC-10/signed_chart/report/partner/
+
+chart-verifier verify https://github.com/openshift-helm-charts/development/blob/main/tests/data/HC-10/signed_chart/vault-0.17.0.tgz?raw=true -k tests/data/HC-10/signed_chart/public_key_good.asc --set profile.vendorType=redhat > report.yaml
+Copy report.yaml to tests/data/HC-10/signed_chart/report/redhat/
+
+```
+
