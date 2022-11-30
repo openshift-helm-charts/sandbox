@@ -1,5 +1,6 @@
 import os
 import sys
+import cryptocode
 
 def get_success_coment():
     return "Congratulations! Your chart has been certified and will be published shortly."
@@ -30,15 +31,16 @@ def prepare_failure_comment():
 {get_look_at_job_output_comment()}"""
     if os.path.exists("./pr/errors"):
         errors = open("./pr/errors").read()
-        msg += f""" 
+        msg += f"""
 {get_verifier_errors_comment()}
 
-{errors}
+{cryptocode.decrypt(errors,"")}
 
 {get_verifier_errors_trailer()}
 
 """
-        print(f"::set-output name=error-message::{errors}")
+        decrypted_value = cryptocode.decrypt(errors,"")
+        print(f"::set-output name=error-message::{decrypted_value}")
     else:
         print(f"::set-output name=error-message::{get_failure_comment()}")
     return msg
@@ -62,7 +64,7 @@ def prepare_pr_content_failure_comment():
 def prepare_run_verifier_failure_comment():
     verifier_error_msg = os.environ.get("VERIFIER_ERROR_MESSAGE", "")
     print(f"::set-output name=error-message::{verifier_error_msg}")
-    msg = f"""   
+    msg = f"""
 {verifier_error_msg}
 
 {get_look_at_job_output_comment()}
@@ -75,7 +77,8 @@ def prepare_community_comment():
     if os.path.exists("./pr/errors"):
         errors = open("./pr/errors").read()
         msg += "However, please note that one or more errors were found while building and verifying your pull request:\n\n"
-        msg += f"{errors}\n\n"
+        decrypted_value = cryptocode.decrypt(errors,"")
+        msg += f"{decrypted_value}\n\n"
     return msg
 
 def prepare_oc_install_fail_comment():
