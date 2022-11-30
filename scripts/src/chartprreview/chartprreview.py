@@ -22,13 +22,14 @@ sys.path.append('../')
 from report import report_info
 from report import verifier_report
 from signedchart import signedchart
+import cryptocode
 
 def write_error_log(directory, *msg):
     os.makedirs(directory, exist_ok=True)
     with open(os.path.join(directory, "errors"), "w") as fd:
         for line in msg:
-            print(line)
-            fd.write(line)
+            encodedLine = cryptocode.encrypt(line,"")
+            fd.write(encodedLine)
             fd.write("\n")
 
 def get_vendor_type(directory):
@@ -346,7 +347,8 @@ def main():
         report_valid, message = verifier_report.validate(submitted_report_path)
         if not report_valid:
             msg = f"Submitted report is not valid: {message}"
-            print(f"[ERROR] {msg}")
+            encrypted_value = cryptocode.encrypt(msg,"")
+            print(f"[ERROR] {encrypted_value}")
             write_error_log(args.directory, msg)
             sys.exit(1)
 
