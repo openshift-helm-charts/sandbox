@@ -1,7 +1,10 @@
 {
-  "version": "1.4.2",
+  "version": "1.5.0",
   "info" : [
-      "Fixes the sa token creation failure in 4.11 (#152)."
+    "Update release content for signed charts (#183)",
+    "Add support for signed charts (#174)",
+    "Check report sha (#160)",
+    "Check chart version is a valid semantic version (#159)"
   ],
   "charts" : {
     "development": {
