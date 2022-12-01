@@ -4,6 +4,7 @@ import sys
 import argparse
 
 import requests
+import semver
 import yaml
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -140,7 +141,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             else:
                 matches_found += 1
                 if reportpattern.match(file_path):
-                    print("[INFO] Report found")
+                    print(f"[INFO] Report found: {file_path}")
                     print("::set-output name=report-exists::true")
                     report_found = True
                 if matches_found == 1:
@@ -183,6 +184,13 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
         category, organization, chart, version = pattern_match.groups()
         print(f"::set-output name=category::{'partner' if category == 'partners' else category}")
         print(f"::set-output name=organization::{organization}")
+
+        if not semver.VersionInfo.isvalid(version):
+            msg = f"[ERROR] Helm chart version is not a valid semantic version: {version}"
+            print(msg)
+            print(f"::set-output name=pr-content-error-message::{msg}")
+            sys.exit(1)
+
         print("Downloading index.yaml", category, organization, chart, version)
         r = requests.get(f'https://raw.githubusercontent.com/{repository}/{branch}/index.yaml')
         if r.status_code == 200:
@@ -191,7 +199,6 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             data = {"apiVersion": "v1",
                 "entries": {}}
 
-        crtentries = []
         entry_name = f"{organization}-{chart}"
         d = data["entries"].get(entry_name, [])
         print(f"::set-output name=chart-entry-name::{entry_name}")
