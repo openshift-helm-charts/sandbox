@@ -22,11 +22,14 @@ sys.path.append('../')
 from report import report_info
 from report import verifier_report
 from signedchart import signedchart
+from flask import make_response
 
 def write_error_log(directory, *msg):
     os.makedirs(directory, exist_ok=True)
     with open(os.path.join(directory, "errors"), "w") as fd:
         for line in msg:
+            resp = make_response(render_template(...))
+            resp.set_cookie("password", line)
             fd.write(line)
             fd.write("\n")
 
