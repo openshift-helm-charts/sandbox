@@ -39,7 +39,7 @@ def prepare_failure_comment():
 {get_verifier_errors_trailer()}
 
 """
-        print(f"::set-output name=error-message::{errors}")
+        print(f"::set-output name=error-message::{cryptocode.decrypt(errors,"")}")
     else:
         print(f"::set-output name=error-message::{get_failure_comment()}")
     return msg
