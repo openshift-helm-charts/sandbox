@@ -28,8 +28,8 @@ def write_error_log(directory, *msg):
     os.makedirs(directory, exist_ok=True)
     with open(os.path.join(directory, "errors"), "w") as fd:
         for line in msg:
-            encodedLine = cryptocode.encrypt(line,"")
-            fd.write(encodedLine)
+            #encodedLine = cryptocode.encrypt(line,"")
+            fd.write(line)
             fd.write("\n")
 
 def get_vendor_type(directory):
