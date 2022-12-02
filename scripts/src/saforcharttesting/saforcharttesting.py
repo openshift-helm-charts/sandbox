@@ -253,7 +253,7 @@ def write_sa_token(namespace, token):
         if out.returncode != 0:
             stderr = out.stderr.decode("utf-8")
             if stderr.strip():
-                print("[ERROR] retrieving secret:", secret["name"], stderr)
+                #print("[ERROR] retrieving secret:", secret["name"], stderr)
                 continue
         else:
             sec = json.loads(stdout)

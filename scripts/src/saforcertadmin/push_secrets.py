@@ -67,7 +67,7 @@ def create_or_update_repo_secrets(repo, secret_name, key_id, encrypted_value):
         logging.error(f"unexpected response during put request : {response.status_code} : {response.reason}")
         sys.exit(1)
     #response_json = response.json()
-    logging.info(f'Secret {secret_name} create or update successful')
+    #logging.info(f'Secret {secret_name} create or update successful')
 
 def main():
     parser = argparse.ArgumentParser(description='Script to list, create or update secrets of a repository')
@@ -83,11 +83,11 @@ def main():
 
     if args.list:
         secrets = get_repo_secrets(args.repo)
-        logging.info(f'Github Secret Names: {secrets}')
+        #logging.info(f'Github Secret Names: {secrets}')
     elif args.secret and args.value:
         secret_name = args.secret
         secret_value = args.value
-        logging.info(f'Setting SECRET: {secret_name}')
+        #logging.info(f'Setting SECRET: {secret_name}')
         key_id, public_key = get_repo_public_key(args.repo)
         encrypted_value = encrypt(public_key, secret_value)
         create_or_update_repo_secrets(args.repo, secret_name, key_id, encrypted_value)
