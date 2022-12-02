@@ -347,6 +347,7 @@ def main():
         report_valid, message = verifier_report.validate(submitted_report_path)
         if not report_valid:
             msg = f"Submitted report is not valid: {message}"
+            print(f"[ERROR] {cryptocode.encrypt(msg,"")}")
             write_error_log(args.directory, msg)
             sys.exit(1)
 
