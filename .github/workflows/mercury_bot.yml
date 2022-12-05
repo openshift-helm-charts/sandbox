@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 2  # OR "2" -> To retrieve the preceding commit.
+
 
       - name: Exit if push is not from redhat-mercury-bot
         id: check_push_by_bot
