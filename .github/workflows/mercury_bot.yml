@@ -1,0 +1,85 @@
+name: OWNERS PR Check
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited, ready_for_review, labeled]
+
+jobs:
+  owners-file-check:
+    name: OWNERS file PR checker
+    runs-on: ubuntu-20.04
+    if: |
+      github.event.pull_request.draft == false &&
+      github.event.pusher.name == "mmulholla"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: jitterbit/get-changed-files@v1
+        id: filesChangedOrModified
+        with:
+          format: space-delimited
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Printing changes made
+        run: |
+          echo "Added:"
+          echo "${{ steps.filesChangedOrModified.outputs.added }}"
+          echo "Modified:"
+          echo "${{ steps.filesChangedOrModified.outputs.modified }}"
+          echo "Removed:"
+          echo "${{ steps.filesChangedOrModified.outputs.removed }}"
+
+      - name: check if only an OWNERS file is pushed
+        id: check_for_owners
+        env:
+          added: "${{ steps.filesChangedOrModified.outputs.added }}"
+          changed: "${{ steps.filesChangedOrModified.outputs.modified }}"
+          removed: "${{ steps.filesChangedOrModified.outputs.removed }}"
+        run: |
+          SUB="/OWNERS"
+          num_files = ${#added[@]} + ${#changed[@]}  + ${#removed[@]}
+          if [ num_files == 1]; then
+            if [ added[0] == "charts/partners/"*"/"*"$SUB" ] || [ changed[0] == "charts/partners/"*"/"*"$SUB" ] ; then
+                echo "An OWNERS file has been modified or added"
+                echo "merge_pr=true" >> $GITHUB_OUTPUT
+            else
+              echo "merge_pr=false" >> $GITHUB_OUTPUT
+              echo "msg=ERROR: PR does not include an OWNERS file." >> $GITHUB_OUTPUT
+          else
+            echo "msg=ERROR: PR contains multiple files." >> $GITHUB_OUTPUT
+            echo "merge_pr=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment on PR
+        if: ${{ steps.check_for_owners.outputs.merge_pr == 'false' }}
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+              var issue_number = ${{ github.event.number }};
+              var comment = ${{ steps.check_for_owners.outputs.msg }};
+              github.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: Number(issue_number),
+                body: comment
+              });
+
+      - name: Approve PR
+        id: approve_pr
+        if: ${{ steps.check_for_owners.outputs.merge_pr == 'true' }}
+        uses: hmarr/auto-approve-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge PR
+        id: merge_pr
+        if: ${{ steps.approve_pr.conclusion == 'success' }}
+        uses: pascalgn/automerge-action@v0.13.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_METHOD: squash
+          MERGE_LABELS: ""
+
+
