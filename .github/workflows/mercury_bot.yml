@@ -15,8 +15,8 @@ jobs:
       - name: Exit if push is not from redhat-mercury-bot
         id: check_push_by_bot
         run: |
-          echo "${{ GITHUB_ACTOR }}"
-          if [ "${{ GITHUB_ACTOR }}" != "redhat-mercury-bot" ]; then
+          echo "${GITHUB_ACTOR}"
+          if [ "${GITHUB_ACTOR}" != "redhat-mercury-bot" ]; then
             echo "The push is not from redhat mercury bot - do not continue."
             exit 0
           fi
