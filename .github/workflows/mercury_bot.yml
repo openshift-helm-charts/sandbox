@@ -15,6 +15,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Exit if push is not from redhat-mercury-bot
+        id: check_push_by_bot
+        run: |
+          echo "${{ github.event.pusher.name}}"
+          if [ "${{ github.event.pusher.name}}" != "redhat-mercury-bot" ]; then
+            echo "The push is not from redhat mercury bot - do not continue."
+            exit 0
+          fi
+
       - uses: jitterbit/get-changed-files@v1
         id: filesChangedOrModified
         with:
