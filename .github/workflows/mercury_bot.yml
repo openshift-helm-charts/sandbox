@@ -40,15 +40,15 @@ jobs:
           pr_files: "${{ steps.get_files_changed.outputs.pr_files }}"
         run: |
           # check if PR contains just one OWNERS file
-          SUB="/OWNERS"
-          echo "Files in PR: $pr_file"
+          echo "Files in PR: $pr_files"
           if [ ${#pr_files[@]} == 1]; then
-            if [ pr_files[0] == "charts/partners/"*"/"*"$SUB" ] ; then
+            if [ "$pr_files[0]" == "charts/partners/"*"/"*"/OWNERS" ] ; then
                 echo "An OWNERS file has been modified or added"
                 echo "merge_pr=true" >> $GITHUB_OUTPUT
             else
               echo "merge_pr=false" >> $GITHUB_OUTPUT
               echo "msg=ERROR: PR does not include an OWNERS file." >> $GITHUB_OUTPUT
+            fi
           else
             echo "msg=ERROR: PR contains multiple files." >> $GITHUB_OUTPUT
             echo "merge_pr=false" >> $GITHUB_OUTPUT
