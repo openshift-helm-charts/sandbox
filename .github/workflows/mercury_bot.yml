@@ -31,8 +31,8 @@ jobs:
         id: get_files_changed
         run: |
           # get modified file
-          ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
-                                    --get_files
+          ./ve1/bin/pr-artifact --api-url=${{ github.event.pull_request._links.self.href }} \
+                                --get_files
 
       - name: check if only an OWNERS file is pushed
         id: check_for_owners
