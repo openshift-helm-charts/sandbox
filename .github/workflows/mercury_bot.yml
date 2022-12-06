@@ -9,7 +9,7 @@ jobs:
     name: OWNERS file PR checker
     runs-on: ubuntu-20.04
     if: github.event.pull_request.draft == false &&
-        env.GITHUB_ACTOR == "mmulholla"
+        $GITHUB_ACTOR == "mmulholla"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
