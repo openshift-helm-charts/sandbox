@@ -8,59 +8,43 @@ jobs:
   owners-file-check:
     name: OWNERS file PR checker
     runs-on: ubuntu-20.04
+    if: github.event.pull_request.draft == false &&
+        ${GITHUB_ACTOR} == "mmulholla"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 2  # OR "2" -> To retrieve the preceding commit.
 
-
-      - name: Exit if push is not from redhat-mercury-bot
-        id: check_push_by_bot
-        run: |
-          echo "${GITHUB_ACTOR}"
-          if [ "${GITHUB_ACTOR}" != "redhat-mercury-bot" ]; then
-            echo "The push is not from redhat mercury bot - do not continue."
-            exit 0
-          fi
-          
-      # Example 1
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v34
-
-      - name: List all changed files
-        run: |
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            echo "$file was changed"
-          done
-
-      - uses: jitterbit/get-changed-files@v1
-        id: filesChangedOrModified
+      - name: Set up Python 3.x Part 1
+        uses: actions/setup-python@v2
         with:
-          format: space-delimited
-          token: ${{ secrets.GITHUB_TOKEN }}
+          python-version: "3.9"
 
-      - name: Printing changes made
+      - name: Set up Python 3.x Part 2
         run: |
-          echo "Added:"
-          echo "${{ steps.filesChangedOrModified.outputs.added }}"
-          echo "Modified:"
-          echo "${{ steps.filesChangedOrModified.outputs.modified }}"
-          echo "Removed:"
-          echo "${{ steps.filesChangedOrModified.outputs.removed }}"
+          # set up python
+          python3 -m venv ve1
+          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
+          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+
+      - name: get files changed
+        id: get_files_changed
+        run: |
+          # get modified file
+          ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
+                                    --get_files
 
       - name: check if only an OWNERS file is pushed
         id: check_for_owners
         env:
-          added: "${{ steps.filesChangedOrModified.outputs.added }}"
-          changed: "${{ steps.filesChangedOrModified.outputs.modified }}"
-          removed: "${{ steps.filesChangedOrModified.outputs.removed }}"
+          pr_files: "${{ steps.get_files_changed.outputs.pr_files }}"
         run: |
+          # check if PR contains just one OWNERS file
           SUB="/OWNERS"
-          num_files = ${#added[@]} + ${#changed[@]}  + ${#removed[@]}
-          if [ num_files == 1]; then
-            if [ added[0] == "charts/partners/"*"/"*"$SUB" ] || [ changed[0] == "charts/partners/"*"/"*"$SUB" ] ; then
+          echo "Files in PR: $pr_file"
+          if [ ${#pr_files[@]} == 1]; then
+            if [ pr_files[0] == "charts/partners/"*"/"*"$SUB" ] ; then
                 echo "An OWNERS file has been modified or added"
                 echo "merge_pr=true" >> $GITHUB_OUTPUT
             else
