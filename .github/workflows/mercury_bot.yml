@@ -41,7 +41,7 @@ jobs:
         run: |
           # check if PR contains just one OWNERS file
           echo "Files in PR: $pr_files"
-          if [ ${#pr_files[@]} == 1]; then
+          if [ ${#pr_files[@]} == 1 ]; then
             if [ "$pr_files[0]" == "charts/partners/"*"/"*"/OWNERS" ] ; then
                 echo "An OWNERS file has been modified or added"
                 echo "merge_pr=true" >> $GITHUB_OUTPUT
@@ -61,7 +61,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
               var issue_number = ${{ github.event.number }};
-              var comment = ${{ steps.check_for_owners.outputs.msg }};
+              var comment = "${{ steps.check_for_owners.outputs.msg }}";
               github.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
