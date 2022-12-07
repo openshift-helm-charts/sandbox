@@ -8,21 +8,13 @@ jobs:
   owners-metrics:
     name: Send Owner Metrics
     runs-on: ubuntu-20.04
+    if: github.actor == 'redhat-mercury-bot'
     env:
       SEGMENT_WRITE_KEY: ${{ secrets.SEGMENT_WRITE_KEY }}
       SEGMENT_TEST_WRITE_KEY: ${{ secrets.SEGMENT_TEST_WRITE_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Exit if push is not from redhat-mercury-bot
-        id: check_push_by_bot
-        run: |
-          echo "${{ github.event.pusher.name}}"
-          if [ "${{ github.event.pusher.name}}" != "redhat-mercury-bot" ]; then
-            echo "The push is not from redhat mercury bot - do not continue."
-            exit 0
-          fi
 
       - name: Set up Python 3.x Part 1
         uses: actions/setup-python@v2
@@ -53,9 +45,9 @@ jobs:
         run: |
           SUB="/OWNERS"
           if [ "${{ steps.filesChangedOrModified.outputs.added[0] }}" == *"$SUB"* ] || [ "${{ steps.filesChangedOrModified.outputs.modified[0] }}" == *"$SUB"* ] ; then
-          echo "OWNERS files have been modified or added"
+              echo "OWNERS files have been modified or added"
           else
-          echo "OWNERS files not pushed"
+              echo "OWNERS files not pushed"
           exit 0
           fi
 

@@ -42,8 +42,10 @@ jobs:
           # check if PR contains just one OWNERS file
           pr_files=($(echo "$pr_files_py" | tr -d '[],'))
           echo "Files in PR: ${pr_files[@]}"
+          eval first_file=${pr_files[0]}
           if [ ${#pr_files[@]} == 1 ]; then
-            if [[ "$pr_files[0]" == "charts/partners/"*/*"/OWNERS" ]] ; then
+            eval first_file=${pr_files[0]}
+            if [[ $first_file == "charts/partners/"*/*"/OWNERS" ]] ; then
                 echo "An OWNERS file has been modified or added"
                 echo "merge_pr=true" >> $GITHUB_OUTPUT
             else
