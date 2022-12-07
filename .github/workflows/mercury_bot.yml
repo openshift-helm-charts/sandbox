@@ -37,10 +37,11 @@ jobs:
       - name: check if only an OWNERS file is pushed
         id: check_for_owners
         env:
-          pr_files: "${{ steps.get_files_changed.outputs.pr_files }}"
+          pr_files_py: "${{ steps.get_files_changed.outputs.pr_files }}"
         run: |
           # check if PR contains just one OWNERS file
-          echo "Files in PR: $pr_files"
+          pr_files=($(echo "$pr_files_py" | tr -d '[],'))
+          echo "Files in PR: ${pr_files[@]}"
           if [ ${#pr_files[@]} == 1 ]; then
             if [[ "$pr_files[0]" == "charts/partners/"*/*"/OWNERS" ]] ; then
                 echo "An OWNERS file has been modified or added"
