@@ -84,7 +84,7 @@ jobs:
           else
             echo "Use dev verifier image"
             echo "::set-output name=insecure_skip_tls_verify::true"
-            echo "::set-output name=verifier-action-image::0.1.0"
+            echo "::set-output name=verifier-action-image::latest"
           fi
 
       - name: Checkout
