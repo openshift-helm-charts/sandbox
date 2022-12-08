@@ -28,7 +28,7 @@ jobs:
       - name: get files changed
         id: get_files_changed
         run: |
-          # get modified file
+          # get files in PR
           ./ve1/bin/pr-artifact --api-url=${{ github.event.pull_request._links.self.href }} \
                                 --get-files
 
@@ -37,7 +37,7 @@ jobs:
         env:
           pr_files_py: "${{ steps.get_files_changed.outputs.pr_files }}"
         run: |
-          # check if PR contains just one OWNERS file
+          # check if PR contains just one partner OWNERS file
           pr_files=($(echo "$pr_files_py" | tr -d '[],'))
           echo "Files in PR: ${pr_files[@]}"
           eval first_file=${pr_files[0]}
@@ -47,10 +47,12 @@ jobs:
                 echo "An OWNERS file has been modified or added"
                 echo "merge_pr=true" >> $GITHUB_OUTPUT
             else
+              echo "The file in the PR is not a partner OWNERS file"
               echo "merge_pr=false" >> $GITHUB_OUTPUT
-              echo "msg=ERROR: PR does not include an OWNERS file." >> $GITHUB_OUTPUT
+              echo "msg=ERROR: PR does not include a partner OWNERS file." >> $GITHUB_OUTPUT
             fi
           else
+            echo "The PR contains multiple files."
             echo "msg=ERROR: PR contains multiple files." >> $GITHUB_OUTPUT
             echo "merge_pr=false" >> $GITHUB_OUTPUT
           fi
@@ -69,6 +71,13 @@ jobs:
                 issue_number: Number(issue_number),
                 body: comment
               });
+
+      - name: Reflect on check for OWNERS file result
+        if: ${{ steps.check_for_owners.outputs.merge_pr == 'false' }}
+        run: |
+          # exit with failure if PR is not for a single partner OWNERS file
+          echo "The PR was not for a single partner OWNERS file."
+          exit 1
 
       - name: Approve PR
         id: approve_pr
