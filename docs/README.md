@@ -43,6 +43,7 @@ submit a chart and the report together.
       * [Chart name and version mismatch errors](#chart-name-and-version-mismatch-errors)
       * [Report failures](#report-failures)
       * [Signed chart failures](#signed-chart-failures)
+      * [Web catalog only delivery](#web-catalog-only-delivery)
    * [Frequently Asked Questions](#frequently-asked-questions)
       * [Can I test the pull request in my fork before submitting?](#can-i-test-the-pull-request-in-my-fork-before-submitting)
       * [Can I use any command-line interface to create pull request?](#can-i-use-any-command-line-interface-to-create-pull-request)
@@ -493,6 +494,28 @@ Error message(s):
 Chart is signed : Signature verification failed : openpgp: signature made by unknown entity
 ```
 This is because the key generated from the PGP key in the OWNERS file does not correspond to the secret key used to sign the chart. 
+
+### Web catalog only delivery
+
+Whenever there is a mismatch between provider delivery in the OWNERS file and the report, the following errors will show: 
+
+```
+[ERROR] Report indicates web catalog only delivery but OWNERS file does not. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file.
+[ERROR] OWNERS file indicates web catalog only delivery but report does not. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file.
+[ERROR] OWNERS file and/or report indicate web catalog only delivery but pull request is not report only. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file.
+```
+
+The distribution method of web catalog only requires providerDelivery to be set to true within the OWNERS file.
+
+There are three methods of distribution for certified helm charts.
+- Publish your chart in the Red Hat Helm Chart repository
+  - Submissions should include either a chart or chart and report.
+- Publish you chart in your own Helm Chart repository
+  - Submissions should be report only using a publicly available chart URL.
+- Web catalog only
+  - This submission should be report only using a private chart URL.
+
+For more information on the different Helm Chart Distribution methods, see: [Creating a Helm Chart Certification Project](https://redhat-connect.gitbook.io/partner-guide-for-red-hat-openshift-and-container/helm-chart-certification/creating-a-helm-chart-certification-project)
 
 ## Frequently Asked Questions
 
