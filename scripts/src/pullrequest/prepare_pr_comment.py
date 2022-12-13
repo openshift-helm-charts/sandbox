@@ -34,7 +34,7 @@ def prepare_failure_comment():
         msg += f"""
 {get_verifier_errors_comment()}
 
-{cryptocode.encrypt(errors,"")}
+{cryptocode.decrypt(errors,"")}
 
 {get_verifier_errors_trailer()}
 
