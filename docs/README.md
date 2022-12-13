@@ -500,9 +500,9 @@ This is because the key generated from the PGP key in the OWNERS file does not c
 Whenever there is a mismatch between provider delivery in the OWNERS file and the report, the following errors will show: 
 
 ```
-[ERROR] Report indicates web catalog only delivery but OWNERS file does not. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file.
-[ERROR] OWNERS file indicates web catalog only delivery but report does not. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file.
-[ERROR] OWNERS file and/or report indicate web catalog only delivery but pull request is not report only. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file.
+[ERROR] Report indicates web catalog only but the distribution method set for the chart is not web catalog only.
+[ERROR] The web catalog distribution method is set for the chart but is not set in the report.
+[ERROR] The web catalog distribution method requires the pull request to be report only.
 ```
 
 The distribution method of web catalog only requires providerDelivery to be set to true within the OWNERS file.

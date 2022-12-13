@@ -29,7 +29,7 @@ Feature: Report only submission with provider control settings
     @partners @full
     Examples:
       | vendor_type  | vendor    | chart_path                  | report_path                          | provider_control_owners | message                                                                                              |
-      | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/HC-06/partner/report.yaml | true                    | OWNERS file and/or report indicate web catalog only delivery but pull request is not report only. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file. |
+      | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/HC-06/partner/report.yaml | true                    | The web catalog distribution method requires the pull request to be report only. |
 
   @external-feedback
   Scenario Outline: [HC-06-003] A partner associate submits an error-free report with inconsistent provider controlled delivery setting
@@ -43,5 +43,5 @@ Feature: Report only submission with provider control settings
     @partners @full
     Examples:
       | vendor_type  | vendor    | report_path                            | provider_control_owners | message                                                                 |
-      | partners     | hashicorp | tests/data/common/partner/report.yaml  | true                    | OWNERS file indicates web catalog only delivery but report does not. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file. |
-      | partners     | hashicorp | tests/data/HC-06/partner/report.yaml   | false                   | Report indicates web catalog only delivery but OWNERS file does not. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file. |
+      | partners     | hashicorp | tests/data/common/partner/report.yaml  | true                    | The web catalog distribution method is set for the chart but is not set in the report. |
+      | partners     | hashicorp | tests/data/HC-06/partner/report.yaml   | false                   | Report indicates web catalog only but the distribution method set for the chart is not web catalog only. |

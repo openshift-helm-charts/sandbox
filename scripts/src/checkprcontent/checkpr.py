@@ -54,7 +54,7 @@ def check_provider_delivery(report_in_pr,num_files_in_pr,report_file_match):
     provider_delivery = False
     if report_in_pr and num_files_in_pr > 1:
         if report_provider_delivery or owner_provider_delivery:
-            msg = f"[ERROR] OWNERS file and/or report indicate web catalog only delivery but pull request is not report only. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file."
+            msg = f"[ERROR] The web catalog distribution method requires the pull request to be report only."
             print(msg)
             print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
@@ -63,17 +63,17 @@ def check_provider_delivery(report_in_pr,num_files_in_pr,report_file_match):
             if verifier_report.get_package_digest(report_data):
                 provider_delivery = True
             else:
-                msg = f"[ERROR] Web catalog only delivery control requires a package digest in the report. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file."
+                msg = f"[ERROR] The web catalog distribution method requires a package digest in the report."
                 print(msg)
                 print(f"::set-output name=pr-content-error-message::{msg}")
                 sys.exit(1)
         elif report_provider_delivery:
-            msg = f"[ERROR] Report indicates web catalog only delivery but OWNERS file does not. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file."
+            msg = f"[ERROR] Report indicates web catalog only but the distribution method set for the chart is not web catalog only."
             print(msg)
             print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
         elif owner_provider_delivery:
-            msg = f"[ERROR] OWNERS file indicates web catalog only delivery but report does not. The distribution method web catalog only requires providerDelivery to be set to true in the OWNERS file."
+            msg = f"[ERROR] The web catalog distribution method is set for the chart but is not set in the report."
             print(msg)
             print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
