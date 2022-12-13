@@ -39,7 +39,8 @@ def prepare_failure_comment():
 {get_verifier_errors_trailer()}
 
 """
-        print(f"::set-output name=error-message::{cryptocode.decrypt(errors,"")}")
+        decrypted_value = cryptocode.decrypt(errors,"")
+        print(f"::set-output name=error-message::{decrypted_value}")
     else:
         print(f"::set-output name=error-message::{get_failure_comment()}")
     return msg
@@ -76,7 +77,8 @@ def prepare_community_comment():
     if os.path.exists("./pr/errors"):
         errors = open("./pr/errors").read()
         msg += "However, please note that one or more errors were found while building and verifying your pull request:\n\n"
-        msg += f"{cryptocode.decrypt(errors,"")}\n\n"
+        decrypted_value = cryptocode.decrypt(errors,"")
+        msg += f"{decrypted_value}\n\n"
     return msg
 
 def prepare_oc_install_fail_comment():

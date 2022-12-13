@@ -348,6 +348,8 @@ def main():
         if not report_valid:
             msg = f"Submitted report is not valid: {message}"
             print(f"[ERROR] {cryptocode.encrypt(msg,"")}")
+            encrypted_value = cryptocode.encrypt(msg,"")
+            print(f"[ERROR] {encrypted_value}")
             write_error_log(args.directory, msg)
             sys.exit(1)
 
