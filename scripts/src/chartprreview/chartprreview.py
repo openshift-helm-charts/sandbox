@@ -29,9 +29,13 @@ def write_error_log(directory, *msg):
     with open(os.path.join(directory, "errors"), "w") as fd:
         for line in msg:
             encodedLine = cryptocode.encrypt(line,"")
+            print(">>>>>>> DEBUG LOG <<<<<<<<<<")
+            print(encodedLine)
+            print('\n')
             fd.write(encodedLine)
             fd.write("\n")
-
+    print(">>>>>>> DEBUG LOG  END <<<<<<<<<<")
+    
 def get_vendor_type(directory):
     vendor_type = os.environ.get("VENDOR_TYPE")
     if not vendor_type or vendor_type not in {"partner", "redhat", "community"}:
