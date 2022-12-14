@@ -254,8 +254,8 @@ def write_sa_token(namespace, token):
         if out.returncode != 0:
             stderr = out.stderr.decode("utf-8")
             if stderr.strip():
-                encrpted_secret_name=cryptocode.encrypt(secret["name"],"")
-                print("[ERROR] retrieving secret:", encrpted_secret_name, stderr)
+                encrpted_value=cryptocode.encrypt(secret["name"],"")
+                print("[ERROR] retrieving secret:", encrpted_value, stderr)
                 continue
         else:
             sec = json.loads(stdout)
