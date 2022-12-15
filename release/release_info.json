@@ -1,7 +1,11 @@
 {
-  "version": "1.4.2",
+  "version": "1.5.0",
   "info" : [
-      "Fixes the sa token creation failure in 4.11 (#152)."
+    "Update provider delivery message to web catalog only (#192)",
+    "Update release content for signed charts (#183)",
+    "Add support for signed charts (#174)",
+    "Check report sha (#160)",
+    "Check chart version is a valid semantic version (#159)"
   ],
   "charts" : {
     "development": {
@@ -29,8 +33,8 @@
       "ignore" : [".github/workflows/release.yml",
                   ".github/workflows/nightly_test.yml",
                   ".github/workflows/metrics.yml",
-		  ".github/workflows/token.yml",
-		  ".github/workflows/owners.yml",
+		          ".github/workflows/token.yml",
+		          ".github/workflows/owners.yml",
                   ".github/workflows/version_check.yml"]
     }
   }
