@@ -26,7 +26,6 @@ import os
 import sys
 import requests
 import argparse
-import cryptocode
 
 token = os.environ.get("GITHUB_TOKEN")
 headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'token {token}'}
@@ -68,8 +67,7 @@ def create_or_update_repo_secrets(repo, secret_name, key_id, encrypted_value):
         logging.error(f"unexpected response during put request : {response.status_code} : {response.reason}")
         sys.exit(1)
     #response_json = response.json()
-    encrpted_value=cryptocode.encrypt(secret_name,"")
-    logging.info(f'Secret {encrpted_value} create or update successful')
+    logging.info(f'Secret {secret_name} create or update successful')
 
 def main():
     parser = argparse.ArgumentParser(description='Script to list, create or update secrets of a repository')
@@ -85,13 +83,11 @@ def main():
 
     if args.list:
         secrets = get_repo_secrets(args.repo)
-        encrpted_value=cryptocode.encrypt(secrets,"")
-        logging.info(f'Github Secret Names: {encrpted_value}')
+        logging.info(f'Github Secret Names: {secrets}')
     elif args.secret and args.value:
         secret_name = args.secret
         secret_value = args.value
-        encrpted_value=cryptocode.encrypt(secret_name,"")
-        logging.info(f'Setting SECRET: {encrpted_value}')
+        logging.info(f'Setting SECRET: {secret_name}')
         key_id, public_key = get_repo_public_key(args.repo)
         encrypted_value = encrypt(public_key, secret_value)
         create_or_update_repo_secrets(args.repo, secret_name, key_id, encrypted_value)
