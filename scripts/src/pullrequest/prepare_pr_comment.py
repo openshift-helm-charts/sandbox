@@ -31,15 +31,16 @@ def prepare_failure_comment():
 {get_look_at_job_output_comment()}"""
     if os.path.exists("./pr/errors"):
         errors = open("./pr/errors").read()
+        decrypted_value = cryptocode.decrypt(errors,"")
+        print(f">>>>>>>> DECRYPTED VALUE >>>>>>>: {decrypted_value}")
         msg += f"""
 {get_verifier_errors_comment()}
 
-{cryptocode.decrypt(errors,"")}
+{decrypted_value}
 
 {get_verifier_errors_trailer()}
 
 """
-        decrypted_value = cryptocode.decrypt(errors,"")
         print(f"::set-output name=error-message::{decrypted_value}")
     else:
         print(f"::set-output name=error-message::{get_failure_comment()}")
