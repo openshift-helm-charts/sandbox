@@ -23,7 +23,9 @@
       ],
       "ignore" : [".github/workflows/release.yml",
                   ".github/workflows/nightly_test.yml",
-                  ".github/workflows/metrics.yml"]
+                  ".github/workflows/metrics.yml",
+                  ".github/workflows/codeql.yml"
+                ]
     },
     "stage" : {
       "replace": [
@@ -33,9 +35,10 @@
       "ignore" : [".github/workflows/release.yml",
                   ".github/workflows/nightly_test.yml",
                   ".github/workflows/metrics.yml",
-		          ".github/workflows/token.yml",
-		          ".github/workflows/owners.yml",
-                  ".github/workflows/version_check.yml"]
+		              ".github/workflows/token.yml",
+		              ".github/workflows/owners.yml",
+                  ".github/workflows/version_check.yml",
+                  ".github/workflows/codeql.yml"]
     }
   }
 }
