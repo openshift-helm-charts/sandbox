@@ -36,6 +36,10 @@ def check_if_ci_only_is_modified(api_url):
         page_number += 1
 
         for f in files:
+            print(f"[DEBUG] TYPE OF F: {type(f)}")
+            print(f"[DEBUG] VALUE OF F: {f}")
+            if f == 'message':
+                print(f"[DEBUG] CONTENT OF FILES: {files}")
             filename = f["filename"]
             if any([pattern.match(filename) for pattern in workflow_files]):
                 workflow_found = True

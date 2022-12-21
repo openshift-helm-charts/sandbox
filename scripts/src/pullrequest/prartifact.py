@@ -17,6 +17,8 @@ def get_modified_charts(api_url):
     r = requests.get(files_api_url, headers=headers)
     pattern,_ = checkpr.get_file_match_compiled_patterns()
     for f in r.json():
+        print(f"[DEBUG] TYPE OF F: {type(f)}")
+        print(f"[DEBUG] VALUE OF F: {f}")
         m = pattern.match(f["filename"])
         if m:
             category, organization, chart, version = m.groups()
