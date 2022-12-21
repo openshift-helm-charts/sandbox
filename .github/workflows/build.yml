@@ -358,7 +358,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add metrics
-        if: always() && steps.check_build_required.outputs.run-build == 'true'
+        if: ${{ always() && steps.check_build_required.outputs.run-build == 'true' && env.GITHUB_REPOSITORY != "openshift-helm-charts/sandbox" }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
