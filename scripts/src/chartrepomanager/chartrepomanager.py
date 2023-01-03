@@ -218,7 +218,7 @@ def set_package_digest(chart_entry):
         raise Exception("Was unable to compute SHA256 digest, please ensure chart url points to a chart package.")
 
 
-def update_index_and_push(indexfile,indexdir, repository, branch, category, organization, chart, version, chart_url, chart_entry, pr_number, provider_delivery):
+def update_index_and_push(indexfile, indexdir, repository, branch, category, organization, chart, version, chart_url, chart_entry, pr_number, web_catalog_only):
     token = os.environ.get("GITHUB_TOKEN")
     print(f"Downloading {indexfile}")
     r = requests.get(f'https://raw.githubusercontent.com/{repository}/{branch}/{indexfile}')
@@ -245,7 +245,7 @@ def update_index_and_push(indexfile,indexdir, repository, branch, category, orga
         crtentries.append(v)
 
     chart_entry["urls"] = [chart_url]
-    if not provider_delivery:
+    if not web_catalog_only:
         set_package_digest(chart_entry)
     chart_entry["annotations"]["charts.openshift.io/submissionTimestamp"] = now
     crtentries.append(chart_entry)
@@ -357,11 +357,11 @@ def main():
     indexdir = create_worktree_for_index(branch)
 
     env = Env()
-    provider_delivery = env.bool("PROVIDER_DELIVERY",False)
+    web_catalog_only = env.bool("WEB_CATALOG_ONLY",False)
 
-    print(f'[INFO] provider delivery is {provider_delivery}')
+    print(f'[INFO] webCatalogOnly/providerDelivery is {web_catalog_only}')
 
-    if provider_delivery:
+    if web_catalog_only:
         indexfile = "unpublished-certified-charts.yaml"
     else:
         indexfile = "index.yaml"
@@ -405,7 +405,7 @@ def main():
         print("[INFO] Creating index from report")
         chart_entry, chart_url = create_index_from_report(category, report_path)
 
-    if not provider_delivery:
+    if not web_catalog_only:
         tag = os.environ.get("CHART_NAME_WITH_VERSION")
         if not tag:
             print("[ERROR] Internal error: missing chart name with version (tag)")
@@ -418,4 +418,4 @@ def main():
             print(f"[INFO] Add key file for release : {current_dir}/{public_key_file}")
             print(f"::set-output name=public_key_file::{current_dir}/{public_key_file}")
 
-    update_index_and_push(indexfile,indexdir, args.repository, branch, category, organization, chart, version, chart_url, chart_entry, args.pr_number, provider_delivery)
+    update_index_and_push(indexfile,indexdir, args.repository, branch, category, organization, chart, version, chart_url, chart_entry, args.pr_number, web_catalog_only)

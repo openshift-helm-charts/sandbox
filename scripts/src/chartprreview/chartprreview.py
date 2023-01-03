@@ -367,7 +367,7 @@ def main():
     generated_report_path = os.environ.get("GENERATED_REPORT_PATH")
     generated_report_info_path =  os.environ.get("REPORT_SUMMARY_PATH")
     env = Env()
-    provider_delivery = env.bool("PROVIDER_DELIVERY",False)
+    web_catalog_only = env.bool("WEB_CATALOG_ONLY",False)
 
     if os.path.exists(submitted_report_path):
         print("[INFO] Report exists: ", submitted_report_path)
@@ -376,7 +376,7 @@ def main():
         report_info_path = ""
         if report_generated and report_generated == "True":
             match_checksum(args.directory,generated_report_info_path, category, organization, chart, version)
-        elif not provider_delivery:
+        elif not web_catalog_only:
             check_url(args.directory, report_path)
     else:
         print("[INFO] Report does not exist: ", submitted_report_path)

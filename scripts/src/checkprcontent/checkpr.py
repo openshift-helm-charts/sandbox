@@ -18,7 +18,7 @@ from report import verifier_report
 ALLOW_CI_CHANGES = "allow/ci-changes"
 TYPE_MATCH_EXPRESSION = "(partners|redhat|community)"
 
-def check_provider_delivery(report_in_pr,num_files_in_pr,report_file_match):
+def check_web_catalog_only(report_in_pr, num_files_in_pr, report_file_match):
 
     print(f"[INFO] report in PR {report_in_pr}")
     print(f"[INFO] num files in PR {num_files_in_pr}")
@@ -29,8 +29,8 @@ def check_provider_delivery(report_in_pr,num_files_in_pr,report_file_match):
     found_owners,owner_data = owners_file.get_owner_data(category, organization, chart)
 
     if found_owners:
-        owner_provider_delivery = owners_file.get_provider_delivery(owner_data)
-        print(f"[INFO] providerDelivery from OWNERS : {owner_provider_delivery}")
+        owner_web_catalog_only = owners_file.get_web_catalog_only(owner_data)
+        print(f"[INFO] webCatalogOnly/providerDelivery from OWNERS : {owner_web_catalog_only}")
     else:
         msg = "[ERROR] OWNERS file was not found."
         print(msg)
@@ -43,47 +43,47 @@ def check_provider_delivery(report_in_pr,num_files_in_pr,report_file_match):
         found_report,report_data = verifier_report.get_report_data(report_file_path)
 
         if found_report:
-            report_provider_delivery = verifier_report.get_provider_delivery(report_data)
-            print(f"[INFO] providerDelivery from report : {report_provider_delivery}")
+            report_web_catalog_only = verifier_report.get_web_catalog_only(report_data)
+            print(f"[INFO] webCatalogOnly/providerDelivery from report : {report_web_catalog_only}")
         else:
             msg = f"[ERROR] Failed tp open report: {report_file_path}."
             print(msg)
             print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
 
-    provider_delivery = False
+    web_catalog_only = False
     if report_in_pr and num_files_in_pr > 1:
-        if report_provider_delivery or owner_provider_delivery:
+        if report_web_catalog_only or owner_web_catalog_only:
             msg = f"[ERROR] The web catalog distribution method requires the pull request to be report only."
             print(msg)
             print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
     elif report_in_pr:
-        if report_provider_delivery and owner_provider_delivery:
+        if report_web_catalog_only and owner_web_catalog_only:
             if verifier_report.get_package_digest(report_data):
-                provider_delivery = True
+                web_catalog_only = True
             else:
                 msg = f"[ERROR] The web catalog distribution method requires a package digest in the report."
                 print(msg)
                 print(f"::set-output name=pr-content-error-message::{msg}")
                 sys.exit(1)
-        elif report_provider_delivery:
+        elif report_web_catalog_only:
             msg = f"[ERROR] Report indicates web catalog only but the distribution method set for the chart is not web catalog only."
             print(msg)
             print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
-        elif owner_provider_delivery:
+        elif owner_web_catalog_only:
             msg = f"[ERROR] The web catalog distribution method is set for the chart but is not set in the report."
             print(msg)
             print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
 
-    if provider_delivery:
-        print(f"[INFO] providerDelivery is a go")
-        print(f"::set-output name=providerDelivery::True")
+    if web_catalog_only:
+        print(f"[INFO] webCatalogOnly/providerDelivery is a go")
+        print(f"::set-output name=webCatalogOnly::True")
     else:
-        print(f"::set-output name=providerDelivery::False")
-        print(f"[INFO] providerDelivery is a no-go")
+        print(f"::set-output name=webCatalogOnly::False")
+        print(f"[INFO] webCatalogOnly/providerDelivery is a no-go")
 
 def get_file_match_compiled_patterns():
     """Return a tuple of patterns, where the first can be used to match any file in a chart PR 
@@ -178,7 +178,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                 
         sys.exit(1)
 
-    check_provider_delivery(report_found,matches_found,pattern_match)
+    check_web_catalog_only(report_found, matches_found, pattern_match)
 
     if matches_found>0:
         category, organization, chart, version = pattern_match.groups()
