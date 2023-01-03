@@ -221,7 +221,7 @@ jobs:
         if: ${{ steps.check_build_required.outputs.run-build == 'true' }}
         env:
           VENDOR_TYPE: ${{ steps.check_pr_content.outputs.category }}
-          PROVIDER_DELIVERY: ${{ steps.check_pr_content.outputs.providerDelivery }}
+          WEB_CATALOG_ONLY: ${{ steps.check_pr_content.outputs.webCatalogOnly }}
           REPORT_GENERATED: ${{ steps.verify_requires.outputs.report_needed }}
           GENERATED_REPORT_PATH: ${{ steps.run-verifier.outputs.report_file }}
           REPORT_SUMMARY_PATH: ${{ steps.run-verifier.outputs.report_info_file }}
@@ -333,7 +333,7 @@ jobs:
           CHART_ENTRY_NAME: ${{ steps.check_pr_content.outputs.chart-entry-name }}
           CHART_NAME_WITH_VERSION: ${{ steps.check_pr_content.outputs.chart-name-with-version }}
           REDHAT_TO_COMMUNITY: ${{ steps.check_report.outputs.redhat_to_community }}
-          PROVIDER_DELIVERY: ${{ steps.check_pr_content.outputs.providerDelivery }}
+          WEB_CATALOG_ONLY: ${{ steps.check_pr_content.outputs.web_catalog_only }}
         id: release-charts
         run: |
           tar zxvf ./scripts/dependencies/helm-chart-releaser/chart-releaser_1.2.0_linux_amd64.tar.gz
