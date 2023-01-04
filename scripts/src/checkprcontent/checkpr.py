@@ -14,6 +14,7 @@ except ImportError:
 sys.path.append('../')
 from owners import owners_file
 from report import verifier_report
+from pullrequest import prartifact
 
 ALLOW_CI_CHANGES = "allow/ci-changes"
 TYPE_MATCH_EXPRESSION = "(partners|redhat|community)"
@@ -105,55 +106,38 @@ def get_file_match_compiled_patterns():
 
 
 def ensure_only_chart_is_modified(api_url, repository, branch):
-    # api_url https://api.github.com/repos/<organization-name>/<repository-name>/pulls/1
-    headers = {'Accept': 'application/vnd.github.v3+json'}
-    r = requests.get(api_url, headers=headers)
-    for label in r.json()["labels"]:
-        if label["name"] == ALLOW_CI_CHANGES:
+    label_names = prartifact.get_labels(api_url)
+    for label_name in label_names:
+        if label_name == ALLOW_CI_CHANGES:
             return
-    files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
-    r = requests.get(files_api_url, headers=headers)
+
+    files = prartifact.get_modified_files(api_url)
     pattern,reportpattern = get_file_match_compiled_patterns()
-    page_number = 1
-    max_page_size,page_size = 100,100
     matches_found = 0
     report_found = False
     none_chart_files = {}
-    file_count = 0
 
-    while page_size == max_page_size:
-
-        files_api_query = f'{files_api_url}?per_page={page_size}&page={page_number}'
-        print(f"Query files : {files_api_query}")
-        r = requests.get(files_api_query,headers=headers)
-        files = r.json()
-        page_size = len(files)
-        file_count += page_size
-        page_number += 1
-
-        for f in files:
-            file_path = f["filename"]
-            match = pattern.match(file_path)
-            if not match:
-                file_name = os.path.basename(file_path)
-                none_chart_files[file_name] = file_path
-            else:
-                matches_found += 1
-                if reportpattern.match(file_path):
-                    print(f"[INFO] Report found: {file_path}")
-                    print("::set-output name=report-exists::true")
-                    report_found = True
-                if matches_found == 1:
-                    pattern_match = match
-                elif pattern_match.groups() != match.groups():
-                    msg = "[ERROR] A PR must contain only one chart. Current PR includes files for multiple charts."
-                    print(msg)
-                    print(f"::set-output name=pr-content-error-message::{msg}")
-                    exit(1)
+    for file_path in files:
+        match = pattern.match(file_path)
+        if not match:
+            file_name = os.path.basename(file_path)
+            none_chart_files[file_name] = file_path
+        else:
+            matches_found += 1
+            if reportpattern.match(file_path):
+                print(f"[INFO] Report found: {file_path}")
+                print("::set-output name=report-exists::true")
+                report_found = True
+            if matches_found == 1:
+                pattern_match = match
+            elif pattern_match.groups() != match.groups():
+                msg = "[ERROR] A PR must contain only one chart. Current PR includes files for multiple charts."
+                print(msg)
+                print(f"::set-output name=pr-content-error-message::{msg}")
+                exit(1)
     
     if none_chart_files:
-        if file_count > 1 or "OWNERS" not in none_chart_files: #OWNERS not present or preset but not the only file
+        if len(files) > 1 or "OWNERS" not in none_chart_files: #OWNERS not present or preset but not the only file
             example_file = list(none_chart_files.values())[0]
             msg = f"[ERROR] PR includes one or more files not related to charts, e.g., {example_file}"
             print(msg)
@@ -171,7 +155,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                 msg = "[ERROR] Send OWNERS file by itself in a separate PR."
                 print(msg)
                 print(f"::set-output name=owners-error-message::{msg}")
-            elif file_count == 1: # OWNERS file is the only file in PR
+            elif len(files) == 1: # OWNERS file is the only file in PR
                 msg = "[INFO] OWNERS file changes require manual review by maintainers."
                 print(msg)
                 print(f"::set-output name=owners-error-message::{msg}") 

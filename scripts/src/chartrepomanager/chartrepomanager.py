@@ -23,14 +23,13 @@ sys.path.append('../')
 from report import report_info
 from chartrepomanager import indexannotations
 from signedchart import signedchart
+from pullrequest import prartifact
 
 def get_modified_charts(api_url):
-    files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
-    r = requests.get(files_api_url, headers=headers)
+    files = prartifact.get_modified_files(api_url)
     pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
-    for f in r.json():
-        m = pattern.match(f["filename"])
+    for file_path in files:
+        m = pattern.match(file_path)
         if m:
             category, organization, chart, version = m.groups()
             return category, organization, chart, version
