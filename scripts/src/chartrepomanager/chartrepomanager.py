@@ -140,7 +140,7 @@ def create_worktree_for_index(branch):
     err = out.stderr.decode("utf-8")
     if err.strip():
         print("Adding upstream remote failed:", err, "branch", branch, "upstream", upstream)
-    out = subprocess.run(["git", "fetch", "upstream"], capture_output=True)
+    out = subprocess.run(["git", "fetch", "upstream",branch], capture_output=True)
     print(out.stdout.decode("utf-8"))
     err = out.stderr.decode("utf-8")
     if err.strip():
