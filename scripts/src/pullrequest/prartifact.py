@@ -18,8 +18,9 @@ def get_modified_charts(api_url):
     files = get_modified_files(api_url)
     pattern,_ = checkpr.get_file_match_compiled_patterns()
     for file in files:
-        if pattern.match(file):
-            category, organization, chart, version = m.groups()
+        match = pattern.match(file)
+        if match:
+            category, organization, chart, version = match
             return category, organization, chart, version
 
     return "", "", "", ""
