@@ -395,6 +395,9 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.index_file = "index.yaml"
         self.secrets.provider_delivery = False
 
+        r = github_api('get', f'rate_limit', self.secrets.bot_token)
+        res = json.loads(r.text)
+        logging.debug(f">>>>>>>>>> CURRENT RATE LIMIT: {res}")
 
     def cleanup (self):
         # Cleanup releases and release tags
