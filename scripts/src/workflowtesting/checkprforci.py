@@ -15,7 +15,7 @@ def check_if_ci_only_is_modified(api_url):
     # api_url https://api.github.com/repos/<organization-name>/<repository-name>/pulls/1
 
     files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
 
     workflow_files = [re.compile(r".github/workflows/.*"),re.compile(r"scripts/.*"),re.compile(r"tests/.*")]
     test_files = [re.compile(r"tests/functional/step_defs/.*_test_.*"),re.compile(r"tests/functional/behave_features/.*.feature")]

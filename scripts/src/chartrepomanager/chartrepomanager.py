@@ -26,7 +26,7 @@ from signedchart import signedchart
 
 def get_modified_charts(api_url):
     files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     r = requests.get(files_api_url, headers=headers)
     pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
     for f in r.json():
@@ -194,12 +194,12 @@ def create_index_from_report(category, report_path):
 
 def set_package_digest(chart_entry):
     print("[INFO] set package digests.")
-
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     url = chart_entry["urls"][0]
-    head = requests.head(url, allow_redirects=True)
+    head = requests.head(url, headers=headers, allow_redirects=True)
     target_digest = ""
     if head.status_code == 200:
-        response = requests.get(url, allow_redirects=True)
+        response = requests.get(url, headers=headers, allow_redirects=True)
         target_digest = hashlib.sha256(response.content).hexdigest()
 
     pkg_digest = ""
@@ -220,8 +220,9 @@ def set_package_digest(chart_entry):
 
 def update_index_and_push(indexfile,indexdir, repository, branch, category, organization, chart, version, chart_url, chart_entry, pr_number, provider_delivery):
     token = os.environ.get("GITHUB_TOKEN")
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {token}'}
     print(f"Downloading {indexfile}")
-    r = requests.get(f'https://raw.githubusercontent.com/{repository}/{branch}/{indexfile}')
+    r = requests.get(f'https://raw.githubusercontent.com/{repository}/{branch}/{indexfile}', headers=headers)
     original_etag = r.headers.get('etag')
     now = datetime.now(timezone.utc).astimezone().isoformat()
     if r.status_code == 200:
@@ -276,7 +277,7 @@ def update_index_and_push(indexfile,indexdir, repository, branch, category, orga
     err = out.stderr.decode("utf-8")
     if err.strip():
         print(f"Error committing {indexfile}", "index directory", indexdir, "branch", branch, "error:", err)
-    r = requests.head(f'https://raw.githubusercontent.com/{repository}/{branch}/{indexfile}')
+    r = requests.head(f'https://raw.githubusercontent.com/{repository}/{branch}/{indexfile}', headers=headers)
     etag = r.headers.get('etag')
     if original_etag and etag and (original_etag != etag):
         print(f"{indexfile} not updated. ETag mismatch.", "original ETag", original_etag, "new ETag", etag, "index directory", indexdir, "branch", branch)

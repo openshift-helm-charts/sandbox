@@ -13,7 +13,7 @@ from checkprcontent import checkpr
 # TODO(baijum): Move this code under chartsubmission.chart module
 def get_modified_charts(api_url):
     files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     r = requests.get(files_api_url, headers=headers)
     pattern,_ = checkpr.get_file_match_compiled_patterns()
     for f in r.json():
@@ -28,7 +28,7 @@ def get_modified_charts(api_url):
 
 def get_modified_files(api_url):
     files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     r = requests.get(files_api_url, headers=headers)
     pr_files = []
     print(f"[INFO] file info in PR {r.json()}")

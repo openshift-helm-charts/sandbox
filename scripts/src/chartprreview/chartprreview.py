@@ -41,14 +41,14 @@ def get_vendor_type(directory):
 
 def get_labels(api_url):
     # api_url https://api.github.com/repos/<organization-name>/<repository-name>/pulls/1
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     r = requests.get(api_url, headers=headers)
     return r.json()["labels"]
 
 def get_modified_charts(directory, api_url):
     print("[INFO] Get modified charts. %s" %directory)
     files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     r = requests.get(files_api_url, headers=headers)
     pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
     for f in r.json():
@@ -132,9 +132,9 @@ def match_checksum(directory,generated_report_info_path,category, organization, 
 def check_url(directory, report_path):
     print("[INFO] Check chart_url is a valid url. %s" % report_path)
     chart_url = report_info.get_report_chart_url(report_path=report_path)
-
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     try:
-        r = requests.head(chart_url)
+        r = requests.head(chart_url, headers=headers)
     except requests.exceptions.InvalidSchema as err:
         msgs = []
         msgs.append(f"Invalid schema: {chart_url}")
@@ -310,8 +310,8 @@ def check_report_success(directory, api_url, report_path, report_info_path, vers
 
 def verify_package_digest(url,report):
     print("[INFO] check package digest.")
-
-    response = requests.get(url, allow_redirects=True)
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
+    response = requests.get(url, headers=headers, allow_redirects=True)
     if response.status_code == 200:
         target_digest = hashlib.sha256(response.content).hexdigest()
 

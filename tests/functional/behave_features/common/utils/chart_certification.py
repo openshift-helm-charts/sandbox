@@ -434,6 +434,12 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             self.repo.git.branch('-D', current_branch)
         except git.exc.GitCommandError:
             logging.info(f"Local '{current_branch}' does not exist")
+        
+        # checking the rate limit
+        r = github_api('get', f'rate_limit', self.secrets.bot_token)
+        rate = json.loads(r.text)["rate"]
+        limit, used, remaining = rate["limit"], rate["used"], rate["remaining"]
+        logging.debug(f"RATE LIMIT: {limit}, USED: {used} REMAINING: {remaining}")
     
     def update_bot_name(self, bot_name):
         logging.debug(f"Updating bot name: {bot_name}")
