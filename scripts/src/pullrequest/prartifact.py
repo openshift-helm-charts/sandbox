@@ -41,14 +41,18 @@ def get_modified_files(api_url):
             page_size = len(files)
             page_number += 1
 
-            for file in files:
-                if "filename" in file:
-                    pr_files.append(file["filename"])
-                if "message" in file:
-                    print(f"[WARNING] message getting files : {files}")
-                    if "API rate limit exceeded"  in file["message"]:
-                        print(f'[ERROR] : {file["message"]}')
-                        sys.exit(1)
+            if "message" in files:
+                print(f'[ERROR] getting pr files: {files["message"]}')
+                sys.exit(1)
+            else:
+                for file in files:
+                    if "filename" in file:
+                        pr_files.append(file["filename"])
+                    if "message" in file:
+                        print(f"[WARNING] message getting files : {files}")
+                        if "API rate limit exceeded"  in file["message"]:
+                            print(f'[ERROR] : {file["message"]}')
+                            sys.exit(1)
 
     return pr_files
 
