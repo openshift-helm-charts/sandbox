@@ -106,13 +106,13 @@ def get_file_match_compiled_patterns():
 
 def ensure_only_chart_is_modified(api_url, repository, branch):
     # api_url https://api.github.com/repos/<organization-name>/<repository-name>/pulls/1
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     r = requests.get(api_url, headers=headers)
     for label in r.json()["labels"]:
         if label["name"] == ALLOW_CI_CHANGES:
             return
     files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    #headers = {'Accept': 'application/vnd.github.v3+json'}
     r = requests.get(files_api_url, headers=headers)
     pattern,reportpattern = get_file_match_compiled_patterns()
     page_number = 1
@@ -192,7 +192,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             sys.exit(1)
 
         print("Downloading index.yaml", category, organization, chart, version)
-        r = requests.get(f'https://raw.githubusercontent.com/{repository}/{branch}/index.yaml')
+        r = requests.get(f'https://raw.githubusercontent.com/{repository}/{branch}/index.yaml', headers=headers)
         if r.status_code == 200:
             data = yaml.load(r.text, Loader=Loader)
         else:

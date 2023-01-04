@@ -43,7 +43,7 @@ def verify_user(username):
 
 def check_for_restricted_file(api_url):
     files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     pattern_owners = re.compile(OWNERS_FILE)
     pattern_versionfile = re.compile(VERSION_FILE)
     pattern_thisfile = re.compile(THIS_FILE)

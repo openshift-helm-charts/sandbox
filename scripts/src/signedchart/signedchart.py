@@ -46,7 +46,7 @@ def is_chart_signed(api_url,report_path):
 
     if api_url:
         files_api_url = f'{api_url}/files'
-        headers = {'Accept': 'application/vnd.github.v3+json'}
+        headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
         r = requests.get(files_api_url, headers=headers)
         tgz_pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.-]+)/.*.tgz")
         tgz_found = False

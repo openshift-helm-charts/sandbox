@@ -4,6 +4,7 @@ import requests
 import yaml
 import semantic_version
 import sys
+import os
 
 sys.path.append('../')
 from chartrepomanager import indexannotations
@@ -11,6 +12,7 @@ from chartrepomanager import indexannotations
 INDEX_FILE = "https://charts.openshift.io/index.yaml"
 
 def _make_http_request(url, body=None, params={}, headers={}, verbose=False):
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     response = requests.get(url, params=params, headers=headers, json=body)
     if verbose:
         print(json.dumps(headers, indent=4, sort_keys=True))

@@ -51,7 +51,7 @@ def check_file_in_pr(api_url,pattern,error_value):
 
     print("[INFO] check if PR for matching files")
     files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     page_number = 1
     max_page_size,page_size = 100,100
     file_count = 0

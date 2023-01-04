@@ -1,12 +1,12 @@
 import time
 import sys
 import argparse
-
+import os
 import requests
 
 def ensure_pull_request_not_merged(api_url):
     # api_url https://api.github.com/repos/<organization-name>/<repository-name>/pulls/1
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     merged = False
     for i in range(20):
         r = requests.get(api_url, headers=headers)
