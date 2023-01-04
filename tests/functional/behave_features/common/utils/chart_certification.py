@@ -395,14 +395,6 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         self.secrets.index_file = "index.yaml"
         self.secrets.provider_delivery = False
 
-        # Rate limit checking
-        r = github_api('get', f'rate_limit', self.secrets.bot_token)
-        rate = json.loads(r.text)["rate"]
-        limit = rate["limit"]
-        used = rate["used"]
-        remaining = rate["remaining"]
-        logging.debug(f">>>>>>> RATE LIMIT: {limit}, USED: {used} REMAINING: {remaining}")
-
     def cleanup (self):
         # Cleanup releases and release tags
         self.cleanup_release()
@@ -441,6 +433,14 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
             self.repo.git.branch('-D', current_branch)
         except git.exc.GitCommandError:
             logging.info(f"Local '{current_branch}' does not exist")
+        
+        # Rate limit checking
+        r = github_api('get', f'rate_limit', self.secrets.bot_token)
+        rate = json.loads(r.text)["rate"]
+        limit = rate["limit"]
+        used = rate["used"]
+        remaining = rate["remaining"]
+        logging.debug(f">>>>>>> RATE LIMIT: {limit}, USED: {used} REMAINING: {remaining}")
     
     def update_bot_name(self, bot_name):
         logging.debug(f"Updating bot name: {bot_name}")
