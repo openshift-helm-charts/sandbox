@@ -20,7 +20,7 @@ def get_modified_charts(api_url):
     for file in files:
         match = pattern.match(file)
         if match:
-            category, organization, chart, version = match
+            category, organization, chart, version = match.groups()
             return category, organization, chart, version
 
     return "", "", "", ""
