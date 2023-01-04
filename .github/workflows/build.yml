@@ -333,7 +333,7 @@ jobs:
           CHART_ENTRY_NAME: ${{ steps.check_pr_content.outputs.chart-entry-name }}
           CHART_NAME_WITH_VERSION: ${{ steps.check_pr_content.outputs.chart-name-with-version }}
           REDHAT_TO_COMMUNITY: ${{ steps.check_report.outputs.redhat_to_community }}
-          WEB_CATALOG_ONLY: ${{ steps.check_pr_content.outputs.web_catalog_only }}
+          WEB_CATALOG_ONLY: ${{ steps.check_pr_content.outputs.webCatalogOnly }}
         id: release-charts
         run: |
           tar zxvf ./scripts/dependencies/helm-chart-releaser/chart-releaser_1.2.0_linux_amd64.tar.gz
