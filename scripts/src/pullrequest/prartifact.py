@@ -67,19 +67,19 @@ def get_labels(api_url):
     if not pr_labels:
         headers = {'Accept': 'application/vnd.github.v3+json','Authorization': f'Bearer {os.environ.get("BOT_TOKEN")}'}
         r = requests.get(api_url, headers=headers)
-        labels = r.json()
+        pr_data = r.json()
 
         if xRateLimit in r.headers:
             print(f'[DEBUG] {xRateLimit} : {r.headers[xRateLimit]}')
         if xRateRemain in r.headers:
             print(f'[DEBUG] {xRateRemain}  : {r.headers[xRateRemain]}')
 
-        if "message" in labels:
+        if "message" in pr_data:
             print(f'[ERROR] getting pr files: {labels["message"]}')
             sys.exit(1)
-
-        for label in labels:
-            pr_labels.append(label["name"])
+        if "labels" in pr_data:
+            for label in pr_data["labels"]:
+                pr_labels.append(label["name"])
 
     return pr_labels
 
