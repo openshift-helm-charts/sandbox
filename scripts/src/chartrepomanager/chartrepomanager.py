@@ -285,8 +285,8 @@ def update_index_and_push(indexfile, indexdir, repository, branch, category, org
     if err.strip():
         print(f"Error committing {indexfile}", "index directory", indexdir, "branch", branch, "error:", err)
     r = requests.head(f'https://raw.githubusercontent.com/{repository}/{branch}/{indexfile}')
-    response_content = r.json()
     try:
+        response_content = r.json()
         if "message" in response_content:
             print(f'[ERROR] checking index file: {response_content["message"]}')
             sys.exit(1)
