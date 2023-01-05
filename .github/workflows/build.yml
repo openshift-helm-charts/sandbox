@@ -8,6 +8,8 @@ jobs:
   chart-certification:
     name: Chart Certification
     runs-on: ubuntu-20.04
+    env:
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
     if: |
       github.event.pull_request.draft == false &&
       (github.event.action != 'labeled' || github.event.label.name == 'force-publish') &&
