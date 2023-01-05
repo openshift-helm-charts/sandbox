@@ -2,6 +2,7 @@ import re
 import os
 import sys
 import argparse
+import json
 
 import requests
 import semver
@@ -205,10 +206,14 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             print(msg)
             print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
-        response_content = r.json()
-        if "message" in response_content:
-            print(f'[ERROR] getting index file content: {response_content["message"]}')
-            sys.exit(1)
+        try:
+            response_content = r.json()
+            if "message" in response_content:
+                print(f'[ERROR] getting index file content: {response_content["message"]}')
+                sys.exit(1)
+        except json.decoder.JSONDecodeError:
+            pass
+
 
 
 
