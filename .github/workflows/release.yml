@@ -77,7 +77,7 @@ jobs:
               exit 1
           elif [ "${RELEASE_INFO_ONLY}" == 'true' ]; then
              echo "PR contains only release_info file"
-             echo '::set-output name=create_pull_requests::true'
+             echo "create_pull_requests=true" >> $GITHUB_OUTPUT
           elif [ "${DEV_PR_FOR_RELEASE}" != 'true' ]; then
              echo "No release work to do"
              exit
@@ -185,18 +185,18 @@ jobs:
                   exit 1
               else
                   echo "At least one PR was created - merge this one"
-                  echo '::set-output name=merge::true'
+                  echo "merge=true" >> $GITHUB_OUTPUT
               fi
               if [ "${DEV_PR_NOT_NEEDED}" == 'true' ]; then
                   echo "No dev PR so create release"
-                  echo "::set-output name=release_body::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}"
-                  echo "::set-output name=release_tag::${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}"
+                  echo "release_body=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_release_body }}" >> $GITHUB_OUTPUT
+                  echo "release_tag=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}" >> $GITHUB_OUTPUT
               fi
           elif [ "${DEV_PR_FOR_RELEASE}" == 'true' ]; then
               echo "Dev PR so create release"
-              echo '::set-output name=merge::true'
-              echo "::set-output name=release_body::${{ github.event.pull_request.body }}"
-              echo "::set-output name=release_tag::${{ steps.check_created_release_pr.outputs.PR_version }}"
+              echo "merge=true" >> $GITHUB_OUTPUT
+              echo "release_body=${{ github.event.pull_request.body }}" >> $GITHUB_OUTPUT
+              echo "release_tag=${{ steps.check_created_release_pr.outputs.PR_version }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Approve PR

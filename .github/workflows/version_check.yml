@@ -36,22 +36,22 @@ jobs:
           echo "dry-run : ${{ github.event.inputs.dry-run }}"
           echo "update-version : ${{ github.event.inputs.update-version }}"
           if [ $GITHUB_EVENT_NAME == 'workflow_dispatch' ]; then
-            echo '::set-output name=run-job::true'
+            echo "run-job=true" >> $GITHUB_OUTPUT
             if [ "${{ github.event.inputs.dry-run }}" == "true" ]; then
                 if [[ "${{ github.event.inputs.update-version }}" == "true"  && $GITHUB_REPOSITORY != "openshift-helm-charts/charts" ]]; then
-                  echo '::set-output name=check-version::true'
+                  echo "check-version=true" >> $GITHUB_OUTPUT
                 else
-                  echo '::set-output name=check-version::false'
+                  echo "check-version=false" >> $GITHUB_OUTPUT
                 fi
             else
-                echo '::set-output name=check-version::true'
+                echo "check-version=true" >> $GITHUB_OUTPUT
             fi
           elif [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
-            echo '::set-output name=run-job::true'
-            echo '::set-output name=check-version::true'
+            echo "run-job=true" >> $GITHUB_OUTPUT
+            echo "check-version=true" >> $GITHUB_OUTPUT
           else
-            echo '::set-output name=run-job::false'
-            echo '::set-output name=check-version::false'
+            echo "run-job=false" >> $GITHUB_OUTPUT
+            echo "check-version=false" >> $GITHUB_OUTPUT
           fi
 
 
@@ -75,7 +75,7 @@ jobs:
           OCP_VERSION=$(./oc version -o json | jq '.openshiftVersion')
           OCP_VERSION=$(sed -e 's/^"//' -e 's/"$//' <<< $OCP_VERSION)
           printf "[INFO] Current OCP Version: %s\n" ${OCP_VERSION}
-          echo "::set-output name=curr_ocp_version::${OCP_VERSION}"
+          echo "curr_ocp_version=${OCP_VERSION}" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Checkout software-version branch
@@ -97,30 +97,30 @@ jobs:
         run: |
           set -euo pipefail
           if [ "${{ steps.check_repo.outputs.run-job }}" != "true" ]; then
-            echo "::set-output name=run_tests::false"
-            echo "::set-output name=update-version::false"
+            echo "run_tests=false" >> $GITHUB_OUTPUT
+            echo "update-version=false" >> $GITHUB_OUTPUT
           elif [ "${{ steps.check_repo.outputs.check-version }}" == "true" ]; then
             if [ "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}" == "${{ steps.get_prev_ocp_version.outputs.result }}" ]; then
               # No change in the OpenShift versions.
               printf "OpenShift version has not changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}"
-              echo "::set-output name=update-version::false"
+              echo "update-version=false" >> $GITHUB_OUTPUT
               if [ "${{ github.event.inputs.dry-run }}" == "true" ]; then
                 echo "Openshift version has not changed but run anyaway as dry-run is set"
-                echo "::set-output name=run_tests::true"
+                echo "run_tests=true" >> $GITHUB_OUTPUT
               else
                 echo "Openshift version has not changed do not run tests"
-                echo "::set-output name=run_tests::false"
+                echo "run_tests=false" >> $GITHUB_OUTPUT
               fi
             else
               printf "OpenShift version has changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_ocp_version.outputs.result }}" "${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }}"
-              echo "::set-output name=run_tests::true"
-              echo "::set-output name=update-version::true"
+              echo "run_tests=true" >> $GITHUB_OUTPUT
+              echo "update-version=true" >> $GITHUB_OUTPUT
             fi
           else
             # Run whether open shift version has changed or not
             echo "Run tests - version check skipped"
-            echo "::set-output name=update-version::false"
-            echo "::set-output name=run_tests::true"
+            echo "update-version=false" >> $GITHUB_OUTPUT
+            echo "run_tests=true" >> $GITHUB_OUTPUT
           fi
         shell: bash
 
@@ -239,22 +239,22 @@ jobs:
           echo "dry-run : ${{ github.event.inputs.dry-run }}"
           echo "update-version : ${{ github.event.inputs.update-version }}"
           if [ $GITHUB_EVENT_NAME == 'workflow_dispatch' ]; then
-            echo '::set-output name=run-job::true'
+            echo "run-job=true" >> $GITHUB_OUTPUT
             if [ "${{ github.event.inputs.dry-run }}" == "true" ]; then
                 if [[ "${{ github.event.inputs.update-version }}" == "true"  && $GITHUB_REPOSITORY != "openshift-helm-charts/charts" ]]; then
-                  echo '::set-output name=check-version::true'
+                  echo "check-version=true" >> $GITHUB_OUTPUT
                 else
-                  echo '::set-output name=check-version::false'
+                  echo "check-version=false" >> $GITHUB_OUTPUT
                 fi
             else
-                echo '::set-output name=check-version::true'
+                echo "check-version=true" >> $GITHUB_OUTPUT
             fi
           elif [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
-            echo '::set-output name=run-job::true'
-            echo '::set-output name=check-version::true'
+            echo "run-job=true" >> $GITHUB_OUTPUT
+            echo "check-version=true" >> $GITHUB_OUTPUT
           else
-            echo '::set-output name=run-job::false'
-            echo '::set-output name=check-version::false'
+            echo "run-job=false" >> $GITHUB_OUTPUT
+            echo "check-version=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Get current Chart Verifier version
@@ -264,7 +264,7 @@ jobs:
           QUAY_API='https://quay.io/api/v1/repository/redhat-certification/chart-verifier/tag/'
           CV_DIGEST=$(curl ${QUAY_API} | jq '[.tags[] | select(.name == "latest")] | .[0].manifest_digest')
           printf "[INFO] Current Chart Verifier digest: %s\n" ${CV_DIGEST}
-          echo "::set-output name=current_cv_digest::${CV_DIGEST}"
+          echo "current_cv_digest=${CV_DIGEST}" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Checkout software-version branch
@@ -286,31 +286,31 @@ jobs:
         run: |
           set -euo pipefail
           if [ "${{ steps.check_repo.outputs.run-job }}" != "true" ]; then
-            echo "::set-output name=run_tests::false"
-            echo "::set-output name=update-version::false"
+            echo "run_tests=false" >> $GITHUB_OUTPUT
+            echo "update-version=false" >> $GITHUB_OUTPUT
           elif [ "${{ steps.check_repo.outputs.check-version }}" == "true" ]; then
              if [ "${{ steps.get_curr_cv_version.outputs.current_cv_digest }}" == "${{ steps.get_prev_cv_digest.outputs.result }}" ]; then
                # No change in the Chart Verifier image - do not run tests if a scheduled run or dry-run is not set
                printf "Chart Verifier has not changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_cv_digest.outputs.result }}" "${{ steps.get_curr_cv_version.outputs.current_cv_digest }}"
-               echo "::set-output name=update-version::false"
+               echo "update-version=false" >> $GITHUB_OUTPUT
                if [ "${{ github.event.inputs.dry-run }}" == "true" ]; then
                  echo "Chart Verifier image has not changed but run anyaway as dry-run is set"
-                 echo "::set-output name=run_tests::true"
+                 echo "run_tests=true" >> $GITHUB_OUTPUT
                else
                  echo "Chart Verifier image has not changed do not run tests"
-                 echo "::set-output name=run_tests::false"
+                 echo "run_tests=false" >> $GITHUB_OUTPUT
                fi
              else
                 # New Chart Verifier image is found
                 printf "Chart Verifier has changed since last run: '%s' -> '%s'\n" "${{ steps.get_prev_cv_digest.outputs.result }}" "${{ steps.get_curr_cv_version.outputs.current_cv_digest }}"
-                echo "::set-output name=run_tests::true"
-                echo "::set-output name=update-version::true"
+                echo "run_tests=true" >> $GITHUB_OUTPUT
+                echo "update-version=true" >> $GITHUB_OUTPUT
              fi
           else
             # Run whether Chart Verifier image has changed or not
             echo "Run tests - version check skipped"
-            echo "::set-output name=update-version::false"
-            echo "::set-output name=run_tests::true"
+            echo "update-version=false" >> $GITHUB_OUTPUT
+            echo "run_tests=true" >> $GITHUB_OUTPUT
           fi
 
         shell: bash

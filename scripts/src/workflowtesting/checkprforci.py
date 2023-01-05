@@ -10,6 +10,7 @@ try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
     from yaml import Loader, Dumper
+from tools import gitutils
 
 sys.path.append('../')
 from pullrequest import prartifact
@@ -37,10 +38,10 @@ def check_if_ci_only_is_modified(api_url):
             return False
 
     if others_found and not workflow_found:
-        print("::set-output name=do-not-build::true")
+        gitutils.add_output("do-not-build","true")
     elif tests_included:
         print(f"[INFO] set full_tests_in_pr to true")
-        print("::set-output name=full_tests_in_pr::true")
+        gitutils.add_output("full_tests_in_pr","true")
 
     return workflow_found
 
@@ -71,17 +72,17 @@ def main():
     if not args.api_url:
         if verify_user(args.username):
             print(f"[INFO] User authorized for manual invocation - run tests.")
-            print(f"::set-output name=run-tests::true")
+            gitutils.add_output("run-tests","true")
         else:
             print(f"[INFO] User not authorized for manual invocation - do not run tests.")
-            print(f"::set-output name=workflow-only-but-not-authorized::true")
+            gitutils.add_output("workflow-only-but-not-authorized","true")
     elif check_if_ci_only_is_modified(args.api_url):
         if verify_user(args.username):
             print(f"[INFO] PR is workflow changes only and user is authorized - run tests.")
-            print(f"::set-output name=run-tests::true")
+            gitutils.add_output("run-tests","true")
         else:
             print(f"[INFO] PR is workflow changes only but user is not authorized - do not run tests.")
-            print(f"::set-output name=workflow-only-but-not-authorized::true")
+            gitutils.add_output("workflow-only-but-not-authorized","true")
     else:
         print(f"[INFO] Non workflow changes were found - do not run tests")
 
