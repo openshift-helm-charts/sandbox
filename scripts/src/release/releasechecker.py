@@ -51,7 +51,7 @@ def check_file_in_pr(api_url,pattern,error_value):
 
     print("[INFO] check if PR for matching files")
     files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("BOT_TOKEN")}'}
     page_number = 1
     max_page_size,page_size = 100,100
     file_count = 0
@@ -67,6 +67,9 @@ def check_file_in_pr(api_url,pattern,error_value):
         page_number += 1
 
         for f in files:
+            print(f"[DEBUG] VALUE OF F: {f}")
+            if f == 'message':
+                print(f"[DEBUG] CONTENT OF FILES: {files}")
             file_path = f["filename"]
             match = pattern.match(file_path)
             if not match and not error_value:
