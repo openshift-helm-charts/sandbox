@@ -29,7 +29,7 @@ def get_modified_files(api_url):
     if not pr_files:
         page_number = 1
         max_page_size,page_size = 100,100
-        headers = {'Accept': 'application/vnd.github.v3+json'}
+        headers = {'Accept': 'application/vnd.github.v3+json','Authorization': f'Bearer {os.environ.get("BOT_TOKEN")}'}
         files_api_url = f'{api_url}/files'
 
         while page_size == max_page_size:
@@ -41,8 +41,10 @@ def get_modified_files(api_url):
             page_size = len(files)
             page_number += 1
 
-            for header,value in r.headers.items():
-                print(f"[INFO] response header : {header} : {value}")
+            if "X-RateLimit-Limit" in r.headers:
+                print(f'[DEBUG] X-RateLimit-Limit : {r.headers["X-RateLimit-Limit"]}')
+            if "X-RateLimit-Remaining" in r.headers:
+                print(f'[DEBUG] X-RateLimit-Remaining  : {r.headers["X-RateLimit-Remaining "]}')
 
             if "message" in files:
                 print(f'[ERROR] getting pr files: {files["message"]}')
@@ -61,10 +63,22 @@ def get_modified_files(api_url):
 
 def get_labels(api_url):
     if not pr_labels:
-        headers = {'Accept': 'application/vnd.github.v3+json'}
+        headers = {'Accept': 'application/vnd.github.v3+json','Authorization': f'Bearer {os.environ.get("BOT_TOKEN")}'}
         r = requests.get(api_url, headers=headers)
-        for label in r.json()["labels"]:
+        labels = r.json()
+
+        if "X-RateLimit-Limit" in r.headers:
+            print(f'[DEBUG] X-RateLimit-Limit : {r.headers["X-RateLimit-Limit"]}')
+        if "X-RateLimit-Remaining" in r.headers:
+            print(f'[DEBUG] X-RateLimit-Remaining  : {r.headers["X-RateLimit-Remaining "]}')
+
+        if "message" in labels:
+            print(f'[ERROR] getting pr files: {labels["message"]}')
+            sys.exit(1)
+
+        for label in labels:
             pr_labels.append(label["name"])
+
     return pr_labels
 
 def save_metadata(directory, vendor_label, chart, number):
