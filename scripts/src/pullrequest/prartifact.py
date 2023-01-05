@@ -12,6 +12,8 @@ from checkprcontent import checkpr
 
 pr_files = []
 pr_labels = []
+xRateLimit = "X-RateLimit-Limit"
+xRateRemain = "X-RateLimit-Remaining"
 
 # TODO(baijum): Move this code under chartsubmission.chart module
 def get_modified_charts(api_url):
@@ -41,10 +43,10 @@ def get_modified_files(api_url):
             page_size = len(files)
             page_number += 1
 
-            if "X-RateLimit-Limit" in r.headers:
-                print(f'[DEBUG] X-RateLimit-Limit : {r.headers["X-RateLimit-Limit"]}')
-            if "X-RateLimit-Remaining" in r.headers:
-                print(f'[DEBUG] X-RateLimit-Remaining  : {r.headers["X-RateLimit-Remaining "]}')
+            if xRateLimit in r.headers:
+                print(f'[DEBUG] {xRateLimit} : {r.headers[xRateLimit]}')
+            if xRateRemain in r.headers:
+                print(f'[DEBUG] {xRateRemain}  : {r.headers[xRateRemain]}')
 
             if "message" in files:
                 print(f'[ERROR] getting pr files: {files["message"]}')
@@ -67,10 +69,10 @@ def get_labels(api_url):
         r = requests.get(api_url, headers=headers)
         labels = r.json()
 
-        if "X-RateLimit-Limit" in r.headers:
-            print(f'[DEBUG] X-RateLimit-Limit : {r.headers["X-RateLimit-Limit"]}')
-        if "X-RateLimit-Remaining" in r.headers:
-            print(f'[DEBUG] X-RateLimit-Remaining  : {r.headers["X-RateLimit-Remaining "]}')
+        if xRateLimit in r.headers:
+            print(f'[DEBUG] {xRateLimit} : {r.headers[xRateLimit]}')
+        if xRateRemain in r.headers:
+            print(f'[DEBUG] {xRateRemain}  : {r.headers[xRateRemain]}')
 
         if "message" in labels:
             print(f'[ERROR] getting pr files: {labels["message"]}')
