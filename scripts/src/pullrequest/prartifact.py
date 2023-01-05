@@ -41,6 +41,9 @@ def get_modified_files(api_url):
             page_size = len(files)
             page_number += 1
 
+            for header in r.Headers.Values():
+                print(f"[INFO] response header : {header} : {r.Headers[header]}")
+
             if "message" in files:
                 print(f'[ERROR] getting pr files: {files["message"]}')
                 sys.exit(1)
