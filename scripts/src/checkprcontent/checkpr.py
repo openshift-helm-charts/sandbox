@@ -177,6 +177,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
 
         print("Downloading index.yaml", category, organization, chart, version)
         r = requests.get(f'https://raw.githubusercontent.com/{repository}/{branch}/index.yaml')
+
         if r.status_code == 200:
             data = yaml.load(r.text, Loader=Loader)
         else:
@@ -204,6 +205,12 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             print(msg)
             print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
+            response_content = r.json()
+        if "message" in response_content:
+            print(f'[ERROR] getting index file content: {response_content["message"]}')
+            sys.exit(1)
+
+
 
 def main():
     parser = argparse.ArgumentParser()

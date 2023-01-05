@@ -46,6 +46,10 @@ def get_repo_public_key(repo):
         logging.error(f"unexpected response getting repo public key : {response.status_code} : {response.reason}")
         sys.exit(1)
     response_json = response.json()
+    if "message" in response_json:
+        print(f'[ERROR] getting public key: {response_json["message"]}')
+        sys.exit(1)
+
     return response_json['key_id'], response_json['key']
 
 def get_repo_secrets(repo):
@@ -56,6 +60,9 @@ def get_repo_secrets(repo):
         logging.error(f"unexpected response getting secrets : {response.status_code} : {response.reason}")
         sys.exit(1)
     response_json = response.json()
+    if "message" in response_json:
+        print(f'[ERROR] getting public key: {response_json["message"]}')
+        sys.exit(1)
     for i in range(response_json['total_count']):
         secret_names.append(response_json['secrets'][i]['name'])
     return secret_names
@@ -66,7 +73,11 @@ def create_or_update_repo_secrets(repo, secret_name, key_id, encrypted_value):
     if response.status_code != 201 and response.status_code != 204:
         logging.error(f"unexpected response during put request : {response.status_code} : {response.reason}")
         sys.exit(1)
-    #response_json = response.json()
+    response_json = response.json()
+    if "message" in response_json:
+        print(f'[ERROR] getting secret: {response_json["message"]}')
+        sys.exit(1)
+
     logging.info(f'Secret {secret_name} create or update successful')
 
 def main():
