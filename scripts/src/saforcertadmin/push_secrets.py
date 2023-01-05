@@ -24,6 +24,7 @@ from nacl import encoding, public
 import logging
 import os
 import sys
+import json
 import requests
 import argparse
 
@@ -73,10 +74,14 @@ def create_or_update_repo_secrets(repo, secret_name, key_id, encrypted_value):
     if response.status_code != 201 and response.status_code != 204:
         logging.error(f"unexpected response during put request : {response.status_code} : {response.reason}")
         sys.exit(1)
-    response_json = response.json()
-    if "message" in response_json:
-        print(f'[ERROR] getting secret: {response_json["message"]}')
-        sys.exit(1)
+    try:
+        response_json = response.json()
+        if "message" in response_json:
+            print(f'[ERROR] getting secret: {response_json["message"]}')
+            sys.exit(1)
+    except json.decoder.JSONDecodeError:
+        pass
+
 
     logging.info(f'Secret {secret_name} create or update successful')
 

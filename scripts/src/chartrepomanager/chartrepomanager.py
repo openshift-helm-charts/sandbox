@@ -2,6 +2,7 @@ import argparse
 import shutil
 import os
 import sys
+import json
 import re
 import subprocess
 import tempfile
@@ -223,10 +224,13 @@ def update_index_and_push(indexfile, indexdir, repository, branch, category, org
     r = requests.get(f'https://raw.githubusercontent.com/{repository}/{branch}/{indexfile}')
     original_etag = r.headers.get('etag')
     now = datetime.now(timezone.utc).astimezone().isoformat()
-    response_content = r.json()
-    if "message" in response_content:
-        print(f'[ERROR] getting index file content: {response_content["message"]}')
-        sys.exit(1)
+    try:
+        response_content = r.json()
+        if "message" in response_content:
+            print(f'[ERROR] getting index file content: {response_content["message"]}')
+            sys.exit(1)
+    except json.decoder.JSONDecodeError:
+        pass
 
     if r.status_code == 200:
         data = yaml.load(r.text, Loader=Loader)
@@ -282,9 +286,13 @@ def update_index_and_push(indexfile, indexdir, repository, branch, category, org
         print(f"Error committing {indexfile}", "index directory", indexdir, "branch", branch, "error:", err)
     r = requests.head(f'https://raw.githubusercontent.com/{repository}/{branch}/{indexfile}')
     response_content = r.json()
-    if "message" in response_content:
-        print(f'[ERROR] checking index file: {response_content["message"]}')
-        sys.exit(1)
+    try:
+        if "message" in response_content:
+            print(f'[ERROR] checking index file: {response_content["message"]}')
+            sys.exit(1)
+    except json.decoder.JSONDecodeError:
+        pass
+
 
     etag = r.headers.get('etag')
     if original_etag and etag and (original_etag != etag):

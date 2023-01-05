@@ -45,10 +45,16 @@ def set_git_username_email(repo, username, email):
 def github_api_post(endpoint, bot_token, headers={}, json={}):
     r = requests.post(f'{GITHUB_BASE_URL}/{endpoint}',
                       headers=headers, json=json)
-    response_json = r.json()
-    if "message" in response_json:
-        print(f'[ERROR] getting secret: {response_json["message"]}')
-        sys.exit(1)
+
+    try:
+        response_json = r.json()
+
+        if "message" in response_json:
+            print(f'[ERROR] getting secret: {response_json["message"]}')
+            sys.exit(1)
+    except json.decoder.JSONDecodeError:
+        pass
+
 
     return r
 
