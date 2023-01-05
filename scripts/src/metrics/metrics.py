@@ -35,9 +35,10 @@ def parse_response(response):
 
 def get_release_metrics():
     result = []
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
     for i in itertools.count(start=1):
         response = requests.get(
-            f'https://api.github.com/repos/openshift-helm-charts/charts/releases?per_page=100&page={i}')
+            f'https://api.github.com/repos/openshift-helm-charts/charts/releases?per_page=100&page={i}', headers=headers)
         if not 200 <= response.status_code < 300:
             print(f"[ERROR] unexpected response getting release data : {response.status_code} : {response.reason}")
             sys.exit(1)
