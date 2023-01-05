@@ -397,11 +397,13 @@ def check_rate_limit(g,force):
         print(f"[INFO] rate limit info: {rate_limit.core}")
 
 def getChartUpdate(type,partner,chart,cwd):
-
-    directoryPath=os.path.join(cwd, charts,type, partner,chart)
+    if type=="partner":
+        directory_type="partners"
+    else:
+        directory_type=type
+    directoryPath=os.path.join(cwd, charts,directory_type, partner,chart)
     # Checking if the directory contains only the OWNERS file
     print(os.listdir(directoryPath))
-    print(len(os.listdir(directoryPath)))
     if len(os.listdir(directoryPath)) == 1:
         return "new chart"
     else:
