@@ -52,6 +52,9 @@ def get_modified_charts(directory, api_url):
     r = requests.get(files_api_url, headers=headers)
     pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
     for f in r.json():
+        if f == "message":
+            print(f"GOT RESPONSE: {r.json()}")
+            sys.exit(1)
         m = pattern.match(f["filename"])
         if m:
             category, organization, chart, version = m.groups()
