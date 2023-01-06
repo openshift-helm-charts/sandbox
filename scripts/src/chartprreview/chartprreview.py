@@ -22,6 +22,7 @@ sys.path.append('../')
 from report import report_info
 from report import verifier_report
 from signedchart import signedchart
+from pullrequest import prartifact
 
 def write_error_log(directory, *msg):
     os.makedirs(directory, exist_ok=True)
@@ -39,20 +40,12 @@ def get_vendor_type(directory):
         sys.exit(1)
     return vendor_type
 
-def get_labels(api_url):
-    # api_url https://api.github.com/repos/<organization-name>/<repository-name>/pulls/1
-    headers = {'Accept': 'application/vnd.github.v3+json'}
-    r = requests.get(api_url, headers=headers)
-    return r.json()["labels"]
-
 def get_modified_charts(directory, api_url):
     print("[INFO] Get modified charts. %s" %directory)
-    files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
-    r = requests.get(files_api_url, headers=headers)
+    files = prartifact.get_modified_files(api_url)
     pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
-    for f in r.json():
-        m = pattern.match(f["filename"])
+    for file_path in files:
+        m = pattern.match(file_path)
         if m:
             category, organization, chart, version = m.groups()
             return category, organization, chart, version
@@ -260,8 +253,7 @@ def check_report_success(directory, api_url, report_path, report_info_path, vers
 
     report = report_info.get_report_results(report_path=report_path,report_info_path=report_info_path,profile_type=vendor_type)
 
-    labels = get_labels(api_url)
-    label_names = [l["name"] for l in labels]
+    label_names = prartifact.get_labels(api_url)
 
     failed = report["failed"]
     passed = report["passed"]
@@ -367,7 +359,7 @@ def main():
     generated_report_path = os.environ.get("GENERATED_REPORT_PATH")
     generated_report_info_path =  os.environ.get("REPORT_SUMMARY_PATH")
     env = Env()
-    provider_delivery = env.bool("PROVIDER_DELIVERY",False)
+    web_catalog_only = env.bool("WEB_CATALOG_ONLY",False)
 
     if os.path.exists(submitted_report_path):
         print("[INFO] Report exists: ", submitted_report_path)
@@ -376,7 +368,7 @@ def main():
         report_info_path = ""
         if report_generated and report_generated == "True":
             match_checksum(args.directory,generated_report_info_path, category, organization, chart, version)
-        elif not provider_delivery:
+        elif not web_catalog_only:
             check_url(args.directory, report_path)
     else:
         print("[INFO] Report does not exist: ", submitted_report_path)
