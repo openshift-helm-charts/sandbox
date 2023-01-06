@@ -40,6 +40,8 @@ jobs:
       - name: Check if dev repo is targetted, only release file is in PR and user is authorized
         id: check_only_version_in_PR_and_authorized
         working-directory: ./pr-branch
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           # if dev repo is targetted check if release file only is included in PR and if so that user is authorized.
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
@@ -52,6 +54,7 @@ jobs:
         if: ${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_includes_release_only != 'true' }}
         env:
           BOT_NAME: ${{ secrets.BOT_NAME }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           # check if PR was created as part of release processing
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
@@ -136,6 +139,8 @@ jobs:
       - name: Check if version updated
         id: check_version_updated
         if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           # check if version file was changed
           ./ve1/bin/release-checker --version=${{ steps.check_only_version_in_PR_and_authorized.outputs.PR_version }}
@@ -212,6 +217,8 @@ jobs:
 
       - name: Check for PR merge
         if: ${{ steps.check_merge_and_release.outputs.merge == 'true' }}
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           ./ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href }}
 
