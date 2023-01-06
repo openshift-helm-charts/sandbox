@@ -13,6 +13,7 @@ main functions :
 
 
 import os
+import sys
 import json
 import requests
 from git import Repo
@@ -44,10 +45,26 @@ def set_git_username_email(repo, username, email):
 def github_api_post(endpoint, bot_token, headers={}, json={}):
     r = requests.post(f'{GITHUB_BASE_URL}/{endpoint}',
                       headers=headers, json=json)
+
+    try:
+        response_json = r.json()
+
+        if "message" in response_json:
+            print(f'[ERROR] getting secret: {response_json["message"]}')
+            sys.exit(1)
+    except json.decoder.JSONDecodeError:
+        pass
+
+
     return r
 
 def github_api_get(endpoint, bot_token, headers={}):
     r = requests.get(f'{GITHUB_BASE_URL}/{endpoint}', headers=headers)
+    response_json = r.json()
+    if "message" in response_json:
+        print(f'[ERROR] getting secret: {response_json["message"]}')
+        sys.exit(1)
+
     return r
 
 def github_api(method, endpoint, bot_token, headers={}, data={}, json={}):
