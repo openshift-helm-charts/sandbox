@@ -41,7 +41,7 @@ jobs:
         id: check_only_version_in_PR_and_authorized
         working-directory: ./pr-branch
         env:
-          BOT_TOKEN:  ${{ secrets.BOT_TOKEN }}
+          GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
         run: |
           # if dev repo is targetted check if release file only is included in PR and if so that user is authorized.
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \

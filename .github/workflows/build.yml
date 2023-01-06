@@ -169,6 +169,8 @@ jobs:
         if: ${{ steps.check_build_required.outputs.run-build == 'true' }}
         id: verify_requires
         working-directory: ./pr-branch
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
           ../ve1/bin/get-verify-params --directory=pr --api-url=${{ github.event.pull_request._links.self.href }}
 
