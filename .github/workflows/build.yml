@@ -340,6 +340,7 @@ jobs:
         env:
           GITHUB_REF: ${{ github.ref }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           REPORT_CONTENT: ${{steps.check_report.outputs.report_content}}
           CHART_ENTRY_NAME: ${{ steps.check_pr_content.outputs.chart-entry-name }}
           CHART_NAME_WITH_VERSION: ${{ steps.check_pr_content.outputs.chart-name-with-version }}

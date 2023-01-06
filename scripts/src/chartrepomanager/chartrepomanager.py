@@ -194,7 +194,7 @@ def create_index_from_report(category, report_path):
 
 def set_package_digest(chart_entry):
     print("[INFO] set package digests.")
-    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("GITHUB_TOKEN")}'}
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("BOT_TOKEN")}'}
     url = chart_entry["urls"][0]
     head = requests.head(url, headers=headers, allow_redirects=True)
     target_digest = ""
