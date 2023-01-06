@@ -209,7 +209,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
         try:
             if prartifact.xRateLimit in r.headers:
                 print(f'[DEBUG] {prartifact.xRateLimit} : {r.headers[prartifact.xRateLimit]}')
-            if xRateRemain in r.headers:
+            if prartifact.xRateRemain in r.headers:
                 print(f'[DEBUG] {prartifact.xRateRemain}  : {r.headers[prartifact.xRateRemain]}')
 
             response_content = r.json()
