@@ -196,7 +196,7 @@ def set_package_digest(chart_entry):
     print("[INFO] set package digests.")
     headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {os.environ.get("BOT_TOKEN")}'}
     url = chart_entry["urls"][0]
-    head = requests.head(url, headers=headers, allow_redirects=True)
+    head = requests.head(url, allow_redirects=True)
     target_digest = ""
     if head.status_code == 200:
         response = requests.get(url, headers=headers, allow_redirects=True)
@@ -204,7 +204,7 @@ def set_package_digest(chart_entry):
         target_digest = hashlib.sha256(response.content).hexdigest()
         print(f"[DEBUG] TARGET DIGEST: {target_digest}")
     else:
-        print(f"[DEBUG] RESPONSE CODE: {head.status_code} and RESPONSE CONTENT {head.content}")
+        print(f"[DEBUG] RESPONSE CODE: {head.status_code}")
 
     pkg_digest = ""
     if "digest" in chart_entry:
