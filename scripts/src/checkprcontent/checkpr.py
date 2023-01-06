@@ -134,7 +134,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
 
         for f in files:
             if f == "message":
-                print("[DEBUG] RESPONSE OF FILES QUERY: {files}")
+                print(f"[DEBUG] RESPONSE OF FILES QUERY: {files}")
             file_path = f["filename"]
             match = pattern.match(file_path)
             if not match:
