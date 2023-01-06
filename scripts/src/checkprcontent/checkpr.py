@@ -112,7 +112,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
         if label["name"] == ALLOW_CI_CHANGES:
             return
     files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    #headers = {'Accept': 'application/vnd.github.v3+json'}
     r = requests.get(files_api_url, headers=headers)
     pattern,reportpattern = get_file_match_compiled_patterns()
     page_number = 1
@@ -133,6 +133,8 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
         page_number += 1
 
         for f in files:
+            if f == "message":
+                print("[DEBUG] RESPONSE OF FILES QUERY: {files}")
             file_path = f["filename"]
             match = pattern.match(file_path)
             if not match:
