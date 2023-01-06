@@ -28,7 +28,10 @@ import json
 import requests
 import argparse
 
-token = os.environ.get("GITHUB_TOKEN")
+sys.path.append('../')
+from pullrequest import prartifact
+
+token = os.environ.get("BOT_TOKEN")
 headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'token {token}'}
 
 logging.basicConfig(level=logging.INFO)
@@ -47,6 +50,12 @@ def get_repo_public_key(repo):
         logging.error(f"unexpected response getting repo public key : {response.status_code} : {response.reason}")
         sys.exit(1)
     response_json = response.json()
+
+    if prartifact.xRateLimit in r.headers:
+        print(f'[DEBUG] {prartifact.xRateLimit} : {r.headers[prartifact.xRateLimit]}')
+    if prartifact.xRateRemain in r.headers:
+        print(f'[DEBUG] {prartifact.xRateRemain}  : {r.headers[prartifact.xRateRemain]}')
+
     if "message" in response_json:
         print(f'[ERROR] getting public key: {response_json["message"]}')
         sys.exit(1)
@@ -58,7 +67,7 @@ def get_repo_secrets(repo):
     secret_names = []
     response = requests.get(f'https://api.github.com/repos/{repo}/actions/secrets', headers=headers)
     if response.status_code != 200:
-        logging.error(f"unexpected response getting secrets : {response.status_code} : {response.reason}")
+        logging.error(f"[ERROR] unexpected response getting public key : {response.status_code} : {response.reason}")
         sys.exit(1)
     response_json = response.json()
     if "message" in response_json:
@@ -77,7 +86,7 @@ def create_or_update_repo_secrets(repo, secret_name, key_id, encrypted_value):
     try:
         response_json = response.json()
         if "message" in response_json:
-            print(f'[ERROR] getting secret: {response_json["message"]}')
+            print(f'[ERROR] updating public key: {response_json["message"]}')
             sys.exit(1)
     except json.decoder.JSONDecodeError:
         pass

@@ -198,7 +198,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
         tag_name = f"{organization}-{chart}-{version}"
         print(f"::set-output name=chart-name-with-version::{tag_name}")
         tag_api = f"https://api.github.com/repos/{repository}/git/ref/tags/{tag_name}"
-        headers = {'Accept': 'application/vnd.github.v3+json'}
+        headers = {'Accept': 'application/vnd.github.v3+json','Authorization': f'Bearer {os.environ.get("BOT_TOKEN")}'}
         print(f"[INFO] checking tag: {tag_api}")
         r = requests.head(tag_api, headers=headers)
         if r.status_code == 200:
@@ -207,6 +207,11 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             print(f"::set-output name=pr-content-error-message::{msg}")
             sys.exit(1)
         try:
+            if prartifact.xRateLimit in r.headers:
+                print(f'[DEBUG] {prartifact.xRateLimit} : {r.headers[prartifact.xRateLimit]}')
+            if xRateRemain in r.headers:
+                print(f'[DEBUG] {prartifact.xRateRemain}  : {r.headers[prartifact.xRateRemain]}')
+
             response_content = r.json()
             if "message" in response_content:
                 print(f'[ERROR] getting index file content: {response_content["message"]}')
