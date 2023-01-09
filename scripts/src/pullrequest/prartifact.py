@@ -55,11 +55,6 @@ def get_modified_files(api_url):
                 for file in files:
                     if "filename" in file:
                         pr_files.append(file["filename"])
-                    if "message" in file:
-                        print(f"[WARNING] message getting files : {files}")
-                        if "API rate limit exceeded"  in file["message"]:
-                            print(f'[ERROR] : {file["message"]}')
-                            sys.exit(1)
 
     return pr_files
 
@@ -75,7 +70,7 @@ def get_labels(api_url):
             print(f'[DEBUG] {xRateRemain}  : {r.headers[xRateRemain]}')
 
         if "message" in pr_data:
-            print(f'[ERROR] getting pr files: {labels["message"]}')
+            print(f'[ERROR] getting pr files: {pr_data["message"]}')
             sys.exit(1)
         if "labels" in pr_data:
             for label in pr_data["labels"]:

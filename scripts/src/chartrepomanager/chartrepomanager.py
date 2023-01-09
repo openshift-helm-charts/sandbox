@@ -197,6 +197,20 @@ def set_package_digest(chart_entry):
 
     url = chart_entry["urls"][0]
     head = requests.head(url, allow_redirects=True)
+    print("[DEBUG] head get chart url 1: print rate limits")
+    if prartifact.xRateLimit in head.headers:
+        print(f'[DEBUG] head get chart url 1: {prartifact.xRateLimit} : {head.headers[prartifact.xRateLimit]}')
+    if prartifact.xRateRemain in head.headers:
+        print(f'[DEBUG] head get chart url 1: {prartifact.xRateRemain}  : {head.headers[prartifact.xRateRemain]}')
+
+    head = requests.head(url, allow_redirects=True)
+    print("[DEBUG] head get chart url 1: print rate limits")
+    if prartifact.xRateLimit in head.headers:
+        print(f'[DEBUG] head get chart url 1: {prartifact.xRateLimit} : {head.headers[prartifact.xRateLimit]}')
+    if prartifact.xRateRemain in head.headers:
+        print(f'[DEBUG] head get chart url 1: {prartifact.xRateRemain}  : {head.headers[prartifact.xRateRemain]}')
+
+
     target_digest = ""
     if head.status_code == 200:
         response = requests.get(url, allow_redirects=True)

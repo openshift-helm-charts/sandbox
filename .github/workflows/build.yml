@@ -8,8 +8,6 @@ jobs:
   chart-certification:
     name: Chart Certification
     runs-on: ubuntu-20.04
-    env:
-      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
     if: |
       github.event.pull_request.draft == false &&
       (github.event.action != 'labeled' || github.event.label.name == 'force-publish') &&
@@ -32,6 +30,8 @@ jobs:
 
       - name: Check for CI changes
         id: check_ci_changes
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           # check if workflow testing should run.
           echo "[INFO] check if PR contains only workflow changes and user is authorized"
@@ -42,6 +42,7 @@ jobs:
         if: ${{ steps.check_ci_changes.outputs.run-tests != true }}
         env:
           BOT_NAME: ${{ secrets.BOT_NAME }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           # check if PR was created as part of release processing
           ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
@@ -103,6 +104,7 @@ jobs:
         continue-on-error: true
         env:
           GITHUB_REF: ${{ github.ref }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "refs/heads/gh-pages"; else echo "${GITHUB_REF}-gh-pages"; fi)
            ./ve1/bin/check-pr-content --index-branch=${INDEX_BRANCH} --repository=${{ github.repository }} --api-url=${{ github.event.pull_request._links.self.href }}
@@ -197,6 +199,7 @@ jobs:
         if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' }}
         env:
           API_SERVER: ${{ steps.login-params.outputs.API_SERVER }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           ve1/bin/sa-for-chart-testing --create charts-${{ github.event.number }} --token token.txt --server ${API_SERVER}
           echo "::set-output name=delete_namespace::true"
@@ -222,6 +225,7 @@ jobs:
         id: check_report
         if: ${{ steps.check_build_required.outputs.run-build == 'true' }}
         env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           VENDOR_TYPE: ${{ steps.check_pr_content.outputs.category }}
           WEB_CATALOG_ONLY: ${{ steps.check_pr_content.outputs.webCatalogOnly }}
           REPORT_GENERATED: ${{ steps.verify_requires.outputs.report_needed }}
@@ -243,6 +247,8 @@ jobs:
           ve1/bin/sa-for-chart-testing --delete charts-${{ github.event.number }}
 
       - name: Save PR artifact
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         if: ${{ always() && steps.check_build_required.outputs.run-build == 'true' }}
         run: |
           ve1/bin/pr-artifact --directory=./pr --pr-number=${{ github.event.number }} --api-url=${{ github.event.pull_request._links.self.href }}
@@ -251,6 +257,7 @@ jobs:
         id: pr_comment
         if: ${{ always() && steps.check_build_required.outputs.run-build == 'true' }}
         env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           PR_CONTENT_ERROR_MESSAGE: ${{ steps.check_pr_content.outputs.pr-content-error-message }}
           OWNERS_ERROR_MESSAGE: ${{ steps.check_pr_content.outputs.owners-error-message }}
           COMMUNITY_MANUAL_REVIEW: ${{ steps.check_report.outputs.community_manual_review_required }}
@@ -311,6 +318,8 @@ jobs:
 
       - name: Check for PR merge
         if: ${{ steps.check_build_required.outputs.run-build == 'true' }}
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           ./ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href }}
 
@@ -329,6 +338,7 @@ jobs:
       - name: Release Charts
         if: ${{ steps.check_build_required.outputs.run-build == 'true' }}
         env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           GITHUB_REF: ${{ github.ref }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           REPORT_CONTENT: ${{steps.check_report.outputs.report_content}}
@@ -362,7 +372,7 @@ jobs:
       - name: Add metrics
         if: ${{ always() && steps.check_build_required.outputs.run-build == 'true' && env.GITHUB_REPOSITORY != 'openshift-helm-charts/sandbox' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
               WRITE_KEY=${{ secrets.SEGMENT_WRITE_KEY }}
