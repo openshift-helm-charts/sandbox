@@ -264,7 +264,7 @@ jobs:
           QUAY_API='https://quay.io/api/v1/repository/redhat-certification/chart-verifier/tag/'
           CV_DIGEST=$(curl ${QUAY_API} | jq '[.tags[] | select(.name == "latest")] | .[0].manifest_digest')
           printf "[INFO] Current Chart Verifier digest: %s\n" ${CV_DIGEST}
-          echo "current_cv_digest=${CVZ_DIGEST}" >> $GITHUB_OUTPUT
+          echo "current_cv_digest=${CV_DIGEST}" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Checkout software-version branch
