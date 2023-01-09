@@ -13,7 +13,7 @@ def ensure_pull_request_not_merged(api_url):
         r = requests.get(api_url, headers=headers)
         response_content = r.json()
         if "message" in response_content:
-            print(f'[ERROR] getting public key: {response_content["message"]}')
+            print(f'[ERROR] merge status: {response_content["message"]}')
             sys.exit(1)
 
         if response_content["merged"]:

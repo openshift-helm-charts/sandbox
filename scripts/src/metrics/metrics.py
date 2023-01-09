@@ -36,8 +36,9 @@ def parse_response(response):
 def get_release_metrics():
     result = []
     for i in itertools.count(start=1):
+        request_headers = {'Accept': 'application/vnd.github.v3+json','Authorization': f'Bearer {os.environ.get("BOT_TOKEN")}'}
         response = requests.get(
-            f'https://api.github.com/repos/openshift-helm-charts/charts/releases?per_page=100&page={i}')
+            f'https://api.github.com/repos/openshift-helm-charts/charts/releases?per_page=100&page={i}',headers=request_headers)
         if not 200 <= response.status_code < 300:
             print(f"[ERROR] unexpected response getting release data : {response.status_code} : {response.reason}")
             sys.exit(1)
@@ -444,7 +445,7 @@ def main():
         print("Error: Segment write key not set")
         sys.exit(1)
 
-    g = Github(os.environ.get("github_token"))
+    g = Github(os.environ.get("BOT_TOKEN"))
 
     if args.type == "pull_request":
         repo_current = g.get_repo(args.repository)

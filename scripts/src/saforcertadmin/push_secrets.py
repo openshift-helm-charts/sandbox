@@ -67,11 +67,11 @@ def get_repo_secrets(repo):
     secret_names = []
     response = requests.get(f'https://api.github.com/repos/{repo}/actions/secrets', headers=headers)
     if response.status_code != 200:
-        logging.error(f"[ERROR] unexpected response getting public key : {response.status_code} : {response.reason}")
+        logging.error(f"[ERROR] unexpected response getting repo secrets : {response.status_code} : {response.reason}")
         sys.exit(1)
     response_json = response.json()
     if "message" in response_json:
-        print(f'[ERROR] getting public key: {response_json["message"]}')
+        print(f'[ERROR] getting repo secrets: {response_json["message"]}')
         sys.exit(1)
     for i in range(response_json['total_count']):
         secret_names.append(response_json['secrets'][i]['name'])
@@ -86,7 +86,7 @@ def create_or_update_repo_secrets(repo, secret_name, key_id, encrypted_value):
     try:
         response_json = response.json()
         if "message" in response_json:
-            print(f'[ERROR] updating public key: {response_json["message"]}')
+            print(f'[ERROR] updating repo secret: {response_json["message"]}')
             sys.exit(1)
     except json.decoder.JSONDecodeError:
         pass
