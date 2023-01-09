@@ -444,7 +444,7 @@ def main():
         print("Error: Segment write key not set")
         sys.exit(1)
 
-    g = Github(os.environ.get("github_token"))
+    g = Github(os.environ.get("BOT_TOKEN"))
 
     if args.type == "pull_request":
         repo_current = g.get_repo(args.repository)

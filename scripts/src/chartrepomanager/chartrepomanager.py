@@ -197,6 +197,7 @@ def set_package_digest(chart_entry):
 
     url = chart_entry["urls"][0]
     head = requests.head(url, allow_redirects=True)
+
     target_digest = ""
     if head.status_code == 200:
         response = requests.get(url, allow_redirects=True)
