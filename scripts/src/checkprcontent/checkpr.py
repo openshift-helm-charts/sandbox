@@ -183,7 +183,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
 
     if matches_found>0:
         category, organization, chart, version = pattern_match.groups()
-        gitutils.add_output("category",{'partner' if category == 'partners' else category})
+        gitutils.add_output("category",f"{'partner' if category == 'partners' else category}")
         gitutils.add_output("organization",organization)
 
         if not semver.VersionInfo.isvalid(version):
