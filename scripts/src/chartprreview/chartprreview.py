@@ -306,6 +306,20 @@ def verify_package_digest(url,report):
     response = requests.get(url, allow_redirects=True)
     if response.status_code == 200:
         target_digest = hashlib.sha256(response.content).hexdigest()
+    print("[DEBUG] get chart url 1: print rate limits")
+    if prartifact.xRateLimit in response.headers:
+        print(f'[DEBUG] get chart url 1: {prartifact.xRateLimit} : {response.headers[prartifact.xRateLimit]}')
+    if prartifact.xRateRemain in response.headers:
+        print(f'[DEBUG] get chart url 1: {prartifact.xRateRemain}  : {response.headers[prartifact.xRateRemain]}')
+
+    response = requests.get(url, allow_redirects=True)
+    if response.status_code == 200:
+        target_digest = hashlib.sha256(response.content).hexdigest()
+    print("[DEBUG] get chart url 2: print rate limits")
+    if prartifact.xRateLimit in response.headers:
+        print(f'[DEBUG] get chart url 2: {prartifact.xRateLimit} : {response.headers[prartifact.xRateLimit]}')
+    if prartifact.xRateRemain in response.headers:
+        print(f'[DEBUG] get chart url 2: {prartifact.xRateRemain}  : {response.headers[prartifact.xRateRemain]}')
 
     found,report_data = verifier_report.get_report_data(report)
     if found:
