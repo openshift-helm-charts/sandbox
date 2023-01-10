@@ -2,6 +2,8 @@
 Used within github actions to perform github tasks, specifically as part of the charts auto release process
 defined in .github/workflow/release.yml
 
+commit for testing purposes
+
 Requires the environment to contain:
 BOT_TOKEN : valid Oauth token for a bot with permission to update development and chart repositories
 BOT_NAME : valid owner of the BOT_TOKEN
