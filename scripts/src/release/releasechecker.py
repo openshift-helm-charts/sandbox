@@ -36,6 +36,7 @@ from release import releaser
 sys.path.append('../')
 from owners import checkuser
 from tools import gitutils
+from pullrequest import prartifact
 
 VERSION_FILE = "release/release_info.json"
 TYPE_MATCH_EXPRESSION = "(partners|redhat|community)"
@@ -50,31 +51,16 @@ ERROR_IF_MATCH_FOUND = True
 def check_file_in_pr(api_url,pattern,error_value):
 
     print("[INFO] check if PR for matching files")
-    files_api_url = f'{api_url}/files'
-    headers = {'Accept': 'application/vnd.github.v3+json'}
-    page_number = 1
-    max_page_size,page_size = 100,100
-    file_count = 0
+    files = prartifact.get_modified_files(api_url)
 
-    while page_size == max_page_size:
-
-        files_api_query = f'{files_api_url}?per_page={page_size}&page={page_number}'
-        print(f"[INFO] Query files : {files_api_query}")
-        pr_files = requests.get(files_api_query,headers=headers)
-        files = pr_files.json()
-        page_size = len(files)
-        file_count += page_size
-        page_number += 1
-
-        for f in files:
-            file_path = f["filename"]
-            match = pattern.match(file_path)
-            if not match and not error_value:
-                print(f"[INFO] stop non match found  : {file_path}")
-                return False
-            elif match and error_value:
-                print(f"[INFO] stop match found  : {file_path}")
-                return False
+    for file_path in files:
+        match = pattern.match(file_path)
+        if not match and not error_value:
+            print(f"[INFO] stop non match found  : {file_path}")
+            return False
+        elif match and error_value:
+            print(f"[INFO] stop match found  : {file_path}")
+            return False
 
     return True
 
