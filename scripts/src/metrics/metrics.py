@@ -47,10 +47,10 @@ def get_release_metrics():
             sys.exit(1)
             
         response_json = response.json()
-        if xRateLimit in response_json.headers:
-           print(f'[DEBUG] {xRateLimit} : {response_json.headers[xRateLimit]}')
-        if xRateRemain in response_json.headers:
-            print(f'[DEBUG] {xRateRemain}  : {response_json.headers[xRateRemain]}')
+        if xRateLimit in response_json:
+           print(f'[DEBUG] {xRateLimit} : {response_json[xRateLimit]}')
+        if xRateRemain in response_json:
+            print(f'[DEBUG] {xRateRemain}  : {response_json[xRateRemain]}')
 
         if "message" in response_json:
             print(f'[ERROR] getting pr files: {response_json["message"]}')
