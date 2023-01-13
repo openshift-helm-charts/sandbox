@@ -23,6 +23,7 @@ from report import report_info
 from report import verifier_report
 from signedchart import signedchart
 from pullrequest import prartifact
+from tools import gitutils
 
 def write_error_log(directory, *msg):
     os.makedirs(directory, exist_ok=True)
@@ -211,7 +212,7 @@ def check_report_success(directory, api_url, report_path, report_info_path, vers
     print("[INFO] Full report: ")
     print(data)
     quoted_data = data.replace("%", "%25").replace("\n", "%0A").replace("\r", "%0D")
-    print(f"::set-output name=report_content::{quoted_data}")
+    gitutils.add_output("report_content",quoted_data)
 
     chart = report_info.get_report_chart(report_path=report_path,report_info_path=report_info_path)
     report_version = chart["version"]
@@ -268,17 +269,17 @@ def check_report_success(directory, api_url, report_path, report_info_path, vers
             msgs.append(f"  - {m}")
         write_error_log(directory, *msgs)
         if vendor_type == "redhat":
-            print(f"::set-output name=redhat_to_community::True")
+            gitutils.add_output("redhat_to_community","True")
         if vendor_type != "redhat" and "force-publish" not in label_names:
             if vendor_type == "community":
                 # requires manual review and approval
-                print(f"::set-output name=community_manual_review_required::True")
+                gitutils.add_output("community_manual_review_required","True")
             sys.exit(1)
 
     if vendor_type == "community" and "force-publish" not in label_names:
         # requires manual review and approval
         print("[INFO] Community submission requires manual approval.")
-        print(f"::set-output name=community_manual_review_required::True")
+        gitutils.add_output("community_manual_review_required","True")
         sys.exit(1)
 
     if failures_in_report or vendor_type == "community":

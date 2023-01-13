@@ -9,6 +9,7 @@ import requests
 
 sys.path.append('../')
 from checkprcontent import checkpr
+from tools import gitutils
 
 pr_files = []
 pr_labels = []
@@ -109,7 +110,7 @@ def main():
     if args.get_files:
         pr_files = get_modified_files(args.api_url)
         print(f"[INFO] files in pr: {pr_files}")
-        print(f"::set-output name=pr_files::{pr_files}")
+        gitutils.add_output("pr_files",pr_files)
     else:
         os.makedirs(args.directory, exist_ok=True)
         category, organization, chart, version = get_modified_charts(args.api_url)

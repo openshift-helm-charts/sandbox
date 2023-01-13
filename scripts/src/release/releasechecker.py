@@ -150,7 +150,7 @@ def make_release_body(version, release_info):
         body += f"- {info}<br>"
 
     print(f"[INFO] Release body: {body}")
-    print(f"::set-output name=PR_release_body::{body}")
+    gitutils.add_output("PR_release_body",body)
 
 def get_version_info():
     data = {}
@@ -190,14 +190,14 @@ def main():
         if args.pr_base_repo.endswith(DEV_PR_BASE_REPO):
             if check_if_dev_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_head_repo):
                 print('[INFO] Dev release pull request found')
-                print(f'::set-output name=dev_release_branch::true')
+                gitutils.add_output("dev_release_branch","true")
                 version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
-                print(f'::set-output name=PR_version::{version}')
-                print(f"::set-output name=PR_release_body::{args.pr_body}")
+                gitutils.add_output("PR_version",version)
+                gitutils.add_output("PR_release_body",args.pr_body)
         elif args.pr_base_repo.endswith(CHARTS_PR_BASE_REPO):
             if check_if_charts_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_head_repo):
                 print('[INFO] Workflow release pull request found')
-                print(f'::set-output name=charts_release_branch::true')
+                gitutils.add_output("charts_release_branch","true")
     elif args.api_url:
         ## should be on PR branch
         if args.pr_base_repo.endswith(DEV_PR_BASE_REPO):
@@ -205,17 +205,17 @@ def main():
             user_authorized = checkuser.verify_user(args.sender)
             if version_only and user_authorized:
                 organization = args.pr_base_repo.removesuffix(DEV_PR_BASE_REPO)
-                print(f'::set-output name=charts_repo::{organization}{CHARTS_PR_BASE_REPO}')
+                gitutils.add_output("charts_repo",f"{organization}{CHARTS_PR_BASE_REPO}")
                 version = release_info.get_version("./")
                 version_info = release_info.get_info("./")
                 print(f'[INFO] Release found in PR files : {version}.')
-                print(f'::set-output name=PR_version::{version}')
-                print(f'::set-output name=PR_release_info::{version_info}')
-                print(f'::set-output name=PR_includes_release_only::true')
+                gitutils.add_output("PR_version",version)
+                gitutils.add_output("PR_release_info",version_info)
+                gitutils.add_output("PR_includes_release_only","true")
                 make_release_body(version,version_info)
             elif version_only and not user_authorized:
                 print(f'[ERROR] sender not authorized : {args.sender}.')
-                print(f'::set-output name=sender_not_authorized::true')
+                gitutils.add_output("sender_not_authorized","true")
             else:
                 print('[INFO] Not a release PR')
         else:
@@ -226,7 +226,7 @@ def main():
             # should be on main branch
             if semver.compare(args.version,version) > 0 :
                 print(f'[INFO] Release {args.version} found in PR files is newer than: {version}.')
-                print(f'::set-output name=release_updated::true')
+                gitutils.add_output("release_updated","true")
             else:
                 print(f'[ERROR] Release found in PR files is not new  : {args.version}.')
         else:

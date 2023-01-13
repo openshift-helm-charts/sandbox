@@ -25,6 +25,7 @@ from report import report_info
 from chartrepomanager import indexannotations
 from signedchart import signedchart
 from pullrequest import prartifact
+from tools import gitutils
 
 def get_modified_charts(api_url):
     files = prartifact.get_modified_files(api_url)
@@ -413,12 +414,12 @@ def main():
         if not tag:
             print("[ERROR] Internal error: missing chart name with version (tag)")
             sys.exit(1)
-        print(f"::set-output name=tag::{tag}")
+        gitutils.add_output("tag",tag)
 
         current_dir = os.getcwd()
-        print(f"::set-output name=report_file::{current_dir}/report.yaml")
+        gitutils.add_output("report_file",f"{current_dir}/report.yaml")
         if public_key_file:
             print(f"[INFO] Add key file for release : {current_dir}/{public_key_file}")
-            print(f"::set-output name=public_key_file::{current_dir}/{public_key_file}")
+            gitutils.add_output("public_key_file",f"{current_dir}/{public_key_file}")
 
     update_index_and_push(indexfile,indexdir, args.repository, branch, category, organization, chart, version, chart_url, chart_entry, args.pr_number, web_catalog_only)

@@ -161,3 +161,7 @@ def add_changes(repo,skip_files):
                 repo.git.add(add)
 
     return len(repo.index.diff("HEAD")) > 0
+
+def add_output(name,value):
+    with open(os.environ['GITHUB_OUTPUT'],'a') as fh:
+        print(f'{name}={value}',file=fh)
