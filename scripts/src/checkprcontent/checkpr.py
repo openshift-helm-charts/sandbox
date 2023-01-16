@@ -103,8 +103,8 @@ def get_file_match_compiled_patterns():
 
     pattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
     reportpattern = re.compile(r"charts/"+TYPE_MATCH_EXPRESSION+"/([\w-]+)/([\w-]+)/([\w\.-]+)/report.yaml")
-
-    return pattern,reportpattern
+    tarballpattern = re.compile(r"charts/(partners|redhat|community)/([\w-]+)/([\w-]+)/([\w\.-]+)/(.*\.tgz$)")
+    return pattern,reportpattern,tarballpattern
 
 
 def ensure_only_chart_is_modified(api_url, repository, branch):
@@ -114,7 +114,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
             return
 
     files = prartifact.get_modified_files(api_url)
-    pattern,reportpattern = get_file_match_compiled_patterns()
+    pattern,reportpattern,tarballpattern = get_file_match_compiled_patterns()
     matches_found = 0
     report_found = False
     none_chart_files = {}
@@ -130,6 +130,18 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                 print(f"[INFO] Report found: {file_path}")
                 gitutils.add_output("report-exists","true")
                 report_found = True
+            else:
+                tar_match = tarballpattern.match(file_path)
+                if tar_match:
+                    print(f"[INFO] tarball found: {file_path}")
+                    _,_,chart_name,chart_version,tar_name = tar_match.groups()
+                    expected_tar_name = f"{chart_name}-{chart_version}.tgz"
+                    if tar_name != expected_tar_name:
+                        msg = f"[ERROR] the tgz file is named incorrectly. Expected: {expected_tar_name}"
+                        print(msg)
+                        gitutils.add_output("pr-content-error-message",msg)
+                        exit(1)
+
             if matches_found == 1:
                 pattern_match = match
             elif pattern_match.groups() != match.groups():
