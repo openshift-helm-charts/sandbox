@@ -38,14 +38,28 @@ jobs:
         run: |
           ve1/bin/behave tests/functional/behave_features/ --tags=full --logging-level=WARNING --no-capture --no-color
 
-      - name: Send message to slack channel
-        id: notify
-        if: always()
+      - name: Send message to helm_dev slack channel
+        id: notify_to_dev
+        if: ${{ steps.run_all_tests.conclusion != 'success' }}
         uses: archive/github-actions-slack@v2.0.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           slack-channel: C02979BDUPL
-          slack-text: ${{ steps.run_all_tests.conclusion }}! Nightly test for certification flow. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
+          slack-text: Failure! Nightly test for certification flow. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
       
-      - name: Result from "Send Message to slack channel"
+      - name: Result from "Send Message to helm_dev slack channel"
+        if: ${{ steps.run_all_tests.conclusion != 'success' }}
+        run: echo "The result was ${{ steps.notify_to_dev.outputs.slack-result }}"
+      
+      - name: Send message to helm_notify slack channel
+        id: notify
+        if: ${{ steps.run_all_tests.conclusion == 'success' }}
+        uses: archive/github-actions-slack@v2.0.0
+        with:
+          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
+          slack-channel: C04K1ARMH8A
+          slack-text: Success! Nightly test for certification flow. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
+      
+      - name: Result from "Send Message to helm_notify slack channel"
+        if: ${{ steps.run_all_tests.conclusion == 'success' }}
         run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
