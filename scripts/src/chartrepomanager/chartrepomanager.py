@@ -198,15 +198,22 @@ def set_package_digest(chart_entry):
 
     url = chart_entry["urls"][0]
     head = requests.head(url, allow_redirects=True)
+    print(f"[DEBUG]: tgz url : {url}")
+    print(f"[DEBUG]: response code from head request: {head.status_code}")
 
     target_digest = ""
     if head.status_code == 200:
         response = requests.get(url, allow_redirects=True)
+        print(f"[DEBUG]: response code get request: {response.status_code}")
         target_digest = hashlib.sha256(response.content).hexdigest()
+        print(f"[DEBUG]: calculated digest : {target_digest}")
+
 
     pkg_digest = ""
     if "digest" in chart_entry:
         pkg_digest = chart_entry["digest"]
+        print(f"[DEBUG]: digest in report : {pkg_digest}" )
+
 
     if target_digest:
         if not pkg_digest:
