@@ -214,7 +214,7 @@ jobs:
 
       - name: Send message to helm_dev slack channel
         id: notify_dev
-        if: ${{ github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion != 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion != 'success' }}
         uses: archive/github-actions-slack@v2.0.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
@@ -222,12 +222,12 @@ jobs:
           slack-text: Failure! Nightly run after an OpenShift version update to ${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }} was detected. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
 
       - name: Result from "Send Message to helm_dev slack channel"
-        if: ${{ github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion != 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion != 'success' }}
         run: echo "The result was ${{ steps.notify_dev.outputs.slack-result }}"
 
       - name: Send message to helm_notify slack channel
         id: notify
-        if: ${{ github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion == 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion == 'success' }}
         uses: archive/github-actions-slack@v2.0.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
@@ -235,7 +235,7 @@ jobs:
           slack-text: Success! Nightly run after an OpenShift version update to ${{ steps.get_curr_ocp_version.outputs.curr_ocp_version }} was detected. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
 
       - name: Result from "Send Message to helm_notify slack channel"
-        if: ${{ github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion == 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion == 'success' }}
         run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
 
 
@@ -421,7 +421,7 @@ jobs:
 
       - name: Send message to helm_dev slack channel
         id: notify_dev
-        if: ${{ github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion != 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion != 'success' }}
         uses: archive/github-actions-slack@v2.0.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
@@ -429,12 +429,12 @@ jobs:
           slack-text: Failure! Nightly run after a chart-verifier version update to ${{ steps.get_curr_cv_version.outputs.current_cv_digest }} was detected. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
 
       - name: Result from "Send Message to helm_dev slack channel"
-        if: ${{ github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion != 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion != 'success' }}
         run: echo "The result was ${{ steps.notify_dev.outputs.slack-result }}"
       
       - name: Send message to helm_notify slack channel
         id: notify
-        if: ${{ github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion == 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion == 'success' }}
         uses: archive/github-actions-slack@v2.0.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
@@ -442,6 +442,6 @@ jobs:
           slack-text: Success! Nightly run after a chart-verifier version update to ${{ steps.get_curr_cv_version.outputs.current_cv_digest }} was detected. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
 
       - name: Result from "Send Message to helm_notify slack channel"
-        if: ${{ github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion == 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && steps.check_test.outputs.run_tests == 'true' && steps.run-schedule-tests.conclusion == 'success' }}
         run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
 
