@@ -40,7 +40,7 @@ jobs:
 
       - name: Send message to helm_dev slack channel
         id: notify_to_dev
-        if: ${{ steps.run_all_tests.conclusion != 'success' }}
+        if: ${{ always() && steps.run_all_tests.conclusion != 'success' }}
         uses: archive/github-actions-slack@v2.0.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
@@ -48,12 +48,12 @@ jobs:
           slack-text: Failure! Nightly test for certification flow. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
       
       - name: Result from "Send Message to helm_dev slack channel"
-        if: ${{ steps.run_all_tests.conclusion != 'success' }}
+        if: ${{ always() && steps.run_all_tests.conclusion != 'success' }}
         run: echo "The result was ${{ steps.notify_to_dev.outputs.slack-result }}"
       
       - name: Send message to helm_notify slack channel
         id: notify
-        if: ${{ steps.run_all_tests.conclusion == 'success' }}
+        if: ${{ always() && steps.run_all_tests.conclusion == 'success' }}
         uses: archive/github-actions-slack@v2.0.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
@@ -61,5 +61,5 @@ jobs:
           slack-text: Success! Nightly test for certification flow. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
       
       - name: Result from "Send Message to helm_notify slack channel"
-        if: ${{ steps.run_all_tests.conclusion == 'success' }}
+        if: ${{ always() && steps.run_all_tests.conclusion == 'success' }}
         run: echo "The result was ${{ steps.notify.outputs.slack-result }}"

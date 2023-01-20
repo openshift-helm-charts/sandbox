@@ -73,7 +73,7 @@ jobs:
 
       - name: Send message to helm_dev slack channel
         id: notify_dev
-        if: ${{ github.event_name == 'schedule' && github.repository == 'openshift-helm-charts/development' && steps.release_metrics.conclusion != 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && github.repository == 'openshift-helm-charts/development' && steps.release_metrics.conclusion != 'success' }}
         uses: archive/github-actions-slack@v2.0.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
@@ -81,12 +81,12 @@ jobs:
           slack-text: Failure! Nightly collection of metrics. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
 
       - name: Result from "Send Message to helm_dev slack channel"
-        if: ${{ github.event_name == 'schedule' && github.repository == 'openshift-helm-charts/development' && steps.release_metrics.conclusion != 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && github.repository == 'openshift-helm-charts/development' && steps.release_metrics.conclusion != 'success' }}
         run: echo "The result was ${{ steps.notify_dev.outputs.slack-result }}"
       
       - name: Send message to helm_notify slack channel
         id: notify
-        if: ${{ github.event_name == 'schedule' && github.repository == 'openshift-helm-charts/development' && steps.release_metrics.conclusion == 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && github.repository == 'openshift-helm-charts/development' && steps.release_metrics.conclusion == 'success' }}
         uses: archive/github-actions-slack@v2.0.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
@@ -94,6 +94,6 @@ jobs:
           slack-text: Success! Nightly collection of metrics. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
 
       - name: Result from "Send Message to helm_notify slack channel"
-        if: ${{ github.event_name == 'schedule' && github.repository == 'openshift-helm-charts/development' && steps.release_metrics.conclusion == 'success' }}
+        if: ${{ always() && github.event_name == 'schedule' && github.repository == 'openshift-helm-charts/development' && steps.release_metrics.conclusion == 'success' }}
         run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
 
