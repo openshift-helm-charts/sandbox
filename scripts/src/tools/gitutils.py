@@ -67,7 +67,7 @@ def github_api_get(endpoint, bot_token, headers={}):
 
     return r
 
-def github_api(method, endpoint, bot_token, headers={}, data={}, json={}):
+def github_api(method, endpoint, bot_token, headers={}, json={}):
     if not headers:
         headers = {'Accept': 'application/vnd.github.v3+json',
                    'Authorization': f'Bearer {bot_token}'}
@@ -118,7 +118,7 @@ def create_pr(branch_name,skip_files,repository,message,target_branch):
                 'title': branch_name, 'body': f'{message}'}
 
         r = github_api(
-            'post', f'repos/{repository}/pulls', bot_token, json=data)
+            'post', f'repos/{repository}/pulls',bot_token,header={},json=data)
 
         j = json.loads(r.text)
         if 'number' in j:
