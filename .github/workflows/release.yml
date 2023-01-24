@@ -118,7 +118,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.base.ref }}
-          repository: "openshift-helm-charts/stage"
+          repository: ${{ steps.check_only_version_in_PR_and_authorized.outputs.stage_repo }}
           token: ${{ secrets.BOT_TOKEN }}
           path: "stage-repo"
 

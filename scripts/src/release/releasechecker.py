@@ -44,6 +44,8 @@ CHARTS_PR_BASE_REPO = gitutils.CHARTS_REPO
 CHARTS_PR_HEAD_REPO = gitutils.CHARTS_REPO
 DEV_PR_BASE_REPO = gitutils.DEVELOPMENT_REPO
 DEV_PR_HEAD_REPO = gitutils.DEVELOPMENT_REPO
+STAGE_PR_BASE_REPO = gitutils.STAGE_REPO
+STAGE_PR_HEAD_REPO = gitutils.STAGE_REPO
 DEFAULT_BOT_NAME = "openshift-helm-charts-bot"
 ERROR_IF_MATCH_NOT_FOUND = False
 ERROR_IF_MATCH_FOUND = True
@@ -132,7 +134,7 @@ def check_if_charts_release_branch(sender,pr_branch,pr_body,api_url,pr_head_repo
         print(f"Release part ({version}) of branch name {pr_branch} is not a valid semantic version.")
         return False
 
-    if not pr_head_repo.endswith(CHARTS_PR_HEAD_REPO):
+    if not pr_head_repo.endswith(CHARTS_PR_HEAD_REPO) and not pr_head_repo.endswith(STAGE_PR_HEAD_REPO):
         print(f"PR does not have the expected origin. Got: {pr_head_repo}, expected: {CHARTS_PR_HEAD_REPO}")
         return False
 
@@ -194,10 +196,11 @@ def main():
                 version = args.pr_branch.removeprefix(releaser.DEV_PR_BRANCH_NAME_PREFIX)
                 gitutils.add_output("PR_version",version)
                 gitutils.add_output("PR_release_body",args.pr_body)
-        elif args.pr_base_repo.endswith(CHARTS_PR_BASE_REPO):
+        elif args.pr_base_repo.endswith(CHARTS_PR_BASE_REPO) or args.pr_base_repo.endswith(STAGE_PR_BASE_REPO):
             if check_if_charts_release_branch(args.sender,args.pr_branch,args.pr_body,args.api_url,args.pr_head_repo):
                 print('[INFO] Workflow release pull request found')
                 gitutils.add_output("charts_release_branch","true")
+
     elif args.api_url:
         ## should be on PR branch
         if args.pr_base_repo.endswith(DEV_PR_BASE_REPO):
@@ -206,6 +209,7 @@ def main():
             if version_only and user_authorized:
                 organization = args.pr_base_repo.removesuffix(DEV_PR_BASE_REPO)
                 gitutils.add_output("charts_repo",f"{organization}{CHARTS_PR_BASE_REPO}")
+                gitutils.add_output("stage_repo",f"{organization}{STAGE_PR_BASE_REPO}")
                 version = release_info.get_version("./")
                 version_info = release_info.get_info("./")
                 print(f'[INFO] Release found in PR files : {version}.')
