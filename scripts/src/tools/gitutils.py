@@ -42,7 +42,7 @@ def set_git_username_email(repo, username, email):
     repo.config_writer().set_value("user", "email", email).release()
 
 
-def github_api_post(endpoint, headers={}, json={}):
+def github_api_post(endpoint, headers, json):
     r = requests.post(f'{GITHUB_BASE_URL}/{endpoint}',
                       headers=headers, json=json)
 
@@ -58,7 +58,7 @@ def github_api_post(endpoint, headers={}, json={}):
 
     return r
 
-def github_api_get(endpoint, bot_token, headers={}):
+def github_api_get(endpoint, headers):
     r = requests.get(f'{GITHUB_BASE_URL}/{endpoint}', headers=headers)
     response_json = r.json()
     if "message" in response_json:
@@ -67,14 +67,13 @@ def github_api_get(endpoint, bot_token, headers={}):
 
     return r
 
-def github_api(method, endpoint, bot_token, headers={}, json={}):
-    if not headers:
-        headers = {'Accept': 'application/vnd.github.v3+json',
-                   'Authorization': f'Bearer {bot_token}'}
+def github_api(method, endpoint, bot_token, json={}):
+    headers = {'Accept': 'application/vnd.github.v3+json',
+                'Authorization': f'Bearer {bot_token}'}
     if method == 'get':
-        return github_api_get(endpoint, bot_token, headers=headers)
+        return github_api_get(endpoint,headers)
     elif method == 'post':
-        return github_api_post(endpoint, bot_token, headers=headers, json=json)
+        return github_api_post(endpoint,headers,json)
     else:
         raise ValueError(
             f"Github API method {method} not implemented in helper function")
@@ -118,7 +117,7 @@ def create_pr(branch_name,skip_files,repository,message,target_branch):
                 'title': branch_name, 'body': f'{message}'}
 
         r = github_api(
-            'post', f'repos/{repository}/pulls',bot_token,header={},json=data)
+            'post', f'repos/{repository}/pulls',bot_token,json=data)
 
         j = json.loads(r.text)
         if 'number' in j:
