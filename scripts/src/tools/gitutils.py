@@ -52,7 +52,7 @@ def github_api_post(endpoint, headers, json):
         if "message" in response_json:
             print(f'[ERROR] from post request: {response_json["message"]}')
             sys.exit(1)
-    except json.decoder.JSONDecodeError:
+    except json.JSONDecodeError:
         pass
 
 
