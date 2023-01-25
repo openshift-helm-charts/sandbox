@@ -1,11 +1,7 @@
 {
   "version": "1.5.0",
   "info" : [
-    "Update provider delivery message to web catalog only (#192)",
-    "Update release content for signed charts (#183)",
-    "Add support for signed charts (#174)",
-    "Check report sha (#160)",
-    "Check chart version is a valid semantic version (#159)"
+    "Various Bug Fixes and updates for latest chart-verifier"
   ],
   "charts" : {
     "development": {
@@ -30,7 +26,8 @@
     "stage" : {
       "replace": [
         ".github",
-        "scripts"
+        "scripts",
+        "tests"
       ],
       "ignore" : [".github/workflows/release.yml",
                   ".github/workflows/nightly_test.yml",
