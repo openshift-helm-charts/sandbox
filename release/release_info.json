@@ -1,7 +1,8 @@
 {
-  "version": "1.5.1",
+  "version": "1.5.2",
   "info" : [
-    "Various Bug Fixes and updates for latest chart-verifier"
+    "Remove a deprecated script",
+    "Allow insecure-tls-verify for the charts repo on new 4.12 test cluster"
   ],
   "charts" : {
     "development": {
