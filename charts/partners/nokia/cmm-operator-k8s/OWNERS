@@ -1,9 +1,10 @@
 chart:
   name: cmm-operator-k8s
-  shortDescription: null
-publicPgpKey: null
+  shortDescription: unknown
+providerDelivery: true
+publicPgpKey: unknown
 users:
 - githubUsername: nelsonpraveen
 vendor:
   label: nokia
-  name: Nokia Networks - LTTH
+  name: Nokia
