@@ -1,8 +1,7 @@
 {
-  "version": "1.5.2",
+  "version": "1.5.3",
   "info" : [
-    "Remove a deprecated script",
-    "Allow insecure-tls-verify for the charts repo on new 4.12 test cluster"
+    "Reconfigure bot to explicitly succeed and fallback to failure"
   ],
   "charts" : {
     "development": {
