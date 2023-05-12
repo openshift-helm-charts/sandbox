@@ -80,11 +80,12 @@ def prepare_community_comment():
     return msg
 
 def prepare_generic_fail_comment():
+    msg = ""
     if os.path.exists("./pr/errors"):
         errors = open("./pr/errors").read()
         msg += "One or more errors were found while building and verifying your pull request:\n\n"
         msg += f"{errors}\n\n"
-    else: msg = "An unspecified error has occured while building and verifying your pull request." 
+    else: msg += "An unspecified error has occured while building and verifying your pull request.\n\n" 
     return msg
 
 def prepare_oc_install_fail_comment():
