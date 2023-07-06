@@ -1,7 +1,7 @@
 {
-  "version": "1.5.5",
+  "version": "1.5.6",
   "info" : [
-    "Ensure chart annotations are merged with generated annotations on index creation"
+    "Assign annotations instead of merging in cases where there were no original annotations set"
   ],
   "charts" : {
     "development": {
