@@ -1,7 +1,10 @@
 {
-  "version": "1.5.6",
+  "version": "1.5.7",
   "info" : [
-    "Assign annotations instead of merging in cases where there were no original annotations set"
+    "Add namespaceSelector allowing host-network access to vault text fixture NetworkPolicy for ocp 4.13",
+    "Update signed charts based on new fixtures",
+    "Regenerate test reports after chart modifications",
+    "Add workflow to test cluster access for credential and endpoint changes"
   ],
   "charts" : {
     "development": {
