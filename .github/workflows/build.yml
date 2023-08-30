@@ -100,6 +100,7 @@ jobs:
     name: Prepare Branch
     runs-on: ubuntu-22.04
     needs: setup-ci
+    
     outputs:
       check_pr_content_outcome: ${{ steps.check_pr_content.outcome }}
 
@@ -175,6 +176,7 @@ jobs:
   chart-verifier:
     name: Run chart-verifier
     runs-on: ubuntu-22.04
+    needs: prepare-branch
 
     outputs:
       report_content: ${{ steps.check_report.outputs.report_content }}
@@ -352,6 +354,7 @@ jobs:
   release-chart:
     name: Release Chart
     runs-on: ubuntu-22.04
+    needs: chart-verifier
 
     steps:
       - name: Block until there is no running workflow
