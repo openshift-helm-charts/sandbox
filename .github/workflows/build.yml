@@ -176,7 +176,7 @@ jobs:
   chart-verifier:
     name: Run chart-verifier
     runs-on: ubuntu-22.04
-    needs: [prepare]
+    needs: [setup, prepare]
 
     outputs:
       report_content: ${{ steps.check_report.outputs.report_content }}
@@ -358,7 +358,7 @@ jobs:
   release:
     name: Release Chart
     runs-on: ubuntu-22.04
-    needs: [chart-verifier]
+    needs: [setup, chart-verifier]
 
     steps:
       - name: Block until there is no running workflow
