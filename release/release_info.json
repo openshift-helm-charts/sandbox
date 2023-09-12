@@ -1,10 +1,13 @@
 {
-  "version": "1.5.7",
+  "version": "1.5.8",
   "info" : [
-    "Add namespaceSelector allowing host-network access to vault text fixture NetworkPolicy for ocp 4.13",
-    "Update signed charts based on new fixtures",
-    "Regenerate test reports after chart modifications",
-    "Add workflow to test cluster access for credential and endpoint changes"
+    "Add mgoerens as approver",
+    "Apply black and fix some PEP8 violations",
+    "Update Github actions that use deprecated Node12",
+    "Create action to disable specific workflows based on repo config",
+    "Add OchiengEd as approver/reviewer to update workflows",
+    "Update vault chart fixtures for chart testing fix",
+    "Updated reports for vault chart fixtures"
   ],
   "charts" : {
     "development": {
