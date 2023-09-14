@@ -398,3 +398,12 @@ jobs:
           else
               echo "Do not collect metrics, required segment write key is not set"
           fi
+
+  second:
+    name: Second Job
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Print Hello
+      run: |
+        echo "Hello world"
