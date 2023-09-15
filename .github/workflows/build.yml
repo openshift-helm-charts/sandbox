@@ -306,7 +306,10 @@ jobs:
         if: ${{ steps.check_report.conclusion == 'success' }}
         uses: hmarr/auto-approve-action@v3
         with:
-          github-token: ${{ secrets.BOT_TOKEN }}
+          # The token we use for this changes for the Sandbox repository because the sandbox repository
+          # receives PRs from the openshift-helm-charts-bot, and that same bot cannot approve its own
+          # PRs which breaks workflows. Instead, for the Sandbox repo, we approve with the GHA bot.
+          github-token: ${{ github.repository == 'openshift-helm-charts/sandbox' && secrets.GITHUB_TOKEN || secrets.BOT_TOKEN }}
 
       - name: Merge PR
         id: merge_pr
