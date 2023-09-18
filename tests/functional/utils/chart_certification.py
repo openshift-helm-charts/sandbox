@@ -2,6 +2,7 @@
 """Utility class for setting up and manipulating certification workflow tests."""
 
 import os
+import re
 import json
 import pathlib
 import shutil
@@ -818,7 +819,7 @@ class ChartCertificationE2ETestSingle(ChartCertificationE2ETest):
         response = json.loads(r.text)
         complete_comment = response[0]["body"]
 
-        if expect_message in complete_comment:
+        if re.search(expect_message, complete_comment):
             logging.info("Found the expected comment in the PR")
         else:
             pytest.fail(
