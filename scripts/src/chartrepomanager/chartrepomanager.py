@@ -243,10 +243,10 @@ def create_index_from_chart(
     return crt
 
 
-def create_index_from_report(category, report_path):
-    print("[INFO] create index from report. %s, %s" % (category, report_path))
+def create_index_from_report(category, ocp_version_range, report_path):
+    print("[INFO] create index from report. %s, %s, %s" % (category, ocp_version_range, report_path))
 
-    annotations = indexannotations.getIndexAnnotations(report_path)
+    annotations = indexannotations.getIndexAnnotations(ocp_version_range, report_path)
 
     print("category:", category)
     redhat_to_community = bool(os.environ.get("REDHAT_TO_COMMUNITY"))
@@ -454,15 +454,15 @@ def update_index_and_push(
 
 
 def update_chart_annotation(
-    category, organization, chart_file_name, chart, report_path
+    category, organization, chart_file_name, chart, ocp_version_range, report_path
 ):
     print(
-        "[INFO] Update chart annotation. %s, %s, %s, %s"
-        % (category, organization, chart_file_name, chart)
+        "[INFO] Update chart annotation. %s, %s, %s, %s, %s"
+        % (category, organization, chart_file_name, chart, ocp_version_range)
     )
     dr = tempfile.mkdtemp(prefix="annotations-")
 
-    annotations = indexannotations.getIndexAnnotations(report_path)
+    annotations = indexannotations.getIndexAnnotations(ocp_version_range, report_path)
 
     print("category:", category)
     redhat_to_community = bool(os.environ.get("REDHAT_TO_COMMUNITY"))
@@ -570,6 +570,7 @@ def main():
 
     env = Env()
     web_catalog_only = env.bool("WEB_CATALOG_ONLY", False)
+    ocp_version_range = os.environ.get("OCP_VERSION_RANGE", "N/A")
 
     print(f"[INFO] webCatalogOnly/providerDelivery is {web_catalog_only}")
 
@@ -607,7 +608,7 @@ def main():
 
         print("[INFO] Updating chart annotation")
         update_chart_annotation(
-            category, organization, chart_file_name, chart, report_path
+            category, organization, chart_file_name, chart, ocp_version_range, report_path
         )
         chart_url = f"https://github.com/{args.repository}/releases/download/{organization}-{chart}-{version}/{chart_file_name}"
         print("[INFO] Helm package was released at %s" % chart_url)
@@ -631,7 +632,7 @@ def main():
         if signedchart.check_report_for_signed_chart(report_path):
             public_key_file = get_key_file(category, organization, chart, version)
         print("[INFO] Creating index from report")
-        chart_entry, chart_url = create_index_from_report(category, report_path)
+        chart_entry, chart_url = create_index_from_report(category, ocp_version_range, report_path)
 
     if not web_catalog_only:
         tag = os.environ.get("CHART_NAME_WITH_VERSION")
