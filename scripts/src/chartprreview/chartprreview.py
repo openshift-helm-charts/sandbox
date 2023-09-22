@@ -521,7 +521,10 @@ def main():
         "charts", category, organization, chart, version, "report.yaml"
     )
     if os.path.exists(submitted_report_path):
-        report_valid, message = verifier_report.validate(submitted_report_path)
+        ocp_version_range = os.environ.get("OCP_VERSION_RANGE")
+        report_valid, message = verifier_report.validate(
+            submitted_report_path, ocp_version_range
+        )
         if not report_valid:
             msg = f"Submitted report is not valid: {message}"
             print(f"[ERROR] {msg}")
