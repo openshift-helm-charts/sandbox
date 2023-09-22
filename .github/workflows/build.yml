@@ -261,6 +261,35 @@ jobs:
           error_message="The chart verifier returned an error when trying to obtain a verification report for the chart."
           echo "verifier_error_message=$error_message" >> $GITHUB_OUTPUT
 
+      - name: Get profile version set in report
+        id: get-profile-version
+        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        uses: mikefarah/yq@v4.35.1
+        with:
+          cmd: yq '.metadata.tool.profile.version' ${{ steps.run-verifier.outputs.report_file }}
+
+      - name: Get the range of Kubernetes versions for this chart as advertised in report.yaml
+        id: get-kube-range
+        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        continue-on-error: true
+        uses: mikefarah/yq@v4.35.1
+        with:
+          cmd: yq '.metadata.chart.kubeversion' ${{ steps.run-verifier.outputs.report_file }}
+
+      - name: Get the corresponding range of OCP versions
+        id: get-ocp-range
+        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        continue-on-error: true
+        uses: ./.github/actions/get-ocp-range
+        with:
+          kube-version-range: ${{ steps.get-kube-range.outputs.results }}
+
+      - name: Only ignore errors in get-ocp-range for profile in version v1.0
+        if: ${{ (steps.get-kube-range.outcome == 'failure' || steps.get-ocp-range.outcome == 'failure') && steps.get-profile-version.outputs.results != "v1.0" }}
+        run: |
+          echo "::error file=.github/workflows/build.yaml::Failure in get-ocp-range, mandatory for profile version ${{ steps.get-profile-version.outputs.results }}"
+          exit 1
+
       - name: Check Report
         id: check_report
         if: ${{ needs.setup.outputs.run_build == 'true' }}
@@ -272,9 +301,13 @@ jobs:
           GENERATED_REPORT_PATH: ${{ steps.run-verifier.outputs.report_file }}
           REPORT_SUMMARY_PATH: ${{ steps.run-verifier.outputs.report_info_file }}
           WORKFLOW_WORKING_DIRECTORY: "../pr"
+          OCP_VERSION_RANGE: ${{ steps.get-ocp-range.outputs.ocp-version-range }}
         run: |
           cd pr-branch
-          ../ve1/bin/chart-pr-review --directory=../pr --verify-user=${{ github.event.pull_request.user.login }} --api-url=${{ github.event.pull_request._links.self.href }}
+          ../ve1/bin/chart-pr-review \
+            --directory=../pr \
+            --verify-user=${{ github.event.pull_request.user.login }} \
+            --api-url=${{ github.event.pull_request._links.self.href }}
           cd ..
 
       - name: Delete Namespace
@@ -428,6 +461,7 @@ jobs:
           CHART_NAME_WITH_VERSION: ${{ needs.chart-verifier.outputs.chartNameWithVersion }}
           REDHAT_TO_COMMUNITY: ${{ needs.chart-verifier.outputs.redhat_to_community }}
           WEB_CATALOG_ONLY: ${{ needs.chart-verifier.outputs.webCatalogOnly }}
+          OCP_VERSION_RANGE: ${{ steps.get-ocp-range.outputs.ocp-version-range }}
         id: release-charts
         run: |
           tar zxvf ./scripts/dependencies/helm-chart-releaser/chart-releaser_1.2.0_linux_amd64.tar.gz
@@ -435,7 +469,11 @@ jobs:
           INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "refs/heads/gh-pages"; else echo "${GITHUB_REF}-gh-pages"; fi)
           CWD=`pwd`
           cd pr-branch
-          ../ve1/bin/chart-repo-manager --repository=${{ github.repository }} --index-branch=${INDEX_BRANCH} --api-url=${{ github.event.pull_request._links.self.href }} --pr-number=${{ github.event.number }}
+          ../ve1/bin/chart-repo-manager \
+            --repository=${{ github.repository }} \
+            --index-branch=${INDEX_BRANCH} \
+            --api-url=${{ github.event.pull_request._links.self.href }} \
+            --pr-number=${{ github.event.number }}
           cd ${CWD}
 
       - name: Release
