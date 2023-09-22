@@ -34,7 +34,6 @@ except ImportError:
     from yaml import Loader
 
 sys.path.append("../")
-from chartrepomanager import indexannotations
 from report import report_info
 
 MIN_SUPPORTED_OPENSHIFT_VERSION = semantic_version.SimpleSpec(">=4.1.0")
@@ -187,7 +186,7 @@ def report_is_valid(report_data):
     return outcome
 
 
-def validate(report_path):
+def validate(report_path, ocp_version_range):
     """Validate report.yaml by running a serie of checks.
 
     * Checks that the report.yaml contains valid YAML.
@@ -199,6 +198,7 @@ def validate(report_path):
 
     Args:
         report_path (str): Path to the report.yaml file
+        ocp_version_range (str): Range of supported OCP versions
 
     Returns:
         (bool, str): if the checks all passed, this returns a bool set to True and an
@@ -255,36 +255,16 @@ def validate(report_path):
 
         has_kubeversion_outcome, _ = get_chart_testing_result(report_data)
         if has_kubeversion_outcome:
-            chart = report_info.get_report_chart(report_path)
-            if KUBE_VERSION_ATTRIBUTE in chart:
-                kube_supported_ocp_versions_string = indexannotations.getOCPVersions(
-                    chart[KUBE_VERSION_ATTRIBUTE]
-                )
-                try:
-                    kube_supported_versions = semantic_version.NpmSpec(
-                        kube_supported_ocp_versions_string
-                    )
-                except ValueError:
-                    if v1_0_profile:
-                        return True, ""
-                    else:
-                        return (
-                            False,
-                            f"Kube Version {chart[KUBE_VERSION_ATTRIBUTE]} translates to an invalid OCP version range {kube_supported_ocp_versions_string}",
-                        )
-            else:
-                if v1_0_profile:
-                    return True, ""
-                else:
-                    return False, f"{KUBE_VERSION_ATTRIBUTE} missing from chart!"
-
-            if tested_version not in kube_supported_versions:
-                return (
-                    False,
-                    f"Tested OpenShift version {str(tested_version)} not within specified kube-versions : {kube_supported_ocp_versions_string}",
-                )
-
             if not v1_0_profile:
+                chart = report_info.get_report_chart(report_path)
+                kube_supported_versions = semantic_version.NpmSpec(ocp_version_range)
+
+                if tested_version not in kube_supported_versions:
+                    return (
+                        False,
+                        f"Tested OpenShift version {str(tested_version)} not within specified kube-versions : {ocp_version_range}",
+                    )
+
                 if SUPPORTED_VERSIONS_ANNOTATION in annotations:
                     supported_versions_string = annotations[
                         SUPPORTED_VERSIONS_ANNOTATION
