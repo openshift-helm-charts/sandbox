@@ -9,7 +9,7 @@ jobs:
     name: Setup CI
     runs-on: ubuntu-22.04
     outputs:
-      run-build: ${{ steps.check_build_required.outputs.run-build }}
+      run_build: ${{ steps.check_build_required.outputs.run-build }}
       verifier-action-image: ${{ steps.set-env.outputs.verifier-action-image }}
       insecure_skip_tls_verify: ${{ steps.set-env.outputs.insecure_skip_tls_verify }}
 
