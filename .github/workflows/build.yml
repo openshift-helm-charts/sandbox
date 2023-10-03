@@ -123,6 +123,12 @@ jobs:
         run: |
           INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "refs/heads/gh-pages"; else echo "${GITHUB_REF}-gh-pages"; fi)
            ./ve1/bin/check-pr-content --index-branch=${INDEX_BRANCH} --repository=${{ github.repository }} --api-url=${{ github.event.pull_request._links.self.href }}
+           echo "index_branch=${INDEX_BRANCH}" >> $GITHUB_OUTPUT
+
+      - name: Print output of 'Check PR Content' step
+        run: |
+          echo "Check PR outcome is: ${{ steps.check_pr_content.outcome }}"
+          echo "Branch: ${{ steps.check_pr_content.outputs.index_branch }}"
 
       - name: Add 'content-ok' label
         uses: actions/github-script@v3
