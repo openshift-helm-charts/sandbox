@@ -122,7 +122,9 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "refs/heads/gh-pages"; else echo "${GITHUB_REF}-gh-pages"; fi)
-          echo ${INDEX_BRANCH}
+          echo "Showing index branch" ${INDEX_BRANCH}
+          echo "Show pyvirtualenv"
+          ls ./
           ./ve1/bin/check-pr-content --index-branch=${INDEX_BRANCH} --repository=${{ github.repository }} --api-url=${{ github.event.pull_request._links.self.href }}
 
       - name: Add 'content-ok' label
