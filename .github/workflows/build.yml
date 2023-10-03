@@ -96,15 +96,27 @@ jobs:
           fi
           echo "insecure_skip_tls_verify=true" >> $GITHUB_OUTPUT
 
+      - name: Preserve python3 virtual env
+        uses: actions/upload-artifact@v3
+        with:
+          name: py3-venv
+          path: ./ve1
+
   prepare:
     name: Prepare Branch
     runs-on: ubuntu-22.04
     needs: [setup]
-    
+
     outputs:
       check_pr_content_outcome: ${{ steps.check_pr_content.outcome }}
 
     steps:
+      - name: Restore python3 venv
+        uses: actions/download-artifact@v3
+        with:
+          name: py3-venv
+          path: ./ve1
+
       - name: Checkout
         if: ${{ needs.setup.outputs.run_build == 'true' }}
         uses: actions/checkout@v3
@@ -122,9 +134,6 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "refs/heads/gh-pages"; else echo "${GITHUB_REF}-gh-pages"; fi)
-          echo "Showing index branch" ${INDEX_BRANCH}
-          echo "Show pyvirtualenv"
-          ls ./
           ./ve1/bin/check-pr-content --index-branch=${INDEX_BRANCH} --repository=${{ github.repository }} --api-url=${{ github.event.pull_request._links.self.href }}
 
       - name: Add 'content-ok' label
@@ -153,7 +162,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               name: 'content-ok'
-            }) 
+            })
 
       - name: Reflect on PR Content check
         if: ${{ steps.check_pr_content.outcome == 'failure'}}
@@ -187,6 +196,12 @@ jobs:
       message_file: ${{ steps.pr_comment.outputs.message-file }}
 
     steps:
+      - name: Restore python3 venv
+        uses: actions/download-artifact@v3
+        with:
+          name: py3-venv
+          path: ./ve1
+
       - name: check chart-verifier version
         run:
           echo "chart-verifier version ${{ needs.setup.outputs.verifier-action-image }}"
@@ -367,6 +382,12 @@ jobs:
     needs: [setup, chart-verifier]
 
     steps:
+      - name: Restore python3 venv
+        uses: actions/download-artifact@v3
+        with:
+          name: py3-venv
+          path: ./ve1
+
       - name: Block until there is no running workflow
         if: ${{ needs.setup.outputs.run_build == 'true' }}
         uses: softprops/turnstyle@v1
