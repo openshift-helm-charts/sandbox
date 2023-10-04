@@ -109,6 +109,8 @@ jobs:
 
     outputs:
       check_pr_content_outcome: ${{ steps.check_pr_content.outcome }}
+      vendorType: ${{ steps.check_pr_content.outputs.category}}
+      webCatalogOnly: ${{ steps.check_pr_content.outputs.webCatalogOnly }}
 
     steps:
       - name: Checkout
@@ -297,8 +299,8 @@ jobs:
         if: ${{ needs.setup.outputs.run_build == 'true' }}
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          VENDOR_TYPE: ${{ steps.check_pr_content.outputs.category }}
-          WEB_CATALOG_ONLY: ${{ steps.check_pr_content.outputs.webCatalogOnly }}
+          VENDOR_TYPE: ${{ needs.prepare.outputs.vendorType }}
+          WEB_CATALOG_ONLY: ${{ needs.prepare.outputs.webCatalogOnly }}
           REPORT_GENERATED: ${{ steps.verify_requires.outputs.report_needed }}
           GENERATED_REPORT_PATH: ${{ steps.run-verifier.outputs.report_file }}
           REPORT_SUMMARY_PATH: ${{ steps.run-verifier.outputs.report_info_file }}
