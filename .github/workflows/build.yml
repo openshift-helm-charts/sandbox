@@ -133,10 +133,6 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           path: "pr-branch"
 
-      - name: Verify repo content # For troubleshooting
-        run: |
-          ls charts/partners/*
-
       - name: Check PR Content
         id: check_pr_content
         if: ${{ needs.setup.outputs.run_build == 'true' }}
@@ -416,6 +412,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Checkout PR Branch
+        if: ${{ needs.setup.outputs.run_build == 'true' }}
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
