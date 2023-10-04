@@ -117,6 +117,10 @@ jobs:
           name: py3-venv
           path: ./ve1
 
+      - name: Restore script permissions
+        runs: |
+          chmod +x ve1/bin/check-pr-content
+
       - name: Checkout
         if: ${{ needs.setup.outputs.run_build == 'true' }}
         uses: actions/checkout@v3
@@ -201,6 +205,12 @@ jobs:
         with:
           name: py3-venv
           path: ./ve1
+
+      - name: Restore script permissions
+        runs: |
+          chmod +x ve1/bin/get-verify-params ve1/bin/sa-for-chart-testing \
+            ve1/bin/chart-pr-review ve1/bin/sa-for-chart-testing \
+            ve1/bin/pr-artifact ve1/bin/pr-comment ve1/bin/check-auto-merge
 
       - name: check chart-verifier version
         run:
@@ -387,6 +397,10 @@ jobs:
         with:
           name: py3-venv
           path: ./ve1
+
+      - name: Restore script permissions
+        runs: |
+          chmod +x ve1/bin/chart-repo-manager ve1/bin/metrics
 
       - name: Block until there is no running workflow
         if: ${{ needs.setup.outputs.run_build == 'true' }}
