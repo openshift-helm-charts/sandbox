@@ -118,7 +118,7 @@ jobs:
           path: ./ve1
 
       - name: Restore script permissions
-        runs: |
+        run: |
           chmod +x ve1/bin/check-pr-content
 
       - name: Checkout
@@ -207,7 +207,7 @@ jobs:
           path: ./ve1
 
       - name: Restore script permissions
-        runs: |
+        run: |
           chmod +x ve1/bin/get-verify-params ve1/bin/sa-for-chart-testing \
             ve1/bin/chart-pr-review ve1/bin/sa-for-chart-testing \
             ve1/bin/pr-artifact ve1/bin/pr-comment ve1/bin/check-auto-merge
@@ -399,7 +399,7 @@ jobs:
           path: ./ve1
 
       - name: Restore script permissions
-        runs: |
+        run: |
           chmod +x ve1/bin/chart-repo-manager ve1/bin/metrics
 
       - name: Block until there is no running workflow
