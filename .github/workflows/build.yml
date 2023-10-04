@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Python 3.x Part 1
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
@@ -96,12 +96,6 @@ jobs:
           fi
           echo "insecure_skip_tls_verify=true" >> $GITHUB_OUTPUT
 
-      - name: Preserve python3 virtual env
-        uses: actions/upload-artifact@v3
-        with:
-          name: py3-venv
-          path: ./ve1
-
   prepare:
     name: Prepare Branch
     runs-on: ubuntu-22.04
@@ -111,15 +105,22 @@ jobs:
       check_pr_content_outcome: ${{ steps.check_pr_content.outcome }}
 
     steps:
-      - name: Restore python3 venv
-        uses: actions/download-artifact@v3
-        with:
-          name: py3-venv
-          path: ./ve1
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Restore script permissions
+      - name: Set up Python 3.x Part 1
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Set up Python 3.x Part 2
         run: |
-          chmod +x ve1/bin/check-pr-content ve1/bin/python3 ve1/bin/python
+          # set up python
+          python3 -m venv ve1
+          cd scripts
+          ../ve1/bin/pip3 install -r requirements.txt
+          ../ve1/bin/python3 setup.py install
+          cd ..
 
       - name: Checkout
         if: ${{ needs.setup.outputs.run_build == 'true' }}
@@ -204,18 +205,22 @@ jobs:
       message_file: ${{ steps.pr_comment.outputs.message-file }}
 
     steps:
-      - name: Restore python3 venv
-        uses: actions/download-artifact@v3
-        with:
-          name: py3-venv
-          path: ./ve1
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Restore script permissions
+      - name: Set up Python 3.x Part 1
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Set up Python 3.x Part 2
         run: |
-          chmod +x ve1/bin/get-verify-params ve1/bin/sa-for-chart-testing \
-            ve1/bin/chart-pr-review ve1/bin/sa-for-chart-testing \
-            ve1/bin/pr-artifact ve1/bin/pr-comment ve1/bin/check-auto-merge \
-            ve1/bin/python3 ve1/bin/python
+          # set up python
+          python3 -m venv ve1
+          cd scripts
+          ../ve1/bin/pip3 install -r requirements.txt
+          ../ve1/bin/python3 setup.py install
+          cd ..
 
       - name: check chart-verifier version
         run:
@@ -397,15 +402,22 @@ jobs:
     needs: [setup, chart-verifier]
 
     steps:
-      - name: Restore python3 venv
-        uses: actions/download-artifact@v3
-        with:
-          name: py3-venv
-          path: ./ve1
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Restore script permissions
+      - name: Set up Python 3.x Part 1
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Set up Python 3.x Part 2
         run: |
-          chmod +x ve1/bin/chart-repo-manager ve1/bin/metrics ve1/bin/python3 ve1/bin/python
+          # set up python
+          python3 -m venv ve1
+          cd scripts
+          ../ve1/bin/pip3 install -r requirements.txt
+          ../ve1/bin/python3 setup.py install
+          cd ..
 
       - name: Block until there is no running workflow
         if: ${{ needs.setup.outputs.run_build == 'true' }}
