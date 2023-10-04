@@ -129,6 +129,10 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           path: "pr-branch"
 
+      - name: Verify repo content # For troubleshooting
+        run: |
+          ls charts/partners/*
+
       - name: Check PR Content
         id: check_pr_content
         if: ${{ needs.setup.outputs.run_build == 'true' }}
