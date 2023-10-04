@@ -111,6 +111,9 @@ jobs:
       check_pr_content_outcome: ${{ steps.check_pr_content.outcome }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Restore python3 venv
         uses: actions/download-artifact@v3
         with:
@@ -121,7 +124,7 @@ jobs:
         run: |
           chmod +x ve1/bin/check-pr-content ve1/bin/python3 ve1/bin/python
 
-      - name: Checkout
+      - name: Checkout PR Branch
         if: ${{ needs.setup.outputs.run_build == 'true' }}
         uses: actions/checkout@v3
         with:
