@@ -203,6 +203,9 @@ jobs:
       message_file: ${{ steps.pr_comment.outputs.message-file }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Checkout PR Branch
         uses: actions/checkout@v3
         with:
