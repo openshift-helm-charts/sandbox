@@ -432,6 +432,13 @@ jobs:
           ../ve1/bin/python3 setup.py install
           cd ..
 
+      - name: install chart verifier for action
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: github
+          skip_cache: true
+          chart-verifier: ${{ needs.setup.outputs.verifier-action-image }}
+
       - name: Block until there is no running workflow
         if: ${{ needs.setup.outputs.run_build == 'true' }}
         uses: softprops/turnstyle@v1
