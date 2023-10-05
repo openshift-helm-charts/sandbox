@@ -407,6 +407,9 @@ jobs:
     needs: [setup, chart-verifier]
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Set up Python 3.x Part 1
         uses: actions/setup-python@v2
         with:
