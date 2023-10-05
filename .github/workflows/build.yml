@@ -105,7 +105,8 @@ jobs:
       check_pr_content_outcome: ${{ steps.check_pr_content.outcome }}
       vendorType: ${{ steps.check_pr_content.outputs.category}}
       webCatalogOnly: ${{ steps.check_pr_content.outputs.webCatalogOnly }}
-
+      chartEntryName: ${{ steps.check_pr_content.outputs.chart-entry-name }}
+      chartNameWithVersion: ${{ steps.check_pr_content.outputs.chart-name-with-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -404,7 +405,7 @@ jobs:
   release:
     name: Release Chart
     runs-on: ubuntu-22.04
-    needs: [setup, chart-verifier]
+    needs: [setup, prepare, chart-verifier]
 
     steps:
       - name: Checkout
@@ -450,10 +451,10 @@ jobs:
           GITHUB_REF: ${{ github.ref }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPORT_CONTENT: ${{ needs.chart-verifier.outputs.report_content }}
-          CHART_ENTRY_NAME: ${{ steps.check_pr_content.outputs.chart-entry-name }}
-          CHART_NAME_WITH_VERSION: ${{ steps.check_pr_content.outputs.chart-name-with-version }}
+          CHART_ENTRY_NAME: ${{ needs.prepare.outputs.chartEntryName }}
+          CHART_NAME_WITH_VERSION: ${{ needs.prepare.outputs.chartNameWithVersion }}
           REDHAT_TO_COMMUNITY: ${{ needs.chart-verifier.outputs.redhat_to_community }}
-          WEB_CATALOG_ONLY: ${{ steps.check_pr_content.outputs.webCatalogOnly }}
+          WEB_CATALOG_ONLY: ${{ needs.prepare.outputs.webCatalogOnly }}
         id: release-charts
         run: |
           tar zxvf ./scripts/dependencies/helm-chart-releaser/chart-releaser_1.2.0_linux_amd64.tar.gz
