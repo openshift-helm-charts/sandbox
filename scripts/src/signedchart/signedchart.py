@@ -73,27 +73,47 @@ def get_pgp_key_from_owners(owner_path):
     found, owner_data = owners_file.get_owner_data_from_file(owner_path)
     if found:
         pgp_key = owners_file.get_pgp_public_key(owner_data)
-        if pgp_key == "null":
-            pgp_key = ""
-
         return pgp_key
     return ""
 
 
 def check_report_for_signed_chart(report_path):
+    """Check that the report has passed the "signature-is-valid" test
+
+    Args:
+        report_path (str): Path to the report.yaml file
+
+    Returns:
+        bool: set to True if the report has passed the "signature-is-valid" test,
+              False otherwise
+    """
     found, report_data = verifier_report.get_report_data(report_path)
     if found:
-        outcome, reason = verifier_report.get_signature_is_valid_result(report_data)
+        _, reason = verifier_report.get_signature_is_valid_result(report_data)
         if "Chart is signed" in reason:
             return True
     return False
 
 
 def check_pgp_public_key(owner_pgp_key, report_path):
-    # return True if one of:
-    # - report not found
-    # - report is not for a signed chart
-    # - digests match
+    """Check if the PGP key in the OWNERS file matches the one from report.yaml
+
+    This checks passes if one of the following condition is met:
+    - The PGP keys match.
+    - The report is not for a signed chart
+    - The report is not found
+
+    Consequently, the check fails if the report is found and one the following is true:
+    - The PGP keys do not match
+    - The report is for a signed chart but no PGP key is provided in report.yaml
+
+    Args:
+        owner_pgp_key (str): The PGP key present in the OWNERS file.
+        report_path (str): Path to the report.yaml file.
+
+    Returns:
+        bool: Set to True if the check passes, to False otherwise.
+    """
     found, report_data = verifier_report.get_report_data(report_path)
     if found:
         pgp_public_key_digest_owners = subprocess.getoutput(
