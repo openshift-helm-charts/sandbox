@@ -172,7 +172,7 @@ jobs:
   chart-verifier:
     name: Run chart-verifier
     runs-on: ubuntu-22.04
-    needs: [prepare]
+    needs: [setup]
 
     outputs:
       report_content: ${{ steps.check_report.outputs.report_content }}
