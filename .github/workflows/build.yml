@@ -366,3 +366,116 @@ jobs:
         run: |
           ./ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href }}
 
+
+  release:
+    name: Release Chart
+    runs-on: ubuntu-22.04
+    needs: [setup, chart-verifier]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Checkout PR Branch
+        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          path: "pr-branch"
+
+      - name: Set up Python 3.x Part 1
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Set up Python 3.x Part 2
+        run: |
+          # set up python
+          python3 -m venv ve1
+          cd scripts
+          ../ve1/bin/pip3 install -r requirements.txt
+          ../ve1/bin/python3 setup.py install
+          cd ..
+
+      - name: install chart verifier for action
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: github
+          skip_cache: true
+          chart-verifier: ${{ needs.setup.outputs.verifier-action-image }}
+
+      - name: Block until there is no running workflow
+        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        uses: softprops/turnstyle@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Release Charts
+        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPORT_CONTENT: ${{ needs.chart-verifier.outputs.report_content }}
+          CHART_ENTRY_NAME: ${{ needs.chart-verifier.outputs.chartEntryName }}
+          CHART_NAME_WITH_VERSION: ${{ needs.chart-verifier.outputs.chartNameWithVersion }}
+          REDHAT_TO_COMMUNITY: ${{ needs.chart-verifier.outputs.redhat_to_community }}
+          WEB_CATALOG_ONLY: ${{ needs.chart-verifier.outputs.webCatalogOnly }}
+        id: release-charts
+        run: |
+          tar zxvf ./scripts/dependencies/helm-chart-releaser/chart-releaser_1.2.0_linux_amd64.tar.gz
+          sudo cp -f cr /usr/local/bin/cr
+          INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "refs/heads/gh-pages"; else echo "${GITHUB_REF}-gh-pages"; fi)
+          CWD=`pwd`
+          cd pr-branch
+          ../ve1/bin/chart-repo-manager --repository=${{ github.repository }} --index-branch=${INDEX_BRANCH} --api-url=${{ github.event.pull_request._links.self.href }} --pr-number=${{ github.event.number }}
+          cd ${CWD}
+
+      - name: Release
+        if: ${{ steps.release-charts.outputs.tag != '' }}
+        uses: softprops/action-gh-release@v0.1.12
+        continue-on-error: true
+        with:
+          tag_name: ${{ steps.release-charts.outputs.tag }}
+          files: |
+              ${{ steps.release-charts.outputs.report_file }}
+              ${{ steps.release-charts.outputs.public_key_file }}
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add metrics
+        if: ${{ always() && needs.setup.outputs.run_build == 'true' && env.GITHUB_REPOSITORY != 'openshift-helm-charts/sandbox' }}
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
+              WRITE_KEY=${{ secrets.SEGMENT_WRITE_KEY }}
+              ID_PREFIX="helm-metric-pr"
+              echo "Use segment production write key"
+          else
+              WRITE_KEY=${{ secrets.SEGMENT_TEST_WRITE_KEY }}
+              ID_PREFIX="helm-test-metric-pr"
+              echo "Use segment test write key"
+          fi
+
+          if [ "${WRITE_KEY}" != "" ]; then
+              echo "add PR run metric"
+              ve1/bin/metrics --write-key="${WRITE_KEY}" \
+                              --metric-type="pull_request" \
+                              --message-file="${{ needs.chart-verifier.outputs.message_file }}" \
+                              --pr-number="${{ github.event.number }}" \
+                              --pr-action="${{ github.event.action }}" \
+                              --repository="${GITHUB_REPOSITORY}" \
+                              --prefix="${ID_PREFIX}" \
+                              --pr_dir="./pr-branch"
+          else
+              echo "Do not collect metrics, required segment write key is not set"
+          fi
