@@ -90,9 +90,9 @@ def check_web_catalog_only(report_in_pr, num_files_in_pr, report_file_match):
 
     if web_catalog_only:
         print("[INFO] webCatalogOnly/providerDelivery is a go")
-        gitutils.add_output("webCatalogOnly", "True")
+        gitutils.add_output("web_catalog_only", "True")
     else:
-        gitutils.add_output("webCatalogOnly", "False")
+        gitutils.add_output("web_catalog_only", "False")
         print("[INFO] webCatalogOnly/providerDelivery is a no-go")
 
 
