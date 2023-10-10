@@ -154,7 +154,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -168,7 +168,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            github.issues.removeLabel({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -189,7 +189,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             var issue_number = ${{ github.event.number }};
-            github.issues.removeLabel({
+            github.rest.issues.removeLabel({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: Number(issue_number),
@@ -315,7 +315,7 @@ jobs:
             var fs = require('fs');
             var issue_number = ${{ github.event.number }};
             var comment = fs.readFileSync('./pr/comment', {encoding:'utf8', flag:'r'});
-            github.issues.createComment({
+            github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: Number(issue_number),
@@ -333,7 +333,7 @@ jobs:
             var vendor_label = fs.readFileSync('./pr/vendor');
             var chart_name = fs.readFileSync('./pr/chart');
             if (vendor_label.toString() !== "" && chart_name.toString() !== "") {
-              github.issues.addLabels({
+              github.rest.issues.addLabels({
                 issue_number: Number(issue_number),
                 owner: context.repo.owner,
                 repo: context.repo.repo,
