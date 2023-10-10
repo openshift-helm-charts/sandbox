@@ -107,7 +107,7 @@ jobs:
       redhat_to_community: ${{ steps.check_report.outputs.redhat_to_community }}
       message_file: ${{ steps.pr_comment.outputs.message-file }}
       web_catalog_only: ${{ steps.check_pr_content.outputs.web_catalog_only }}
-      chartEntryName: ${{ steps.check_pr_content.outputs.chart-entry-name }}
+      chart_entry_name: ${{ steps.check_pr_content.outputs.chart-entry-name }}
       chartNameWithVersion: ${{ steps.check_pr_content.outputs.chart-name-with-version }}
 
     steps:
@@ -424,7 +424,7 @@ jobs:
           GITHUB_REF: ${{ github.ref }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPORT_CONTENT: ${{ needs.chart-verifier.outputs.report_content }}
-          CHART_ENTRY_NAME: ${{ needs.chart-verifier.outputs.chartEntryName }}
+          CHART_ENTRY_NAME: ${{ needs.chart-verifier.outputs.chart_entry_name }}
           CHART_NAME_WITH_VERSION: ${{ needs.chart-verifier.outputs.chartNameWithVersion }}
           REDHAT_TO_COMMUNITY: ${{ needs.chart-verifier.outputs.redhat_to_community }}
           WEB_CATALOG_ONLY: ${{ needs.chart-verifier.outputs.web_catalog_only }}
