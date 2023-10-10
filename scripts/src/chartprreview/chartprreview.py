@@ -58,7 +58,7 @@ def get_modified_charts(directory, api_url):
     """
     print("[INFO] Get modified charts. %s" % directory)
     files = prartifact.get_modified_files(api_url)
-    pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
+    pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.\-+]+)/.*")
     for file_path in files:
         m = pattern.match(file_path)
         if m:
