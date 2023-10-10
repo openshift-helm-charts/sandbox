@@ -106,7 +106,7 @@ jobs:
       report_content: ${{ steps.check_report.outputs.report_content }}
       redhat_to_community: ${{ steps.check_report.outputs.redhat_to_community }}
       message_file: ${{ steps.pr_comment.outputs.message-file }}
-      webCatalogOnly: ${{ steps.check_pr_content.outputs.webCatalogOnly }}
+      web_catalog_only: ${{ steps.check_pr_content.outputs.web_catalog_only }}
       chartEntryName: ${{ steps.check_pr_content.outputs.chart-entry-name }}
       chartNameWithVersion: ${{ steps.check_pr_content.outputs.chart-name-with-version }}
 
@@ -267,7 +267,7 @@ jobs:
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           VENDOR_TYPE: ${{ steps.check_pr_content.outputs.category }}
-          WEB_CATALOG_ONLY: ${{ steps.check_pr_content.outputs.webCatalogOnly }}
+          WEB_CATALOG_ONLY: ${{ steps.check_pr_content.outputs.web_catalog_only }}
           REPORT_GENERATED: ${{ steps.verify_requires.outputs.report_needed }}
           GENERATED_REPORT_PATH: ${{ steps.run-verifier.outputs.report_file }}
           REPORT_SUMMARY_PATH: ${{ steps.run-verifier.outputs.report_info_file }}
@@ -427,7 +427,7 @@ jobs:
           CHART_ENTRY_NAME: ${{ needs.chart-verifier.outputs.chartEntryName }}
           CHART_NAME_WITH_VERSION: ${{ needs.chart-verifier.outputs.chartNameWithVersion }}
           REDHAT_TO_COMMUNITY: ${{ needs.chart-verifier.outputs.redhat_to_community }}
-          WEB_CATALOG_ONLY: ${{ needs.chart-verifier.outputs.webCatalogOnly }}
+          WEB_CATALOG_ONLY: ${{ needs.chart-verifier.outputs.web_catalog_only }}
         id: release-charts
         run: |
           tar zxvf ./scripts/dependencies/helm-chart-releaser/chart-releaser_1.2.0_linux_amd64.tar.gz
