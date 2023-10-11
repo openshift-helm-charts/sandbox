@@ -3,6 +3,7 @@ import argparse
 import os
 import yaml
 import sys
+from pprint import pprint
 
 try:
     from yaml import CLoader as Loader
@@ -19,7 +20,7 @@ def check_if_ci_only_is_modified(api_url):
 
     files = prartifact.get_modified_files(api_url)
     workflow_files = [
-        re.compile(r".github/workflows/.*"),
+        re.compile(r".github/(workflows|actions)/.*"),
         re.compile(r"scripts/.*"),
         re.compile(r"tests/.*"),
     ]
@@ -33,19 +34,27 @@ def check_if_ci_only_is_modified(api_url):
         re.compile(r"docs/([\w-]+)\.md"),
     ]
 
+    print(f"[INFO] The following files were modified in this PR: {files}")
+
     workflow_found = False
     others_found = False
     tests_included = False
 
     for filename in files:
         if any([pattern.match(filename) for pattern in workflow_files]):
+            print(f"[DEBUG] Modified file {filename} is a workflow file.")
             workflow_found = True
+            # Tests are consider workflow files AND test files to inform other actions
+            # so we detect both separately.
             if any([pattern.match(filename) for pattern in test_files]):
+                print(f"[DEBUG] Modified file {filename} is also a test file.")
                 tests_included = True
         elif any([pattern.match(filename) for pattern in skip_build_files]):
+            print(f"[DEBUG] Modified file {filename} is a skippable file.")
             others_found = True
         else:
-            return False
+            print(f"[DEBUG] Modified file {filename} did not match any file paths of interest. Ignoring.")
+            continue
 
     if others_found and not workflow_found:
         gitutils.add_output("do-not-build", "true")
