@@ -232,7 +232,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                 sys.exit(1)
 
         tag_name = f"{organization}-{chart}-{version}"
-        gitutils.add_output("chart-name-with-version", tag_name)
+        gitutils.add_output("release_tag", tag_name)
         tag_api = f"https://api.github.com/repos/{repository}/git/ref/tags/{tag_name}"
         headers = {
             "Accept": "application/vnd.github.v3+json",

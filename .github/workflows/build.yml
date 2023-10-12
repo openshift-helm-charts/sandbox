@@ -108,7 +108,7 @@ jobs:
       message_file: ${{ steps.pr_comment.outputs.message-file }}
       webCatalogOnly: ${{ steps.check_pr_content.outputs.webCatalogOnly }}
       chartEntryName: ${{ steps.check_pr_content.outputs.chart-entry-name }}
-      chartNameWithVersion: ${{ steps.check_pr_content.outputs.chart-name-with-version }}
+      release_tag: ${{ steps.check_pr_content.outputs.release_tag }}
 
     steps:
       - name: Checkout
@@ -425,7 +425,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPORT_CONTENT: ${{ needs.chart-verifier.outputs.report_content }}
           CHART_ENTRY_NAME: ${{ needs.chart-verifier.outputs.chartEntryName }}
-          CHART_NAME_WITH_VERSION: ${{ needs.chart-verifier.outputs.chartNameWithVersion }}
           REDHAT_TO_COMMUNITY: ${{ needs.chart-verifier.outputs.redhat_to_community }}
           WEB_CATALOG_ONLY: ${{ needs.chart-verifier.outputs.webCatalogOnly }}
         id: release-charts
@@ -439,11 +438,11 @@ jobs:
           cd ${CWD}
 
       - name: Release
-        if: ${{ steps.release-charts.outputs.tag != '' }}
+        if: ${{ needs.chart-verifier.outputs.webCatalogOnly == 'False' }}
         uses: softprops/action-gh-release@v0.1.12
         continue-on-error: true
         with:
-          tag_name: ${{ steps.release-charts.outputs.tag }}
+          tag_name: ${{ needs.chart-verifier.outputs.release_tag }}
           files: |
               ${{ steps.release-charts.outputs.report_file }}
               ${{ steps.release-charts.outputs.public_key_file }}
