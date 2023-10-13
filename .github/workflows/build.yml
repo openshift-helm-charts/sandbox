@@ -261,24 +261,24 @@ jobs:
           error_message="The chart verifier returned an error when trying to obtain a verification report for the chart."
           echo "verifier_error_message=$error_message" >> $GITHUB_OUTPUT
 
-      - name: Get profile version set in report
+      - name: Get profile version set in report provided by the user
         id: get-profile-version
-        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' }}
         uses: mikefarah/yq@v4.35.1
         with:
-          cmd: yq '.metadata.tool.profile.version' ${{ steps.run-verifier.outputs.report_file }}
+          cmd: yq '.metadata.tool.profile.version' ${{ steps.verify_requires.outputs.provided_report_path }}
 
-      - name: Get the range of Kubernetes versions for this chart as advertised in report.yaml
+      - name: Get the range of Kubernetes versions set in the report provided by the user
         id: get-kube-range
-        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' }}
         continue-on-error: true
         uses: mikefarah/yq@v4.35.1
         with:
-          cmd: yq '.metadata.chart.kubeversion' ${{ steps.run-verifier.outputs.report_file }}
+          cmd: yq '.metadata.chart.kubeversion' ${{ steps.verify_requires.outputs.provided_report_path }}
 
       - name: Get the corresponding range of OCP versions
         id: get-ocp-range
-        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' }}
         continue-on-error: true
         uses: ./.github/actions/get-ocp-range
         with:
