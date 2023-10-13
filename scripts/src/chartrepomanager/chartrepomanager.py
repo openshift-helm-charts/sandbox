@@ -244,7 +244,10 @@ def create_index_from_chart(
 
 
 def create_index_from_report(category, ocp_version_range, report_path):
-    print("[INFO] create index from report. %s, %s, %s" % (category, ocp_version_range, report_path))
+    print(
+        "[INFO] create index from report. %s, %s, %s"
+        % (category, ocp_version_range, report_path)
+    )
 
     annotations = indexannotations.getIndexAnnotations(ocp_version_range, report_path)
 
@@ -608,7 +611,12 @@ def main():
 
         print("[INFO] Updating chart annotation")
         update_chart_annotation(
-            category, organization, chart_file_name, chart, ocp_version_range, report_path
+            category,
+            organization,
+            chart_file_name,
+            chart,
+            ocp_version_range,
+            report_path,
         )
         chart_url = f"https://github.com/{args.repository}/releases/download/{organization}-{chart}-{version}/{chart_file_name}"
         print("[INFO] Helm package was released at %s" % chart_url)
@@ -632,7 +640,9 @@ def main():
         if signedchart.check_report_for_signed_chart(report_path):
             public_key_file = get_key_file(category, organization, chart, version)
         print("[INFO] Creating index from report")
-        chart_entry, chart_url = create_index_from_report(category, ocp_version_range, report_path)
+        chart_entry, chart_url = create_index_from_report(
+            category, ocp_version_range, report_path
+        )
 
     if not web_catalog_only:
         tag = os.environ.get("CHART_NAME_WITH_VERSION")
