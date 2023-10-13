@@ -263,14 +263,14 @@ jobs:
 
       - name: Get profile version set in report
         id: get-profile-version
-        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' }}
         uses: mikefarah/yq@v4.35.1
         with:
-          cmd: yq '.metadata.tool.profile.version' ${{ steps.run-verifier.outputs.report_file }}
+          cmd: yq '.metadata.tool.profile.version' ${{ steps.verify_requires.outputs.provided_report_path }}
 
       - name: Get the range of Kubernetes versions for this chart as advertised in report.yaml
         id: get-kube-range
-        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' }}
         continue-on-error: true
         uses: mikefarah/yq@v4.35.1
         with:
