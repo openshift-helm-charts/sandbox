@@ -42,6 +42,8 @@ def getIndexAnnotations(ocp_version_range, report_path):
             set_annotations[annotation] = annotations[annotation]
 
     if not OCPSupportedSet:
-        set_annotations["charts.openshift.io/supportedOpenShiftVersions"] = ocp_version_range
+        set_annotations[
+            "charts.openshift.io/supportedOpenShiftVersions"
+        ] = ocp_version_range
 
     return set_annotations
