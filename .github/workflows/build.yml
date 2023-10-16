@@ -265,16 +265,18 @@ jobs:
         id: get-profile-version
         if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' }}
         uses: mikefarah/yq@v4.35.1
+        working-directory: ./pr-branch
         with:
-          cmd: yq '.metadata.tool.profile.version' ${{ steps.verify_requires.outputs.provided_report_path }}
+          cmd: yq '.metadata.tool.profile.version' ${{ steps.verify_requires.outputs.provided_report_relative_path }}
 
       - name: Get the range of Kubernetes versions set in the report provided by the user
         id: get-kube-range
         if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' }}
         continue-on-error: true
         uses: mikefarah/yq@v4.35.1
+        working-directory: ./pr-branch
         with:
-          cmd: yq '.metadata.chart.kubeversion' ${{ steps.verify_requires.outputs.provided_report_path }}
+          cmd: yq '.metadata.chart.kubeversion' ${{ steps.verify_requires.outputs.provided_report_relative_path }}
 
       - name: Get the corresponding range of OCP versions
         id: get-ocp-range
