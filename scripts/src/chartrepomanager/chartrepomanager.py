@@ -634,17 +634,12 @@ def main():
         chart_entry, chart_url = create_index_from_report(category, report_path)
 
     if not web_catalog_only:
-        tag = os.environ.get("CHART_NAME_WITH_VERSION")
-        if not tag:
-            print("[ERROR] Internal error: missing chart name with version (tag)")
-            sys.exit(1)
-        gitutils.add_output("tag", tag)
-
         current_dir = os.getcwd()
         gitutils.add_output("report_file", f"{current_dir}/report.yaml")
         if public_key_file:
             print(f"[INFO] Add key file for release : {current_dir}/{public_key_file}")
             gitutils.add_output("public_key_file", f"{current_dir}/{public_key_file}")
+
     print("Sleeping for 10 seconds")
     time.sleep(10)
     update_index_and_push(
