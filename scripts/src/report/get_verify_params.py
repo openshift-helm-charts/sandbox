@@ -92,6 +92,7 @@ def main():
     )
     gitutils.add_output("report_provided", report_provided)
     gitutils.add_output("provided_report_path", provided_report_path)
+    gitutils.add_output("provided_report_relative_path", os.path.join("charts", category, organization, chart, version, "report.yaml"))
     gitutils.add_output("report_needed", report_needed)
     gitutils.add_output("cluster_needed", cluster_needed)
     if report_needed:
