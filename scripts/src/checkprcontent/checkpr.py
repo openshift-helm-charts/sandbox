@@ -8,6 +8,8 @@ import requests
 import semver
 import yaml
 
+from reporegex import matchers
+
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -109,15 +111,11 @@ def get_file_match_compiled_patterns():
     charts/partners/hashicorp/vault/0.20.0//report.yaml
     """
 
-    pattern = re.compile(
-        r"charts/" + TYPE_MATCH_EXPRESSION + "/([\w-]+)/([\w-]+)/([\w\.-]+)/.*"
-    )
-    reportpattern = re.compile(
-        r"charts/" + TYPE_MATCH_EXPRESSION + "/([\w-]+)/([\w-]+)/([\w\.-]+)/report.yaml"
-    )
-    tarballpattern = re.compile(
-        r"charts/(partners|redhat|community)/([\w-]+)/([\w-]+)/([\w\.-]+)/(.*\.tgz$)"
-    )
+    base = matchers.submission_path_matcher()
+
+    pattern = re.compile(base + r"/.*")
+    reportpattern = re.compile(base + r"/report.yaml")
+    tarballpattern = re.compile(base + r"/(.*\.tgz$)")
     return pattern, reportpattern, tarballpattern
 
 
@@ -151,7 +149,7 @@ def ensure_only_chart_is_modified(api_url, repository, branch):
                     _, _, chart_name, chart_version, tar_name = tar_match.groups()
                     expected_tar_name = f"{chart_name}-{chart_version}.tgz"
                     if tar_name != expected_tar_name:
-                        msg = f"[ERROR] the tgz file is named incorrectly. Expected: {expected_tar_name}"
+                        msg = f"[ERROR] the tgz file is named incorrectly. Expected: {expected_tar_name}. Got: {tar_name}"
                         print(msg)
                         gitutils.add_output("pr-content-error-message", msg)
                         exit(1)

@@ -9,6 +9,7 @@ sys.path.append("../")
 from report import verifier_report
 from owners import owners_file
 from pullrequest import prartifact
+from reporegex import matchers
 
 
 def check_and_prepare_signed_chart(api_url, report_path, owner_path, key_file_path):
@@ -41,10 +42,12 @@ def get_verifier_flags(tar_file, owners_file, temp_dir):
 def is_chart_signed(api_url, report_path):
     if api_url:
         files = prartifact.get_modified_files(api_url)
-        tgz_pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.-]+)/.*.tgz")
+        tgz_pattern = re.compile(
+            matchers.submission_path_matcher(strict_categories=False) + r".*.tgz"
+        )
         tgz_found = False
         prov_pattern = re.compile(
-            r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.-]+)/.*.tgz.prov"
+            matchers.submission_path_matcher(strict_categories=False) + r".*.tgz.prov"
         )
         prov_found = False
 
