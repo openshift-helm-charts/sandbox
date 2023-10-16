@@ -31,6 +31,7 @@ import semver
 import sys
 from release import release_info
 from release import releaser
+from reporegex import matchers
 
 sys.path.append("../")
 from owners import checkuser
@@ -69,7 +70,7 @@ def check_file_in_pr(api_url, pattern, error_value):
 def check_if_only_charts_are_included(api_url):
     print("[INFO] check if only chart files are included")
     chart_pattern = re.compile(
-        r"charts/" + TYPE_MATCH_EXPRESSION + "/([\w-]+)/([\w-]+)/.*"
+        matchers.submission_path_matcher(include_version_matcher=False) + r"./*"
     )
     return check_file_in_pr(api_url, chart_pattern, ERROR_IF_MATCH_NOT_FOUND)
 
@@ -77,7 +78,7 @@ def check_if_only_charts_are_included(api_url):
 def check_if_no_charts_are_included(api_url):
     print("[INFO] check if no chart files are included")
     chart_pattern = re.compile(
-        r"charts/" + TYPE_MATCH_EXPRESSION + "/([\w-]+)/([\w-]+)/.*"
+        matchers.submission_path_matcher(include_version_matcher=False) + r"./*"
     )
     return check_file_in_pr(api_url, chart_pattern, ERROR_IF_MATCH_FOUND)
 
