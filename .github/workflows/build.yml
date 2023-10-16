@@ -226,7 +226,7 @@ jobs:
           API_SERVER=$( echo -n ${{ secrets.API_SERVER }} | base64 -d)
           echo "API_SERVER=${API_SERVER}" >> $GITHUB_OUTPUT
 
-      - uses: redhat-actions/oc-login@v1
+      - uses: redhat-actions/oc-login@v1.2
         id: oc_login
         if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' }}
         with:
