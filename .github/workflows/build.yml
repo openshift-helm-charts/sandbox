@@ -197,7 +197,7 @@ jobs:
             })
 
       - name: install chart verifier for action
-        uses: redhat-actions/openshift-tools-installer@v1
+        uses: redhat-actions/openshift-tools-installer@v1.12
         with:
           source: github
           skip_cache: true
@@ -214,7 +214,7 @@ jobs:
 
       - name: Install oc
         if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' }}
-        uses: redhat-actions/openshift-tools-installer@v1
+        uses: redhat-actions/openshift-tools-installer@v1.12
         with:
           oc: latest
 
@@ -399,7 +399,7 @@ jobs:
           cd ..
 
       - name: install chart verifier for action
-        uses: redhat-actions/openshift-tools-installer@v1
+        uses: redhat-actions/openshift-tools-installer@v1.12
         with:
           source: github
           skip_cache: true
