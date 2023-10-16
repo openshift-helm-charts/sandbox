@@ -52,7 +52,9 @@ def check_if_ci_only_is_modified(api_url):
             print(f"[DEBUG] Modified file {filename} is a skippable file.")
             others_found = True
         else:
-            print(f"[DEBUG] Modified file {filename} did not match any file paths of interest. Ignoring.")
+            print(
+                f"[DEBUG] Modified file {filename} did not match any file paths of interest. Ignoring."
+            )
             continue
 
     if others_found and not workflow_found:
