@@ -23,6 +23,7 @@ from report import report_info
 from report import verifier_report
 from signedchart import signedchart
 from pullrequest import prartifact
+from reporegex import matchers
 from tools import gitutils
 
 
@@ -58,7 +59,7 @@ def get_modified_charts(directory, api_url):
     """
     print("[INFO] Get modified charts. %s" % directory)
     files = prartifact.get_modified_files(api_url)
-    pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.\-+]+)/.*")
+    pattern = re.compile(matchers.submission_path_matcher(strict_categories=False) + r"/.*")
     for file_path in files:
         m = pattern.match(file_path)
         if m:
