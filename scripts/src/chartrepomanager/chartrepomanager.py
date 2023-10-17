@@ -24,12 +24,24 @@ from report import report_info
 from chartrepomanager import indexannotations
 from signedchart import signedchart
 from pullrequest import prartifact
+from reporegex import matchers
 from tools import gitutils
 
 
 def get_modified_charts(api_url):
+    """Reads a PR's modified files to get submission details and exits if none are found.
+
+    Args:
+        api_url: URL to the API representation of a pull request.
+          E.g. https://api.github.com/repos/openshift-helm-charts/charts/pulls/1
+
+    Returns:
+        The category, organization, chart name, and version.
+    """
     files = prartifact.get_modified_files(api_url)
-    pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
+    pattern = re.compile(
+        matchers.submission_path_regex(strict_categories=False) + r"/.*"
+    )
     for file_path in files:
         m = pattern.match(file_path)
         if m:
