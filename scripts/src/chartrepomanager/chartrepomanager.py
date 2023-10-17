@@ -24,12 +24,15 @@ from report import report_info
 from chartrepomanager import indexannotations
 from signedchart import signedchart
 from pullrequest import prartifact
+from reporegex import matchers
 from tools import gitutils
 
 
 def get_modified_charts(api_url):
     files = prartifact.get_modified_files(api_url)
-    pattern = re.compile(r"charts/(\w+)/([\w-]+)/([\w-]+)/([\w\.-]+)/.*")
+    pattern = re.compile(
+        matchers.submission_path_matcher(strict_categories=False) + r"/.*"
+    )
     for file_path in files:
         m = pattern.match(file_path)
         if m:
