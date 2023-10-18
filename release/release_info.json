@@ -1,16 +1,20 @@
 {
-  "version": "1.5.8",
+  "version": "1.6.0",
   "info" : [
-    "Add mgoerens as approver",
-    "Apply black and fix some PEP8 violations",
-    "Update Github actions that use deprecated Node12",
-    "Create action to disable specific workflows based on repo config",
-    "Add OchiengEd as approver/reviewer to update workflows",
-    "Update vault chart fixtures for chart testing fix",
-    "Updated reports for vault chart fixtures",
-    "Adjust expected timeout message and accept regex in expected message",
-    "use a separate approval token for the sandbox repository workflow",
-    "Update vault-timeout chart to fix timeout errors"
+    "Refer to the correct secret during token extraction (#263) by @komish",
+    "Break down GitHub workflow into smaller jobs by (#265) @OchiengEd",
+    "Add comments to part of the python scripts by(#255) @mgoerens",
+    "Update actions/github-script version by (#267) @OchiengEd",
+    "Add acornett21 to OWNERS file to update workflows (#269) by @komish",
+    "fixing regex to follow semver and allow + by @(#268) acornett21",
+    "Prevent early exit in cases where a non-workflow file is also modified alongside workflow files (#270) by @komish",
+    "Consistent github output names by (#266) @OchiengEd",
+    "Add Python Code Style Enforcement to GitHub Actions (#272) by @komish",
+    "Apply Black formatter (#274) by @komish",
+    "Simplify output parameters by(#271) @mgoerens",
+    "Extract repo path regex matching to a single library and reconfigure scripts to use it (#276) by @komish",
+    "Get OCP range from external library by(#264) @mgoerens",
+    "Configure more locations to use the submission regex matchers (#277) by @komish"
   ],
   "charts" : {
     "development": {
