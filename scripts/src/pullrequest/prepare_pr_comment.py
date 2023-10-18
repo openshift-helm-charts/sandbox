@@ -107,7 +107,7 @@ def prepare_generic_fail_comment():
 
 
 def prepare_oc_install_fail_comment():
-    msg = "Unfortunately the certification process failed to install OpenShift and could not complete.\n\n"
+    msg = "Unfortunately the certification process failed to install OpenShift Client and could not complete.\n\n"
     msg += "This problem will be addressed by maintainers and no further action is required from the submitter at this time.\n\n"
     return msg
 
