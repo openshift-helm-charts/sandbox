@@ -521,14 +521,8 @@ For more information on the different Helm Chart Distribution methods, see: [Cre
 
 ### Can I test the pull request in my fork before submitting?
 
-Yes, you can do it.
-
-1. Ensure the `main` branch in your fork is updated with the latest changes.
-2. Create a GitHub [personal access token][pat] (PAT) and add it as an
-   [encyrpted secret][encyrpted-secret] with name as `BOT_TOKEN`.
-3. Create a branch and make your required changes and send a pull request to
-   your `main` branch.
-
+Yes, you can do it. See [Pull Reqest: Testing in a
+Fork](./pull-request.md#testing-in-a-fork) for more information
 ### Can I use any command-line interface to create pull request?
 
 Yes, you can use the [GitHub CLI to create pull request][gh-cli-pr].
