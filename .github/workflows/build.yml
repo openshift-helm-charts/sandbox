@@ -213,6 +213,7 @@ jobs:
           ../ve1/bin/get-verify-params --directory=pr --api-url=${{ github.event.pull_request._links.self.href }}
 
       - name: Install oc
+        id: install-oc
         if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' }}
         uses: redhat-actions/openshift-tools-installer@v1
         with:
