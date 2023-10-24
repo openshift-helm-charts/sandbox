@@ -361,7 +361,7 @@ If the vendor label in the `OWNERS` file is wrong, you can follow the [partner
 connect documentation][partners] to update the `OWNERS` file.
 
 If the directory structure (organization name) is wrong, please reach out to
-[Technology Partner Success Desk][partner-acceleration-desk].
+[Partner Acceleration Desk][partner-acceleration-desk].
 
 ### Chart name mismatch with the directory structure
 
