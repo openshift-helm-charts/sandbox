@@ -464,8 +464,6 @@ jobs:
           OCP_VERSION_RANGE: ${{ steps.get-ocp-range.outputs.ocp-version-range }}
         id: release-charts
         run: |
-          tar zxvf ./scripts/dependencies/helm-chart-releaser/chart-releaser_1.2.0_linux_amd64.tar.gz
-          sudo cp -f cr /usr/local/bin/cr
           INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "refs/heads/gh-pages"; else echo "${GITHUB_REF}-gh-pages"; fi)
           CWD=`pwd`
           cd pr-branch
@@ -478,13 +476,14 @@ jobs:
 
       - name: Release
         if: ${{ needs.chart-verifier.outputs.web_catalog_only == 'False' }}
-        uses: softprops/action-gh-release@v0.1.12
+        uses: softprops/action-gh-release@v0.1.15
         continue-on-error: true
         with:
           tag_name: ${{ needs.chart-verifier.outputs.release_tag }}
           files: |
               ${{ steps.release-charts.outputs.report_file }}
-              ${{ steps.release-charts.outputs.public_key_file }}
+              ${{ steps.release-charts.outputs.public_key_file }} # Can be empty
+              ${{ steps.release-charts.outputs.path_to_chart_tarball }} # Can be empty
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
