@@ -207,7 +207,7 @@ def main():
     chart_name = open("./pr/chart").read().strip()
 
     community_manual_review = os.environ.get("COMMUNITY_MANUAL_REVIEW", False)
-    oc_install_result = os.environ.get("OC_INSTALL_RESULT", False)
+    oc_install_result = os.environ.get("OC_INSTALL_RESULT")
 
     msg = f"Thank you for submitting PR #{issue_number} for Helm Chart Certification!"
 
@@ -224,7 +224,7 @@ def main():
         and run_verifier_result in ["success", "skipped"]
         and verify_result == "success"
         # installation of oc may not run if a cluster is not needed.
-        and oc_install_result in ["success", "skipped", False]
+        and oc_install_result in ["success", "skipped"]
     ):
         outcome = "Passed"
         detail_message = append_to(detail_message, get_success_coment())
