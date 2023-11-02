@@ -13,6 +13,7 @@ version.
 """
 
 import argparse
+import json
 import shutil
 import os
 import sys
@@ -20,12 +21,9 @@ import re
 import subprocess
 import tempfile
 import time
-from datetime import datetime, timezone
-import hashlib
 import urllib.parse
 from environs import Env
 
-import requests
 import yaml
 
 try:
@@ -218,54 +216,6 @@ def get_key_file(category, organization, chart, version):
     return ""
 
 
-def create_worktree_for_index(branch):
-    """Create a detached worktree for the given branch
-
-    Args:
-        branch (str): Name of the Git branch
-
-    Returns:
-        str: Path to local detached worktree
-    """
-    dr = tempfile.mkdtemp(prefix="crm-")
-    upstream = os.environ["GITHUB_SERVER_URL"] + "/" + os.environ["GITHUB_REPOSITORY"]
-    out = subprocess.run(
-        ["git", "remote", "add", "upstream", upstream], capture_output=True
-    )
-    print(out.stdout.decode("utf-8"))
-    err = out.stderr.decode("utf-8")
-    if err.strip():
-        print(
-            "Adding upstream remote failed:",
-            err,
-            "branch",
-            branch,
-            "upstream",
-            upstream,
-        )
-    out = subprocess.run(["git", "fetch", "upstream", branch], capture_output=True)
-    print(out.stdout.decode("utf-8"))
-    err = out.stderr.decode("utf-8")
-    if err.strip():
-        print(
-            "Fetching upstream remote failed:",
-            err,
-            "branch",
-            branch,
-            "upstream",
-            upstream,
-        )
-    out = subprocess.run(
-        ["git", "worktree", "add", "--detach", dr, f"upstream/{branch}"],
-        capture_output=True,
-    )
-    print(out.stdout.decode("utf-8"))
-    err = out.stderr.decode("utf-8")
-    if err.strip():
-        print("Creating worktree failed:", err, "branch", branch, "directory", dr)
-    return dr
-
-
 def create_index_from_chart(chart_file_name):
     """Prepare the index entry for this chart
 
@@ -348,204 +298,6 @@ def create_index_from_report(category, ocp_version_range, report_path):
         chart_entry["digest"] = digests["package"]
 
     return chart_entry
-
-
-def set_package_digest(chart_entry):
-    print("[INFO] set package digests.")
-
-    url = chart_entry["urls"][0]
-    head = requests.head(url, allow_redirects=True)
-    print(f"[DEBUG]: tgz url : {url}")
-    print(f"[DEBUG]: response code from head request: {head.status_code}")
-
-    target_digest = ""
-    if head.status_code == 200:
-        response = requests.get(url, allow_redirects=True)
-        print(f"[DEBUG]: response code get request: {response.status_code}")
-        target_digest = hashlib.sha256(response.content).hexdigest()
-        print(f"[DEBUG]: calculated digest : {target_digest}")
-
-    pkg_digest = ""
-    if "digest" in chart_entry:
-        pkg_digest = chart_entry["digest"]
-        print(f"[DEBUG]: digest in report : {pkg_digest}")
-
-    if target_digest:
-        if not pkg_digest:
-            # Digest was computed but not passed
-            chart_entry["digest"] = target_digest
-        elif pkg_digest != target_digest:
-            # Digest was passed and computed but differ
-            raise Exception(
-                "Found an integrity issue. SHA256 digest passed does not match SHA256 digest computed."
-            )
-    elif not pkg_digest:
-        # Digest was not passed and could not be computed
-        raise Exception(
-            "Was unable to compute SHA256 digest, please ensure chart url points to a chart package."
-        )
-
-
-def update_index_and_push(
-    indexfile,
-    indexdir,
-    repository,
-    branch,
-    organization,
-    chart,
-    version,
-    chart_url,
-    chart_entry,
-    pr_number,
-    web_catalog_only,
-):
-    """Update the Helm repository index file
-
-    Args:
-        indexfile (str): Name of the index file to update (index.yaml or
-                         unpublished-certified-charts.yaml)
-        indexdir (str): Path to the local worktree
-        repository (str): Name of the GitHub repository
-        branch (str): Name of the git branch
-        organization (str): Name of the organization (ex: hashicorp)
-        chart (str): Name of the chart (ex: vault)
-        version (str): The version of the chart (ex: 1.4.0)
-        chart_url (str): URL of the Chart
-        chart_entry (dict): Index entry to add
-        pr_number (str): Git Pull Request ID
-        web_catalog_only (bool): Set to True if the provider has chosen the Web Catalog
-                                 Only option.
-    """
-    token = os.environ.get("GITHUB_TOKEN")
-    print(f"Downloading {indexfile}")
-    r = requests.get(
-        f"https://raw.githubusercontent.com/{repository}/{branch}/{indexfile}"
-    )
-    original_etag = r.headers.get("etag")
-    now = datetime.now(timezone.utc).astimezone().isoformat()
-
-    if r.status_code == 200:
-        data = yaml.load(r.text, Loader=Loader)
-        data["generated"] = now
-    else:
-        data = {"apiVersion": "v1", "generated": now, "entries": {}}
-
-    print("[INFO] Updating the chart entry with new version")
-    crtentries = []
-    entry_name = os.environ.get("CHART_ENTRY_NAME")
-    if not entry_name:
-        print("[ERROR] Internal error: missing chart entry name")
-        sys.exit(1)
-    d = data["entries"].get(entry_name, [])
-    for v in d:
-        if v["version"] == version:
-            continue
-        crtentries.append(v)
-
-    chart_entry["urls"] = [chart_url]
-    if not web_catalog_only:
-        set_package_digest(chart_entry)
-    chart_entry["annotations"]["charts.openshift.io/submissionTimestamp"] = now
-    crtentries.append(chart_entry)
-    data["entries"][entry_name] = crtentries
-
-    print("[INFO] Add and commit changes to git")
-    out = yaml.dump(data, Dumper=Dumper)
-    print(f"{indexfile} content:\n", out)
-    with open(os.path.join(indexdir, indexfile), "w") as fd:
-        fd.write(out)
-    old_cwd = os.getcwd()
-    os.chdir(indexdir)
-    out = subprocess.run(["git", "status"], cwd=indexdir, capture_output=True)
-    print("Git status:")
-    print(out.stdout.decode("utf-8"))
-    print(out.stderr.decode("utf-8"))
-    out = subprocess.run(
-        ["git", "add", os.path.join(indexdir, indexfile)],
-        cwd=indexdir,
-        capture_output=True,
-    )
-    print(out.stdout.decode("utf-8"))
-    err = out.stderr.decode("utf-8")
-    if err.strip():
-        print(
-            f"Error adding {indexfile} to git staging area",
-            "index directory",
-            indexdir,
-            "branch",
-            branch,
-        )
-    out = subprocess.run(["git", "status"], cwd=indexdir, capture_output=True)
-    print("Git status:")
-    print(out.stdout.decode("utf-8"))
-    print(out.stderr.decode("utf-8"))
-    out = subprocess.run(
-        [
-            "git",
-            "commit",
-            "-m",
-            f"{organization}-{chart}-{version} {indexfile} (#{pr_number})",
-        ],
-        cwd=indexdir,
-        capture_output=True,
-    )
-    print(out.stdout.decode("utf-8"))
-    err = out.stderr.decode("utf-8")
-    if err.strip():
-        print(
-            f"Error committing {indexfile}",
-            "index directory",
-            indexdir,
-            "branch",
-            branch,
-            "error:",
-            err,
-        )
-    r = requests.head(
-        f"https://raw.githubusercontent.com/{repository}/{branch}/{indexfile}"
-    )
-
-    etag = r.headers.get("etag")
-    if original_etag and etag and (original_etag != etag):
-        print(
-            f"{indexfile} not updated. ETag mismatch.",
-            "original ETag",
-            original_etag,
-            "new ETag",
-            etag,
-            "index directory",
-            indexdir,
-            "branch",
-            branch,
-        )
-        sys.exit(1)
-    out = subprocess.run(["git", "status"], cwd=indexdir, capture_output=True)
-    print("Git status:")
-    print(out.stdout.decode("utf-8"))
-    print(out.stderr.decode("utf-8"))
-    out = subprocess.run(
-        [
-            "git",
-            "push",
-            f"https://x-access-token:{token}@github.com/{repository}",
-            f"HEAD:refs/heads/{branch}",
-            "-f",
-        ],
-        cwd=indexdir,
-        capture_output=True,
-    )
-    print(out.stdout.decode("utf-8"))
-    print(out.stderr.decode("utf-8"))
-    if out.returncode:
-        print(
-            f"{indexfile} not updated. Push failed.",
-            "index directory",
-            indexdir,
-            "branch",
-            branch,
-        )
-        sys.exit(1)
-    os.chdir(old_cwd)
 
 
 def update_chart_annotation(
@@ -642,14 +394,6 @@ def update_chart_annotation(
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-b",
-        "--index-branch",
-        dest="branch",
-        type=str,
-        required=True,
-        help="index branch",
-    )
-    parser.add_argument(
         "-r",
         "--repository",
         dest="repository",
@@ -665,34 +409,17 @@ def main():
         required=True,
         help="API URL for the pull request",
     )
-    parser.add_argument(
-        "-n",
-        "--pr-number",
-        dest="pr_number",
-        type=str,
-        required=True,
-        help="current pull request number",
-    )
     args = parser.parse_args()
-    branch = args.branch.split("/")[-1]
     category, organization, chart, version = get_modified_charts(args.api_url)
     chart_source_exists, chart_tarball_exists = check_chart_source_or_tarball_exists(
         category, organization, chart, version
     )
-
-    print("[INFO] Creating Git worktree for index branch")
-    indexdir = create_worktree_for_index(branch)
 
     env = Env()
     web_catalog_only = env.bool("WEB_CATALOG_ONLY", False)
     ocp_version_range = os.environ.get("OCP_VERSION_RANGE", "N/A")
 
     print(f"[INFO] webCatalogOnly/providerDelivery is {web_catalog_only}")
-
-    if web_catalog_only:
-        indexfile = "unpublished-certified-charts.yaml"
-    else:
-        indexfile = "index.yaml"
 
     public_key_file = ""
     print("[INFO] Report Content : ", os.environ.get("REPORT_CONTENT"))
@@ -715,7 +442,6 @@ def main():
         report_exists, report_path = check_report_exists(
             category, organization, chart, version
         )
-        chart_file_name = f"{chart}-{version}.tgz"
 
         if report_exists:
             shutil.copy(report_path, "report.yaml")
@@ -755,18 +481,9 @@ def main():
             print(f"[INFO] Add key file for release : {current_dir}/{public_key_file}")
             gitutils.add_output("public_key_file", f"{current_dir}/{public_key_file}")
 
+    gitutils.add_output("chart_entry", json.dumps(chart_entry))
+    gitutils.add_output("chart_url", chart_url)
+    gitutils.add_output("version", version)
+
     print("Sleeping for 10 seconds")
     time.sleep(10)
-    update_index_and_push(
-        indexfile,
-        indexdir,
-        args.repository,
-        branch,
-        organization,
-        chart,
-        version,
-        chart_url,
-        chart_entry,
-        args.pr_number,
-        web_catalog_only,
-    )
