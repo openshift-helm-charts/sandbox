@@ -512,9 +512,9 @@ jobs:
             --index_branch=${INDEX_BRANCH} \
             --index_branch=${INDEX_FILE} \
             --repository=${{ github.repository }}
-            --chart-entry=${{ steps.prepare-chart-release.outputs.chart_entry }}
-            --chart-url=${{ steps.prepare-chart-release.outputs.chart_url }}
-            --version=${{ steps.prepare-chart-release.outputs.version }}
+            --chart-entry='${{ steps.prepare-chart-release.outputs.chart_entry }}'
+            --chart-url="${{ steps.prepare-chart-release.outputs.chart_url }}"
+            --version="${{ steps.prepare-chart-release.outputs.version }}"
 
           git status
           git add $INDEX_FILE
