@@ -509,8 +509,8 @@ jobs:
           source ve1/bin/activate
           cd $INDEX_DIR
           update-index \
-            --index_branch=${INDEX_BRANCH} \
-            --index_branch=${INDEX_FILE} \
+            --index-branch=${INDEX_BRANCH} \
+            --index-file=${INDEX_FILE} \
             --repository=${{ github.repository }}
             --chart-entry='${{ steps.prepare-chart-release.outputs.chart_entry }}'
             --chart-url="${{ steps.prepare-chart-release.outputs.chart_url }}"
