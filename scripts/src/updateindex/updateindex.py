@@ -1,5 +1,4 @@
 import argparse
-import env
 import hashlib
 import json
 import os
@@ -8,6 +7,7 @@ import sys
 import yaml
 
 from datetime import datetime, timezone
+from environs import Env
 
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -172,6 +172,7 @@ def main():
     )
     args = parser.parse_args()
 
+    env = Env()
     web_catalog_only = env.bool("WEB_CATALOG_ONLY", False)
 
     index_data = download_index(args.index_file, args.repository, args.index_branch)
