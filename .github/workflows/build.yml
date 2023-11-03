@@ -451,7 +451,6 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # Prepares release artifcats and index entry.
       - name: Prepare Chart Release and index entry
         if: ${{ needs.setup.outputs.run_build == 'true' }}
         env:
@@ -493,7 +492,7 @@ jobs:
           CHART_ENTRY_NAME: ${{ needs.chart-verifier.outputs.chart_entry_name }}
           WEB_CATALOG_ONLY: ${{ needs.chart-verifier.outputs.web_catalog_only }}
         run: |
-          INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "gh-pages"; else echo "${GITHUB_REF##*/}}-gh-pages"; fi)
+          INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "gh-pages"; else echo "${GITHUB_REF##*/}-gh-pages"; fi)
 
           echo "[INFO] Creating Git worktree for index branch"
           INDEX_DIR=$(mktemp -d)
