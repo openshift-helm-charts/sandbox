@@ -201,6 +201,10 @@ def prepare_chart_tarball_for_release(
             pass
         shutil.copy(path, f".cr-release-packages/{prov_file_name}")
         shutil.copy(path, prov_file_name)
+        gitutils.add_output(
+            "prov_file_name",
+            os.path.join(os.getcwd(), ".cr-release-packages", prov_file_name),
+        )
         return get_key_file(category, organization, chart, version)
     return ""
 

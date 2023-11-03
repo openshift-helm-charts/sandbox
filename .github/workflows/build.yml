@@ -451,7 +451,8 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Prepare Chart Release
+      # Prepares release artifcats and index entry.
+      - name: Prepare Chart Release and index entry
         if: ${{ needs.setup.outputs.run_build == 'true' }}
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }} # TODO: remove ?
@@ -480,6 +481,7 @@ jobs:
               ${{ steps.prepare-chart-release.outputs.report_file }}
               ${{ steps.prepare-chart-release.outputs.public_key_file }}
               ${{ steps.prepare-chart-release.outputs.path_to_chart_tarball }}
+              ${{ steps.prepare-chart-release.outputs.prov_file_name }}
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -488,12 +490,10 @@ jobs:
         if: ${{ needs.setup.outputs.run_build == 'true' }}
         env:
           GITHUB_REF: ${{ github.ref }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHART_ENTRY_NAME: ${{ needs.chart-verifier.outputs.chart_entry_name }}
           WEB_CATALOG_ONLY: ${{ needs.chart-verifier.outputs.web_catalog_only }}
         run: |
-          INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "gh-pages"; else echo "${GITHUB_REF}-gh-pages"; fi)
-          INDEX_BRANCH=${INDEX_BRANCH##*/}
+          INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "gh-pages"; else echo "${GITHUB_REF##*/}}-gh-pages"; fi)
 
           echo "[INFO] Creating Git worktree for index branch"
           INDEX_DIR=$(mktemp -d)
