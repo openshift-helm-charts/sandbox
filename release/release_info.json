@@ -1,20 +1,14 @@
 {
-  "version": "1.6.0",
+  "version": "1.6.1",
   "info" : [
-    "Refer to the correct secret during token extraction (#263) by @komish",
-    "Break down GitHub workflow into smaller jobs by (#265) @OchiengEd",
-    "Add comments to part of the python scripts by(#255) @mgoerens",
-    "Update actions/github-script version by (#267) @OchiengEd",
-    "Add acornett21 to OWNERS file to update workflows (#269) by @komish",
-    "fixing regex to follow semver and allow + by @(#268) acornett21",
-    "Prevent early exit in cases where a non-workflow file is also modified alongside workflow files (#270) by @komish",
-    "Consistent github output names by (#266) @OchiengEd",
-    "Add Python Code Style Enforcement to GitHub Actions (#272) by @komish",
-    "Apply Black formatter (#274) by @komish",
-    "Simplify output parameters by(#271) @mgoerens",
-    "Extract repo path regex matching to a single library and reconfigure scripts to use it (#276) by @komish",
-    "Get OCP range from external library by(#264) @mgoerens",
-    "Configure more locations to use the submission regex matchers (#277) by @komish"
+    "Expand docs covering how to test workflow and script changes in a fork (#273) by @komish",
+    "Fix bug in PR comment generation caused by missing step ID (#280) by @komish",
+    "update docs link from gitbook to access.redhat.com (#282) by @komish",
+    "Fix name of the Partner Acceleration Desk (#285) by @mgoerens",
+    "Improve markdown comment formatting library and update PR comment format (#283) by @komish",
+    "Comment chartrepomanager and remove unused args (#278) by @mgoerens",
+    "Better handle oc-install outcome (#288) by @mgoerens",
+    "Make the PR comment accessible to the metrics step (#290) by @komish"
   ],
   "charts" : {
     "development": {
