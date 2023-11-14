@@ -2,6 +2,7 @@
 """
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -16,6 +17,22 @@ try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
     from yaml import Loader, Dumper
+
+
+def _decode_chart_entry(chart_entry_encoded):
+    """Decode the base64 encoded index entry to add.
+
+    Args:
+        chart_entry_encoded (str): base64 encode index entry for this chart
+
+    Returns:
+        dict: Decoded index entry
+
+    """
+    chart_entry_bytes = base64.b64decode(chart_entry_encoded)
+    chart_entry_str = chart_entry_bytes.decode()
+
+    return json.loads(chart_entry_str)
 
 
 def download_index(index_file, repository, branch):
@@ -181,8 +198,8 @@ def main():
     parser.add_argument(
         "-e",
         "--chart-entry",
-        dest="chart_entry",
-        type=json.loads,
+        dest="chart_entry_encoded",
+        type=str,
         required=True,
         help="Index entry to add",
     )
@@ -196,6 +213,8 @@ def main():
     )
     args = parser.parse_args()
 
+    chart_entry = _decode_chart_entry(args.chart_entry_encoded)
+
     env = Env()
     web_catalog_only = env.bool("WEB_CATALOG_ONLY", False)
 
@@ -204,7 +223,7 @@ def main():
         index_data,
         args.version,
         args.chart_url,
-        args.chart_entry,
+        chart_entry,
         web_catalog_only,
     )
     write_index_file(index_data, args.index_file)
