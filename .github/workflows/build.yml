@@ -469,12 +469,13 @@ jobs:
           REDHAT_TO_COMMUNITY: ${{ needs.chart-verifier.outputs.redhat_to_community }}
           WEB_CATALOG_ONLY: ${{ needs.chart-verifier.outputs.web_catalog_only }}
           OCP_VERSION_RANGE: ${{ steps.get-ocp-range.outputs.ocp-version-range }}
+          API_URL: ${{ github.event.pull_request._links.self.href }}
         id: prepare-chart-release
         run: |
           cd pr-branch
           ../ve1/bin/chart-repo-manager \
-            --repository=${{ github.repository }} \
-            --api-url=${{ github.event.pull_request._links.self.href }} \
+            --repository="$GITHUB_REPOSITORY" \
+            --api-url="$API_URL" \
 
       # Upload the report file, potentially paired with a public key and, if provided, the chart's tarball and its prov file.
       # Only the report file is always included.
@@ -498,6 +499,9 @@ jobs:
         env:
           CHART_ENTRY_NAME: ${{ needs.chart-verifier.outputs.chart_entry_name }}
           WEB_CATALOG_ONLY: ${{ needs.chart-verifier.outputs.web_catalog_only }}
+          CHART_ENTRY: ${{ steps.prepare-chart-release.outputs.chart_entry }}
+          CHART_URL: ${{ steps.prepare-chart-release.outputs.chart_url }}
+          VERSION: ${{ steps.prepare-chart-release.outputs.version }}
         run: |
           INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "gh-pages"; else echo "${GITHUB_REF##*/}-gh-pages"; fi)
 
@@ -516,12 +520,12 @@ jobs:
           source ve1/bin/activate
           cd $INDEX_DIR
           update-index \
-            --index-branch=${INDEX_BRANCH} \
-            --index-file=${INDEX_FILE} \
-            --repository=${{ github.repository }} \
-            --chart-entry="${{ steps.prepare-chart-release.outputs.chart_entry }}" \
-            --chart-url="${{ steps.prepare-chart-release.outputs.chart_url }}" \
-            --version="${{ steps.prepare-chart-release.outputs.version }}"
+            --index-branch="$INDEX_BRANCH" \
+            --index-file="$INDEX_FILE" \
+            --repository="$GITHUB_REPOSITORY" \
+            --chart-entry="$CHART_ENTRY" \
+            --chart-url="$CHART_URL" \
+            --version="$VERSION"
 
           echo "[INFO] Add and commit changes to git"
           git status
@@ -530,7 +534,7 @@ jobs:
           git commit -m "$RELEASE_TAG $INDEX_FILE (${{ github.event.number }})"
           git status
           git push \
-            https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} \
+            https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/"$GITHUB_REPOSITORY" \
             HEAD:refs/heads/${INDEX_BRANCH}
 
       # Note(komish): This step is a temporary workaround. Metrics requires the PR comment
