@@ -158,7 +158,7 @@ jobs:
           steps.check_test.outputs.run_tests == 'true'
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Set up Python 3.x Part 2
         if: |
@@ -166,8 +166,10 @@ jobs:
         run: |
           # set up python
           python3 -m venv ve1
-          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
-          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+          cd scripts
+          ../ve1/bin/pip3 install -r requirements.txt
+          ../ve1/bin/pip3 install .
+          cd ..
 
       - name: (Manual) Run tests on existing charts
         if: |
@@ -363,7 +365,7 @@ jobs:
           steps.check_test.outputs.run_tests == 'true'
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Set up Python 3.x Part 2
         if: |
@@ -372,8 +374,10 @@ jobs:
           # set up python
           pwd
           python3 -m venv ve1
-          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
-          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+          cd scripts
+          ../ve1/bin/pip3 install -r requirements.txt
+          ../ve1/bin/pip3 install .
+          cd ..
 
       - name: (Manual) Run tests on existing charts
         if: |
