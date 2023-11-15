@@ -20,6 +20,7 @@ update occurs in a later step.
 """
 
 import argparse
+import base64
 import json
 import shutil
 import os
@@ -45,6 +46,24 @@ from signedchart import signedchart
 from pullrequest import prartifact
 from reporegex import matchers
 from tools import gitutils
+
+
+def _encode_chart_entry(chart_entry):
+    """Encode the chart_entry to base64. This is needed to pass it as an argument to
+    the update index step.
+
+    Args:
+        chart_entry (dict): the index entry for this chart to encode
+
+    Returns:
+        str: The encoded base64 string equivalent.
+
+    """
+    chart_entry_str = json.dumps(chart_entry)
+    chart_entry_bytes = chart_entry_str.encode()
+
+    # Decoding to string for the GITHUB_OUTPUT
+    return base64.b64encode(chart_entry_bytes).decode()
 
 
 def get_modified_charts(api_url):
@@ -491,7 +510,7 @@ def main():
             print(f"[INFO] Add key file for release : {current_dir}/{public_key_file}")
             gitutils.add_output("public_key_file", f"{current_dir}/{public_key_file}")
 
-    gitutils.add_output("chart_entry", json.dumps(chart_entry))
+    gitutils.add_output("chart_entry", _encode_chart_entry(chart_entry))
     gitutils.add_output("chart_url", chart_url)
     gitutils.add_output("version", version)
 

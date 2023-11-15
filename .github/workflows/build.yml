@@ -519,7 +519,7 @@ jobs:
             --index-branch=${INDEX_BRANCH} \
             --index-file=${INDEX_FILE} \
             --repository=${{ github.repository }} \
-            --chart-entry='${{ steps.prepare-chart-release.outputs.chart_entry }}' \
+            --chart-entry="${{ steps.prepare-chart-release.outputs.chart_entry }}" \
             --chart-url="${{ steps.prepare-chart-release.outputs.chart_url }}" \
             --version="${{ steps.prepare-chart-release.outputs.version }}"
 
