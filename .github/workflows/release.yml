@@ -24,9 +24,9 @@ jobs:
           path: "pr-branch"
 
       - name: Set up Python 3.x Part 1
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Set up Python scripts in pr-branch
         working-directory: ./pr-branch
@@ -34,8 +34,10 @@ jobs:
           # set up python scripts
           echo "set up python script in $PWD"
           python3 -m venv ve1
-          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
-          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+          cd scripts
+          ../ve1/bin/pip3 install -r requirements.txt
+          ../ve1/bin/pip3 install .
+          cd ..
 
       - name: Check if dev repo is targetted, only release file is in PR and user is authorized
         id: check_only_version_in_PR_and_authorized
@@ -124,17 +126,19 @@ jobs:
 
       - name: Set up Python 3.x Part 1
         if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Set up Python scripts on dev branch
         run: |
           # set up python scripts
           echo "set up python script in $PWD"
           python3 -m venv ve1
-          cd scripts && ../ve1/bin/pip3 install -r requirements.txt && cd ..
-          cd scripts && ../ve1/bin/python3 setup.py install && cd ..
+          cd scripts
+          ../ve1/bin/pip3 install -r requirements.txt
+          ../ve1/bin/pip3 install .
+          cd ..
 
       - name: Check if version updated
         id: check_version_updated

@@ -24,7 +24,7 @@ jobs:
       - name: Set up Python 3.x Part 1
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Set up Python 3.x Part 2
         run: |
@@ -32,7 +32,7 @@ jobs:
           python3 -m venv ve1
           cd scripts
           ../ve1/bin/pip3 install -r requirements.txt
-          ../ve1/bin/python3 setup.py install
+          ../ve1/bin/pip3 install .
           cd ..
 
       - name: Check for CI changes
@@ -126,7 +126,7 @@ jobs:
       - name: Set up Python 3.x Part 1
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Set up Python 3.x Part 2
         run: |
@@ -134,7 +134,7 @@ jobs:
           python3 -m venv ve1
           cd scripts
           ../ve1/bin/pip3 install -r requirements.txt
-          ../ve1/bin/python3 setup.py install
+          ../ve1/bin/pip3 install .
           cd ..
 
       - name: Check PR Content
@@ -431,7 +431,7 @@ jobs:
       - name: Set up Python 3.x Part 1
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Set up Python 3.x Part 2
         run: |
@@ -439,7 +439,7 @@ jobs:
           python3 -m venv ve1
           cd scripts
           ../ve1/bin/pip3 install -r requirements.txt
-          ../ve1/bin/python3 setup.py install
+          ../ve1/bin/pip3 install .
           cd ..
 
       - name: install chart verifier for action
