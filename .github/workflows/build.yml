@@ -544,7 +544,9 @@ jobs:
           echo ${{ needs.chart-verifier.outputs.message_text_base64 }} | base64 -d | tee ${{ needs.chart-verifier.outputs.message_file }}
 
       - name: Add metrics
+        id: add_metrics
         if: ${{ always() && needs.setup.outputs.run_build == 'true' && env.GITHUB_REPOSITORY != 'openshift-helm-charts/sandbox' }}
+        continue-on-error: true
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
@@ -571,3 +573,12 @@ jobs:
           else
               echo "Do not collect metrics, required segment write key is not set"
           fi
+
+      - name: Alert Slack helm_dev on failure to update metrics
+        continue-on-error: true
+        if: steps.add_metrics.outcome == 'failure'
+        uses: archive/github-actions-slack@v2.7.0
+        with:
+          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
+          slack-channel: C02979BDUPL
+          slack-text: Failure! Updating metrics during a chart certification. See '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
