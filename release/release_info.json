@@ -1,14 +1,12 @@
 {
-  "version": "1.6.1",
+  "version": "1.6.2",
   "info" : [
-    "Expand docs covering how to test workflow and script changes in a fork (#273) by @komish",
-    "Fix bug in PR comment generation caused by missing step ID (#280) by @komish",
-    "update docs link from gitbook to access.redhat.com (#282) by @komish",
-    "Fix name of the Partner Acceleration Desk (#285) by @mgoerens",
-    "Improve markdown comment formatting library and update PR comment format (#283) by @komish",
-    "Comment chartrepomanager and remove unused args (#278) by @mgoerens",
-    "Better handle oc-install outcome (#288) by @mgoerens",
-    "Make the PR comment accessible to the metrics step (#290) by @komish"
+    "Consolidate Github release management in one step by @mgoerens (#289)",
+    "Don't try to delete a release that is not found by @mgoerens (#293)",
+    "Encode chart_entry to base64 by @mgoerens (#297)",
+    "Move to pyproject.toml and bump to Python 3.10 by @komish (#299)",
+    "Re-add function that metric execution calls by @komish (#301)",
+    "Do not fail certifications if metrics population fails by @komish (#302)"
   ],
   "charts" : {
     "development": {
