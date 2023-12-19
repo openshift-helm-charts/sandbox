@@ -5,16 +5,24 @@ on:
     types: [opened, synchronize, reopened, edited, ready_for_review, labeled]
 
 jobs:
+  check-contributor:
+    name: Check contributor
+    uses: ./.github/workflows/check-contributor.yml
+    with:
+      user: ${{ github.event.pull_request.user.login }}
+
   chart-workflow-release:
     name: Chart Workflow Release
+    needs: [check-contributor]
     runs-on: ubuntu-20.04
     if: |
-      github.event.pull_request.draft == false
+      github.event.pull_request.draft == false &&
+      needs.check-contributor.outputs.is-repo-owner == 'true'
     steps:
-      - name: Checkout
+      - name: Checkout Base Branch
         uses: actions/checkout@v3
 
-      - name: Checkout
+      - name: Checkout Pull Request
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
