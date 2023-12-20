@@ -1,19 +1,18 @@
 {
-  "version": "1.6.2",
-  "info" : [
-    "Consolidate Github release management in one step by @mgoerens (#289)",
-    "Don't try to delete a release that is not found by @mgoerens (#293)",
-    "Encode chart_entry to base64 by @mgoerens (#297)",
-    "Move to pyproject.toml and bump to Python 3.10 by @komish (#299)",
-    "Re-add function that metric execution calls by @komish (#301)",
-    "Do not fail certifications if metrics population fails by @komish (#302)"
+  "version": "1.6.3",
+  "info": [
+    "chore: use the same checkout configuration in test.yml as in build.yml by @OchiengEd (#306)",
+    "Revert chore: use the same checkout configuration in test.yml as in build.yml by @komish (#307)",
+    "Add contributor check gate by @komish (#308)"
   ],
-  "charts" : {
+  "charts": {
     "development": {
-      "merge": ["charts"]
+      "merge": [
+        "charts"
+      ]
     }
   },
-  "development" : {
+  "development": {
     "charts": {
       "replace": [
         ".github",
@@ -22,25 +21,27 @@
         "docs",
         "tests"
       ],
-      "ignore" : [".github/workflows/release.yml",
-                  ".github/workflows/nightly_test.yml",
-                  ".github/workflows/metrics.yml",
-                  ".github/workflows/codeql.yml"
-                ]
+      "ignore": [
+        ".github/workflows/release.yml",
+        ".github/workflows/nightly_test.yml",
+        ".github/workflows/metrics.yml",
+        ".github/workflows/codeql.yml"
+      ]
     },
-    "stage" : {
+    "stage": {
       "replace": [
         ".github",
         "scripts",
         "tests"
       ],
-      "ignore" : [".github/workflows/release.yml",
-                  ".github/workflows/nightly_test.yml",
-                  ".github/workflows/metrics.yml",
-		              ".github/workflows/token.yml",
-		              ".github/workflows/owners.yml",
-                  ".github/workflows/version_check.yml",
-                  ".github/workflows/codeql.yml"]
+      "ignore": [
+        ".github/workflows/release.yml",
+        ".github/workflows/nightly_test.yml",
+        ".github/workflows/metrics.yml",
+        ".github/workflows/owners.yml",
+        ".github/workflows/version_check.yml",
+        ".github/workflows/codeql.yml"
+      ]
     }
   }
 }
