@@ -1,0 +1,10 @@
+chart:
+  name: canvas-oamportal
+  shortDescription: Test chart for testing chart submission workflows.
+publicPgpKey: null
+providerDelivery: False
+users:
+- githubUsername: openshift-helm-charts-bot
+vendor:
+  label: telenity
+  name: telenity
