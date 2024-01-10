@@ -11,13 +11,13 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.BOT_TOKEN }}
           fetch-depth: 0
 
       - name: Set up Python 3.x Part 1
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
@@ -43,7 +43,7 @@ jobs:
       - name: Send message to helm_dev slack channel
         id: notify_to_dev
         if: ${{ always() && steps.run_all_tests.conclusion != 'success' }}
-        uses: archive/github-actions-slack@v2.7.0
+        uses: archive/github-actions-slack@v2.8.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           slack-channel: C02979BDUPL
@@ -56,7 +56,7 @@ jobs:
       - name: Send message to helm_notify slack channel
         id: notify
         if: ${{ always() && steps.run_all_tests.conclusion == 'success' }}
-        uses: archive/github-actions-slack@v2.7.0
+        uses: archive/github-actions-slack@v2.8.0
         with:
           slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
           slack-channel: C04K1ARMH8A
