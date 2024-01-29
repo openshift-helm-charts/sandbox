@@ -30,21 +30,21 @@ def getIndexAnnotations(ocp_version_range, report_path):
             full_version = annotations[annotation]
             if full_version != "N/A" and semantic_version.validate(full_version):
                 ver = semantic_version.Version(full_version)
-                set_annotations[
-                    "charts.openshift.io/testedOpenShiftVersion"
-                ] = f"{ver.major}.{ver.minor}"
+                set_annotations["charts.openshift.io/testedOpenShiftVersion"] = (
+                    f"{ver.major}.{ver.minor}"
+                )
             else:
-                set_annotations[
-                    "charts.openshift.io/testedOpenShiftVersion"
-                ] = annotations[annotation]
+                set_annotations["charts.openshift.io/testedOpenShiftVersion"] = (
+                    annotations[annotation]
+                )
         else:
             if annotation == "charts.openshift.io/supportedOpenShiftVersions":
                 OCPSupportedSet = True
             set_annotations[annotation] = annotations[annotation]
 
     if not OCPSupportedSet:
-        set_annotations[
-            "charts.openshift.io/supportedOpenShiftVersions"
-        ] = ocp_version_range
+        set_annotations["charts.openshift.io/supportedOpenShiftVersions"] = (
+            ocp_version_range
+        )
 
     return set_annotations
