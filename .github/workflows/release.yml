@@ -20,10 +20,10 @@ jobs:
       needs.check-contributor.outputs.is-repo-owner == 'true'
     steps:
       - name: Checkout Base Branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Checkout Pull Request
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -32,7 +32,7 @@ jobs:
           path: "pr-branch"
 
       - name: Set up Python 3.x Part 1
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
@@ -107,7 +107,7 @@ jobs:
 
       - name: Checkout charts repo
         if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           repository: ${{ steps.check_only_version_in_PR_and_authorized.outputs.charts_repo }}
@@ -116,7 +116,7 @@ jobs:
 
       - name: Checkout development repo
         if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           repository: ${{ github.event.pull_request.base.repo.full_name }}
@@ -125,7 +125,7 @@ jobs:
       
       - name: Checkout stage repo
         if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           repository: ${{ steps.check_only_version_in_PR_and_authorized.outputs.stage_repo }}
@@ -134,7 +134,7 @@ jobs:
 
       - name: Set up Python 3.x Part 1
         if: ${{ steps.reflect_on_pr_content.outputs.create_pull_requests == 'true' }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
@@ -221,7 +221,7 @@ jobs:
       - name: Merge PR
         id: merge_pr
         if: ${{ steps.check_merge_and_release.outputs.merge == 'true' }}
-        uses: pascalgn/automerge-action@v0.15.6
+        uses: pascalgn/automerge-action@v0.16.2
         env:
           GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
           MERGE_METHOD: squash
