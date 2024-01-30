@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from reporegex import matchers
 from tools import gitutils
 
-from . import prartifact
+from pullrequest import prartifact
 
 
 class NoMatchesError(Exception):
@@ -82,6 +82,13 @@ def extract_from_path_for_pr(pr_api_url):
 
 
 def main():
+    """CLI for determining the the cat/org/chart being modified.
+
+    Return codes:
+        0:  No problems.
+        10: Multiple matches were found.
+        20: No matches were found.
+    """
     parser = ArgumentParser(
         description="""Read the modified files from a GitHub Pull Requests
 and determine the category, organization, and chartname being modified.
@@ -131,9 +138,6 @@ subsequent path to determine the category, organization, and chart name.
             return 0
         print(f"[Error] {e}", file=sys.stderr)
         return 20
-    except Exception as e:
-        print("[Error] Something unexpected went wrong", e, file=sys.stderr)
-        return 90
 
     print(
         json.dumps(
