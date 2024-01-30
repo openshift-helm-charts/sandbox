@@ -92,7 +92,7 @@ def main():
             )
 
         new_entry = f"{category}/{organization}/{chart}"
-        if packages.get(chart, None) is not None:
+        if packages.get(chart) is not None:
             logError(
                 f"Duplicate chart name detected. Unable to build unique package list. trying to add: {new_entry}, current_value: {packages[chart]}"
             )
