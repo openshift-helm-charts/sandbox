@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from . import owners_file
+from owners import owners_file
 
 REQUIRED_VENDOR_LABEL = "redhat"
 REQUIRED_VENDOR_NAME = "Red Hat"
