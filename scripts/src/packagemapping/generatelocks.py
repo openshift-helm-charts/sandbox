@@ -1,9 +1,10 @@
-from glob import glob
-import sys
-import yaml
 import re
+import sys
 from datetime import datetime, timezone
+from glob import glob
 from json import dumps as to_json
+
+import yaml
 
 
 def ownerfile_regex():

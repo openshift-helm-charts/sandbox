@@ -1,11 +1,12 @@
+import json
 import re
 import sys
-import json
+from argparse import ArgumentParser
+
+from reporegex import matchers
+from tools import gitutils
 
 from . import prartifact
-from tools import gitutils
-from reporegex import matchers
-from argparse import ArgumentParser
 
 
 class NoMatchesError(Exception):
