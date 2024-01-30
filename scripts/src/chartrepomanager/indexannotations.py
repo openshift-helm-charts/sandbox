@@ -1,4 +1,5 @@
 import sys
+
 import semantic_version
 
 sys.path.append("../")

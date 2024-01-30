@@ -24,8 +24,8 @@ These are not comprehensive lists - other certification checks will preform furt
 """
 
 import sys
-import semantic_version
 
+import semantic_version
 import yaml
 
 try:
