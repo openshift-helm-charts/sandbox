@@ -11,7 +11,6 @@ main functions :
 - commit_development_change - directly commits changes to the main branch of the devlopment repository
 """
 
-
 import os
 import sys
 import json

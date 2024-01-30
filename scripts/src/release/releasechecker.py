@@ -22,7 +22,6 @@ results:
         PR_release_image : The name of the image from the version file from main branch.
 """
 
-
 import re
 import os
 import argparse
