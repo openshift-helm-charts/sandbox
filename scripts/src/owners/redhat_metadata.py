@@ -62,8 +62,7 @@ def main():
 
     Return codes:
         0:  everything has gone well.
-        10: something unexpected has occurred when reading owner
-            data from disk.
+        10: The OWNERS file was not found.
         20: The OWNERS file has invalid content.
         90: Something unexpected has occured when asserting
             the content of the OWNERS file.
@@ -77,12 +76,11 @@ def main():
         f"[Info] Checking OWNERS file content for {args.category}/{args.organization}/{args.chartname}"
     )
 
-    try:
-        _, ownerdata = owners_file.get_owner_data(
-            args.category, args.organization, args.chartname
-        )
-    except Exception as e:
-        print(e)
+    ownerDataFound, ownerdata = owners_file.get_owner_data(
+        args.category, args.organization, args.chartname
+    )
+    if not ownerDataFound:
+        print("[Error] OWNERS file not found")
         return 10
 
     try:
