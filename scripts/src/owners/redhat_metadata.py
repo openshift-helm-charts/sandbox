@@ -64,8 +64,6 @@ def main():
         0:  everything has gone well.
         10: The OWNERS file was not found.
         20: The OWNERS file has invalid content.
-        90: Something unexpected has occured when asserting
-            the content of the OWNERS file.
     """
     parser = ArgumentParser()
     parser.add_argument("category")
@@ -88,9 +86,6 @@ def main():
     except RedHatOwnersFileInvalidContentsError as e:
         print(f"[Error] Invalid contents, {e}")
         return 20
-    except Exception as e:
-        print(f"[Error] Unexpected error: {e}")
-        return 90
 
     print("[Info] LGTM!")
     return 0
