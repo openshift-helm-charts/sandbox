@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from glob import glob
 from json import dumps as to_json
 
-import yaml
+from owners import owners_file
 
 
 def ownerfile_regex():
@@ -39,20 +39,29 @@ def logWarn(msg, file=sys.stderr):
 
 
 def main():
+    """Generates a mapping of chart names to their associated paths.
+
+    Prints the resulting output as a JSON blob.
+
+    Return codes:
+        0:  All is well.
+        10: Parsing failure for the input path to a given OWNERS file.
+        20: One of the expected directory values is empty.
+        30: The OWNERS file at the provided path did not load correctly.
+        40: A duplicate chart name entry has been found.
+        50: The resulting data contained no entries, which
+            is certainly unexpected.
+    """
     packages = {}
     for filename in glob("charts/**/OWNERS", recursive=True):
         logInfo(f"processing file {filename}")
         pattern = ownerfile_regex()
         matched = pattern.match(filename)
         if matched is None:
-            # TODO(komish): Consider if we need to have a flag that exits and otherwise make this a warning
-            # For now, we fail here because it means we have a an invalid directory path and therefore can't determine our
-            # category, org, or repo from the path.
             logError(
                 f"did not successfully parse the input. Did you run this in the right place? filename: {filename}",
             )
-            # continue
-            sys.exit(1)
+            return 10
 
         category, organization, chart = matched.groups()
         if category is None or organization is None or chart is None:
@@ -60,12 +69,17 @@ def main():
                 f"did not successfully parse the input filename: {filename}",
                 "expecting format charts/{category}/{organization}/{chartname}/OWNERS. Did you run this in the right place?",
             )
-            sys.exit(1)
+            return 20
 
-        with open(filename, "r") as f:
-            d = yaml.load(f.read(), Loader=yaml.BaseLoader)
-            owners_value_chart_name = d["chart"]["name"]
-            owners_value_vendor_label = d["vendor"]["label"]
+        ownersContentLoaded, ownersContent = owners_file.get_owners_data_from_file(
+            filename
+        )
+        if not ownersContentLoaded:
+            logError(f"Failed to load OWNERS file content. filename: {filename}")
+            return 30
+
+        owners_value_chart_name = owners_file.get_chart(ownersContent)
+        owners_value_vendor_label = owners_file.get_vendor_label(ownersContent)
 
         if owners_value_chart_name != chart:
             logError(
@@ -82,13 +96,13 @@ def main():
             logError(
                 f"Duplicate chart name detected. Unable to build unique package list. trying to add: {new_entry}, current_value: {packages[chart]}"
             )
-            sys.exit(2)
+            return 40
 
         packages[chart] = new_entry
 
     if len(packages.keys()) == 0:
         logError("the package map contained no items!")
-        sys.exit(3)
+        return 50
 
     now = datetime.now(timezone.utc).astimezone().isoformat()
 
