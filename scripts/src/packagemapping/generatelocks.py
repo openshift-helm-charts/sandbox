@@ -34,7 +34,7 @@ def logInfo(msg, file=sys.stderr):
 
 
 def logWarn(msg, file=sys.stderr):
-    """logWarn just prints the msg with an INFO caption to stderr unless otherwise defined"""
+    """logWarn just prints the msg with an WARN caption to stderr unless otherwise defined"""
     print(f"[WARN] {msg}", file=file)
 
 
