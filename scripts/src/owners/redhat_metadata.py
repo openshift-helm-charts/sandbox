@@ -58,7 +58,16 @@ def assert_redhat_metadata(contents):
 
 
 def main():
-    """The CLI entrypoint. Returns an exit code."""
+    """The CLI entrypoint.
+
+    Return codes:
+        0:  everything has gone well.
+        10: something unexpected has occurred when reading owner
+            data from disk.
+        20: The OWNERS file has invalid content.
+        90: Something unexpected has occured when asserting
+            the content of the OWNERS file.
+    """
     parser = ArgumentParser()
     parser.add_argument("category")
     parser.add_argument("organization")
