@@ -20,9 +20,11 @@ class RedHatOwnersFileInvalidContentsError(Exception):
 def assert_redhat_metadata(contents):
     """Ensures contents of owners file for Red Hat submissions
 
-    Red Hat submissions are expected to have certain metadata. - The owner label
-    must be "redhat" - The owner organizaton name must be "Red Hat" - The
-    chart's name must be prefixed with "redhat-"
+    Red Hat submissions are expected to have certain metadata.
+
+    - The owner label must be "redhat"
+    - The owner organizaton name must be "Red Hat"
+    - The chart's name must be prefixed with "redhat-"
 
     This raises an exception if the metadata is incorrect.
 
@@ -34,6 +36,7 @@ def assert_redhat_metadata(contents):
     Raises:
         RedHatOwnersFileInvalidContentsError: In cases where the
           content is not as expected.
+
     Returns:
         Nothing.
     """
