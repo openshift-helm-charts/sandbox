@@ -22,30 +22,32 @@ update occurs in a later step.
 import argparse
 import base64
 import json
-import shutil
 import os
-import sys
 import re
+import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.parse
-from environs import Env
 
 import yaml
+from environs import Env
 
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper
+    from yaml import CDumper as Dumper
+    from yaml import CLoader as Loader
 except ImportError:
-    from yaml import Loader, Dumper
+    from yaml import Dumper, Loader
 
 sys.path.append("../")
-from report import report_info
-from chartrepomanager import indexannotations
-from signedchart import signedchart
 from pullrequest import prartifact
 from reporegex import matchers
+from report import report_info
+from signedchart import signedchart
 from tools import gitutils
+
+from chartrepomanager import indexannotations
 
 
 def _encode_chart_entry(chart_entry):

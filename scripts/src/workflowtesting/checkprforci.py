@@ -1,8 +1,9 @@
-import re
 import argparse
 import os
-import yaml
+import re
 import sys
+
+import yaml
 
 try:
     from yaml import CLoader as Loader

@@ -8,7 +8,6 @@ Provides get functions for all data in the release_info.json file.
 import json
 import os
 
-
 RELEASE_INFO_FILE = "release/release_info.json"
 
 RELEASE_INFOS = {}

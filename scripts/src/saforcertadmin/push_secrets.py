@@ -20,14 +20,15 @@ Example Usage:
 
 """
 
-from base64 import b64encode
-from nacl import encoding, public
+import argparse
+import json
 import logging
 import os
 import sys
-import json
+from base64 import b64encode
+
 import requests
-import argparse
+from nacl import encoding, public
 
 sys.path.append("../")
 from pullrequest import prartifact
