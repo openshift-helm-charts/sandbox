@@ -111,13 +111,6 @@ subsequent path to determine the category, organization, and chart name.
         dest="emit_to_github",
         action="store_true",
     )
-    parser.add_argument(
-        "--ignore-error-no-matches",
-        help="When enabled, returns a zero exit code instead of a non-zero for cases where no matches were found",
-        dest="ignore_no_matches",
-        action="store_true",
-        default=False,
-    )
     args = parser.parse_args()
     try:
         category, organization, chartname = extract_from_path_for_pr(args.api_url)
@@ -130,12 +123,6 @@ subsequent path to determine the category, organization, and chart name.
         )
         return 10
     except NoMatchesError as e:
-        if args.ignore_no_matches:
-            print(
-                "[Info] No metadata was found in the pull request but `--ignore-error-no-matches` is set. Returning 0.",
-                file=sys.stderr,
-            )
-            return 0
         print(f"[Error] {e}", file=sys.stderr)
         return 20
 
