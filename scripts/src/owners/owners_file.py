@@ -33,6 +33,15 @@ def get_vendor(owner_data):
     return vendor
 
 
+def get_vendor_label(owner_data):
+    vendor = ""
+    try:
+        vendor = owner_data["vendor"]["label"]
+    except Exception:
+        pass
+    return vendor
+
+
 def get_chart(owner_data):
     chart = ""
     try:
