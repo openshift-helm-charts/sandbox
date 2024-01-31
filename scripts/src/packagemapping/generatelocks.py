@@ -48,6 +48,7 @@ def main():
         10: Parsing failure for the input path to a given OWNERS file.
         20: One of the expected directory values is empty.
         30: The OWNERS file at the provided path did not load correctly.
+        35: The OWNERS file content and the directory structure are mismatched.
         40: A duplicate chart name entry has been found.
         50: The resulting data contained no entries, which
             is certainly unexpected.
@@ -85,11 +86,13 @@ def main():
             logError(
                 f"the chart name in the OWNERS file did not match the chart name directory structure. OWNERS_FILE_VALUE={owners_value_chart_name}, DIRECTORY_VALUE:{chart}"
             )
+            return 35
 
         if owners_value_vendor_label != organization:
             logError(
                 f"the vendor label in the OWNERS file did not match the organization name directory structure. OWNERS_FILE_VALUE={owners_value_chart_name}, DIRECTORY_VALUE:{chart}"
             )
+            return 35
 
         new_entry = f"{category}/{organization}/{chart}"
         if packages.get(chart) is not None:
