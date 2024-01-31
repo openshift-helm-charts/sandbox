@@ -25,7 +25,6 @@ def check_if_ci_only_is_modified(api_url):
         re.compile(r"tests/.*"),
     ]
     test_files = [
-        re.compile(r"tests/functional/step_defs/.*_test_.*"),
         re.compile(r"tests/functional/behave_features/.*.feature"),
     ]
     skip_build_files = [
