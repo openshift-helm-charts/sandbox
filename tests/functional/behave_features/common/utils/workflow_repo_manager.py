@@ -10,6 +10,10 @@ from tempfile import TemporaryDirectory
 import common.utils.github as github
 
 
+class RepoManagementError(Exception):
+    pass
+
+
 class WorkflowRepoManager:
     # Keep a log of things created so we can clean them up.
     __local_branches_created: [str] = []
@@ -35,10 +39,10 @@ class WorkflowRepoManager:
 
         try:
             self.repo = git.Repo()
-        except Exception as e:
-            raise Exception(
-                f"Expected to be able to initialize a git repository at this path and failed: {e}"
-            )
+        except git.InvalidGitRepositoryError as e:
+            raise RepoManagementError(
+                "Unable to initialize git repository. Is the current directory a git repo?"
+            ) from e
 
         self.original_branch = self.repo.active_branch.name
 
@@ -58,7 +62,7 @@ class WorkflowRepoManager:
             repo: if set, overrides the use of the internal repo.
 
         Raises:
-           Exception: An error occurred when pushing the branch
+           RepoManagementError: When failing to push a branch.
         """
         r = repo if repo is not None else self.repo
         try:
@@ -67,8 +71,8 @@ class WorkflowRepoManager:
                 f"HEAD:refs/heads/{branch_name}",
                 "-f",
             )
-        except Exception as e:
-            raise Exception(f"Unable to push branch to remote: {e}")
+        except (git.GitCommandError, ValueError) as e:
+            raise RepoManagementError("Unable to push branch to remote") from e
         self.__remote_branches_created.append((remote_name, branch_name))
 
     def checkout_branch(self, branch_name: str):
@@ -81,13 +85,12 @@ class WorkflowRepoManager:
             branch_name: The branch name to create.
 
         Raises:
-           Exception: An error occurred creating the branch.
+           RepoManagementError: When creating a branch locally.
         """
         try:
             self.repo.git.checkout("-b", branch_name)
-        except Exception as e:
-            raise Exception(f"Unable to create branch: {e}")
-
+        except (git.GitCommandError, ValueError) as e:
+            raise RepoManagementError("Unable to create branch") from e
         self.__local_branches_created.append(branch_name)
 
     def add_worktree(self) -> TemporaryDirectory:
@@ -100,15 +103,14 @@ class WorkflowRepoManager:
             The TemporaryDirectory for the worktree that was requested.
 
         Raise:
-            Exception: An error occurred when creating the worktree.
+            RepoManagementError: When creating a worktree locally.
         """
         worktree_dir = TemporaryDirectory(prefix="worktree-")
 
         try:
             self.repo.git.worktree("add", "--detach", worktree_dir.name, "HEAD")
-        except Exception as e:
-            raise Exception(f"Unable to create worktree: {e}")
-
+        except (git.GitCommandError, ValueError) as e:
+            raise RepoManagementError("Unable to create worktree") from e
         self.__local_worktrees_created.append(worktree_dir)
 
         return worktree_dir
@@ -119,7 +121,7 @@ class WorkflowRepoManager:
             try:
                 logging.info(f'Cleaning up generated local branch: "{br}"')
                 self.repo.git.branch("-D", br)
-            except git.exc.GitCommandError:
+            except git.GitCommandError:
                 logging.warn(
                     f'local branch "{br}" could not be deleted, potentially because it did not exist'
                 )
@@ -131,7 +133,7 @@ class WorkflowRepoManager:
             logging.info(f'Cleaning up generated local worktree: "{wt}"')
             try:
                 self.repo.git.worktree("remove", wt.name)
-            except git.exc.GitCommandError:
+            except git.GitCommandError:
                 logging.warn(
                     f'local worktree "{wt}" could not be deleted, potentially because it did not exist'
                 )
@@ -149,7 +151,7 @@ class WorkflowRepoManager:
                     f"repos/{remote}/git/refs/heads/{branch}",
                     self.__authtoken,
                 )
-            except git.exc.GitCommandError:
+            except Exception:
                 logging.warn(
                     f'remote branch "{branch}" could not be deleted, potentially because it did not exist'
                 )
