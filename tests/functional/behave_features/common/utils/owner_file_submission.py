@@ -30,8 +30,6 @@ class OwnersFileSubmissionsE2ETest:
     head_sha: str = ""
 
     test_name: str = ""  # Meaningful test name for this test, displayed in PR title
-    # test_report: str = ''
-    # chart_directory: str = ''
     secrets: E2ETestSecretOneShot = E2ETestSecretOneShot()
     old_cwd: str = os.getcwd()
     # This is the worktree for this test run. To be used for context management where applicable.
@@ -44,7 +42,7 @@ class OwnersFileSubmissionsE2ETest:
     chart_name = ""
     # The vendor name, e.g. 'redhat'
     vendor_label = ""
-    # The vendor category, e.g. 'partner'
+    # The vendor category, e.g. 'partners'
     vendor_category = ""
     # The vendor's pretty name, e.g. 'Red Hat'
     vendor_name = ""
@@ -54,7 +52,6 @@ class OwnersFileSubmissionsE2ETest:
     # Manages the local repository, branches, worktress, etc.
     # and facilitates pushes to remotes.
     repo_manager: WorkflowRepoManager = None
-    repo: git.Repo = None
 
     # Combines this instance's unique ID + the repository base branch hash
     branch_base_id: str = None
@@ -145,7 +142,7 @@ class OwnersFileSubmissionsE2ETest:
         if self.repo_manager:
             self.repo_manager.repo.git.worktree("prune")
 
-    def submission_path(self) -> str:  # charts/partner/mycompany/mychartname
+    def submission_path(self) -> str:  # charts/partners/mycompany/mychartname
         """Composes the submission path based on the vendor_type, vendor, and chart_name values."""
         return os.path.join(
             "charts", self.vendor_category, self.vendor_label, self.chart_name
@@ -158,7 +155,6 @@ class OwnersFileSubmissionsE2ETest:
         will supercede global values.
 
         Args:
-            repo: git.Repo instance of the local directory
             username: git username to set
             email: git email to set
         """
