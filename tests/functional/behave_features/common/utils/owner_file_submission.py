@@ -313,27 +313,29 @@ class OwnersFileSubmissionsE2ETest:
         try:
             run_id = github.get_run_id(self.secrets, workflow_name, pr_number)
             conclusion = github.get_run_result(self.secrets, run_id)
-            if conclusion == expected_result:
-                logging.info(
-                    f"PR{pr_number} Workflow run was '{expected_result}' which is expected"
-                )
-            else:
-                if failure_type == "warning":
-                    logging.warning(
-                        f"PR{pr_number if pr_number else self.secrets.pr_number} Workflow run was '{conclusion}' which is unexpected, run id: {run_id}"
-                    )
-                else:
-                    raise AssertionError(
-                        f"PR{pr_number if pr_number else self.secrets.pr_number} Workflow run was '{conclusion}' which is unexpected, run id: {run_id}"
-                    )
-
-            return run_id, conclusion
         except Exception as e:
             if failure_type == "error":
                 raise AssertionError(e)
             else:
                 logging.warning(e)
                 return None, None
+        
+        if conclusion == expected_result:
+            logging.info(
+                f"PR{pr_number} Workflow run was '{expected_result}' which is expected"
+            )
+        else:
+            if failure_type == "error":
+                raise AssertionError(
+                    f"PR{pr_number if pr_number else self.secrets.pr_number} Workflow run was '{conclusion}' which is unexpected, run id: {run_id}"
+                )
+            else:
+                logging.warning(
+                    f"PR{pr_number if pr_number else self.secrets.pr_number} Workflow run was '{conclusion}' which is unexpected, run id: {run_id}"
+                )
+
+        return run_id, conclusion
+
 
     def set_chart_name(self, basename):
         """Generates a unique chart name from basename and stores both in self.
