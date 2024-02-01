@@ -289,17 +289,26 @@ class OwnersFileSubmissionsE2ETest:
 
     def _check_workflow_conclusion(
         self,
-        pr_number: str,  # '1'
+        pr_number: str,
         workflow_name: str,
-        expected_result: str,  # 'success'
+        expected_result: str,
         failure_type="error",
     ):
         """Checks the conclusion of workflow_name for expected_result via the GitHub API.
 
-        if failure_type is set to "error", this raises an exception.
+        Args:
+            pr_number: The pull request for which a worfklow should have executed, e.g. '1'.
+            workflow_name: The name of the workflow whose outcome is relevant
+            expected_result: The expected conclusion of the workflow. E.g. 'success'
+            failure_type: Determines how this function treats conclusion mismatches. 
+              Raises if set to 'error'.
 
         Raises:
             AssertionError if the conclusion does not match the expected_result.
+
+        Returns:
+            run_id: The ID of the workflow
+            conclusion: The actual conclusion of the workflow.
         """
         try:
             run_id = github.get_run_id(self.secrets, workflow_name, pr_number)
