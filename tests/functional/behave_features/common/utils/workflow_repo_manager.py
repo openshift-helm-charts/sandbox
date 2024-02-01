@@ -121,9 +121,9 @@ class WorkflowRepoManager:
             try:
                 logging.info(f'Cleaning up generated local branch: "{br}"')
                 self.repo.git.branch("-D", br)
-            except git.GitCommandError:
+            except (git.GitCommandError, ValueError) as e:
                 logging.warn(
-                    f'local branch "{br}" could not be deleted, potentially because it did not exist'
+                    f'local branch "{br}" could not be deleted, potentially because it did not exist. Error: {e}'
                 )
         self.__local_branches_created = []
 
@@ -133,9 +133,9 @@ class WorkflowRepoManager:
             logging.info(f'Cleaning up generated local worktree: "{wt}"')
             try:
                 self.repo.git.worktree("remove", wt.name)
-            except git.GitCommandError:
+            except (git.GitCommandError, ValueError) as e:
                 logging.warn(
-                    f'local worktree "{wt}" could not be deleted, potentially because it did not exist'
+                    f'local worktree "{wt}" could not be deleted, potentially because it did not exist. Error: {e}'
                 )
         self.__local_worktrees_created = []
 
@@ -146,14 +146,14 @@ class WorkflowRepoManager:
             branch = rbr[1]
             logging.info(f'Cleaning up branch "{branch}" from remote "{remote}')
             try:
-                github.github_api(
-                    "delete",
-                    f"repos/{remote}/git/refs/heads/{branch}",
-                    self.__authtoken,
+                self.repo.git.push(
+                    f"https://x-access-token:{self.__authtoken}@github.com/{remote}",
+                    "--delete", 
+                    f"refs/heads/{branch}",
                 )
-            except Exception:
+            except (git.GitCommandError, ValueError) as e:
                 logging.warn(
-                    f'remote branch "{branch}" could not be deleted, potentially because it did not exist'
+                    f'remote branch "{branch}" could not be deleted from {remote}, potentially because it did not exist. Error: {e}'
                 )
         self.__remote_branches_created = []
 
