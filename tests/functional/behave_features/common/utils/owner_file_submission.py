@@ -28,9 +28,9 @@ class OwnersFileSubmissionsE2ETest:
     # Used for PRs titles, branch names, etc.
     uuid: str = ""
     head_sha: str = ""
-
-    test_name: str = ""  # Meaningful test name for this test, displayed in PR title
-    secrets: E2ETestSecretOneShot = E2ETestSecretOneShot()
+    # Meaningful test name for this test, displayed in PR title
+    test_name: str = ""  
+    secrets: E2ETestSecretOneShot = None
     old_cwd: str = os.getcwd()
     # This is the worktree for this test run. To be used for context management where applicable.
     temp_dir: TemporaryDirectory = None
@@ -62,6 +62,7 @@ class OwnersFileSubmissionsE2ETest:
         # New data for this instance.
         self.uuid = uuid.uuid4().hex
         self.repo_manager = WorkflowRepoManager()
+        self.secrets = E2ETestSecretOneShot()
 
         # Credentials and paths
         bot_name, bot_token = env.get_bot_name_and_token()
