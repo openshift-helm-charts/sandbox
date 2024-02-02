@@ -268,7 +268,7 @@ class OwnersFileSubmissionsE2ETest:
 
     def check_workflow_conclusion(
         self,
-        expected_result: str,  # the possible outcomes of a github workflow. e.g. 'success'
+        expected_result: str,
     ):
         """Checks the input workflow and reports back if expected_result doesn't match reality."""
 
