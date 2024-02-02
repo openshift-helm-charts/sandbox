@@ -80,7 +80,20 @@ class OwnersFileSubmissionsE2ETest:
         )
 
         # Create the branch on the remote if it doesn't exist.
-        r = github.github_api("get", f"repos/{test_repo}/branches", bot_token)
+        try:
+            r = github.github_api("get", f"repos/{test_repo}/branches", bot_token)
+        except Exception as e:
+            raise AssertionError(
+                " ".join(
+                    [
+                        "Failed to Inintialize Test",
+                        "Unable to get branches from the GitHub API.",
+                        "Is GitHub having an outage?",
+                        f"Error: {e}",
+                    ]
+                )
+            )
+
         branches = json.loads(r.text)
         branch_names = [branch["name"] for branch in branches]
         logging.debug(f"Remote test repo branch names : {branch_names}")
@@ -260,7 +273,20 @@ class OwnersFileSubmissionsE2ETest:
         logging.info(
             f"Create PR from '{remote_repo}:{pr_branch}' to '{remote_repo}:{base_branch}'"
         )
-        r = github.github_api("post", f"repos/{remote_repo}/pulls", gh_token, json=data)
+        try:
+            r = github.github_api(
+                "post", f"repos/{remote_repo}/pulls", gh_token, json=data
+            )
+        except Exception as e:
+            raise AssertionError(
+                " ".join(
+                    [
+                        "Failed to send pull request.",
+                        "Is GitHub having an outage?",
+                        f"Error: {e}",
+                    ]
+                )
+            )
         j = json.loads(r.text)
         if "number" not in j:
             raise AssertionError(f"error sending pull request, response was: {r.text}")
@@ -296,7 +322,7 @@ class OwnersFileSubmissionsE2ETest:
             pr_number: The pull request for which a worfklow should have executed, e.g. '1'.
             workflow_name: The name of the workflow whose outcome is relevant
             expected_result: The expected conclusion of the workflow. E.g. 'success'
-            failure_type: Determines how this function treats conclusion mismatches. 
+            failure_type: Determines how this function treats conclusion mismatches.
               Raises if set to 'error'.
 
         Raises:
@@ -315,7 +341,7 @@ class OwnersFileSubmissionsE2ETest:
             else:
                 logging.warning(e)
                 return None, None
-        
+
         if conclusion == expected_result:
             logging.info(
                 f"PR{pr_number} Workflow run was '{expected_result}' which is expected"
@@ -331,7 +357,6 @@ class OwnersFileSubmissionsE2ETest:
                 )
 
         return run_id, conclusion
-
 
     def set_chart_name(self, basename):
         """Generates a unique chart name from basename and stores both in self.
