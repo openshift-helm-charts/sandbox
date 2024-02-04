@@ -8,7 +8,7 @@ import uuid
 import git
 import json
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from tempfile import TemporaryDirectory
 from string import Template
 from pathlib import Path
@@ -26,11 +26,11 @@ import common.utils.setttings as settings
 class OwnersFileSubmissionsE2ETest:
     # Generated at initialization. Identifies each instance uniquely.
     # Used for PRs titles, branch names, etc.
-    uuid: str = ""
+    uuid: str = field(default_factory=lambda: uuid.uuid4().hex, init=False)
     head_sha: str = ""
     # Meaningful test name for this test, displayed in PR title
     test_name: str = ""  
-    secrets: E2ETestSecretOneShot = None
+    secrets: E2ETestSecretOneShot = field(default_factory=lambda: E2ETestSecretOneShot(), init=False)
     old_cwd: str = os.getcwd()
     # This is the worktree for this test run. To be used for context management where applicable.
     temp_dir: TemporaryDirectory = None
@@ -51,7 +51,7 @@ class OwnersFileSubmissionsE2ETest:
 
     # Manages the local repository, branches, worktress, etc.
     # and facilitates pushes to remotes.
-    repo_manager: WorkflowRepoManager = None
+    repo_manager: WorkflowRepoManager = field(default_factory=lambda: WorkflowRepoManager(), init=False)
 
     # Combines this instance's unique ID + the repository base branch hash
     branch_base_id: str = None
@@ -59,11 +59,6 @@ class OwnersFileSubmissionsE2ETest:
     def __post_init__(self) -> None:
         """Generates identifiers for an instance to use."""
         logging.debug("RedHatOwnersFileSubmissionE2ETest --> __post_init__ called!")
-        # New data for this instance.
-        self.uuid = uuid.uuid4().hex
-        self.repo_manager = WorkflowRepoManager()
-        self.secrets = E2ETestSecretOneShot()
-
         # Credentials and paths
         bot_name, bot_token = env.get_bot_name_and_token()
         test_repo = settings.TEST_REPO
