@@ -1,5 +1,6 @@
 import os
 
+import contextlib
 import yaml
 
 try:
@@ -25,53 +26,33 @@ def get_owner_data_from_file(owner_path):
 
 
 def get_vendor(owner_data):
-    vendor = ""
-    try:
-        vendor = owner_data["vendor"]["name"]
-    except Exception:
-        pass
-    return vendor
+    vendor_name = ""
+    with contextlib.suppress(KeyError):
+        vendor_name = owner_data["vendor"]["name"]
+    return vendor_name
 
 
 def get_vendor_label(owner_data):
-    vendor = ""
-    try:
-        vendor = owner_data["vendor"]["label"]
-    except Exception:
-        pass
-    return vendor
+    vendor_label = ""
+    with contextlib.suppress(KeyError):
+        vendor_label = owner_data["vendor"]["label"]
+    return vendor_label
 
 
 def get_chart(owner_data):
     chart = ""
-    try:
+    with contextlib.suppress(KeyError):
         chart = owner_data["chart"]["name"]
-    except Exception:
-        pass
     return chart
 
 
 def get_web_catalog_only(owner_data):
-    web_catalog_only = False
-    try:
-        if "webCatalogOnly" in owner_data:
-            web_catalog_only = owner_data["webCatalogOnly"]
-        elif "providerDelivery" in owner_data:
-            web_catalog_only = owner_data["providerDelivery"]
-    except Exception:
-        pass
-    return web_catalog_only
+    return owner_data.get("web_catalog_only", False) or owner_data.get("providerDelivery", False)
 
 
 def get_users_included(owner_data):
-    users_included = "No"
-    try:
-        users = owner_data["users"]
-        if len(users) != 0:
-            return "Yes"
-    except Exception:
-        pass
-    return users_included
+    users = owner_data.get("users", list())
+    return len(users) != 0
 
 
 def get_pgp_public_key(owner_data):
