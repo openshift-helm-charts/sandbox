@@ -9,20 +9,35 @@ except ImportError:
     from yaml import Loader
 
 
+class OwnersFileError(Exception):
+    pass
+
+
 def get_owner_data(category, organization, chart):
     path = os.path.join("charts", category, organization, chart, "OWNERS")
-    status, owner_content = get_owner_data_from_file(path)
-    return status, owner_content
+    success = True
+
+    try:
+        owner_content = get_owner_data_from_file(path)
+    except OwnersFileError as e:
+        print(f"Error getting OWNERS file data: {e}")
+        success = False
+
+    return success, owner_content
 
 
 def get_owner_data_from_file(owner_path):
     try:
         with open(owner_path) as owner_data:
             owner_content = yaml.load(owner_data, Loader=Loader)
-        return True, owner_content
-    except Exception as err:
-        print(f"Exception loading OWNERS file: {err}")
-        return False, ""
+    except yaml.YAMLError as e:
+        print(f"Exception loading OWNERS file: {e}")
+        raise OwnersFileError from e
+    except OSError as e:
+        print(f"Error opening OWNERS file: {e}")
+        raise OwnersFileError from e
+
+    return owner_content
 
 
 def get_vendor(owner_data):
