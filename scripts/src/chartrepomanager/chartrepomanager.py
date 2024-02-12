@@ -36,9 +36,9 @@ from environs import Env
 
 try:
     from yaml import CDumper as Dumper
-    from yaml import CLoader as Loader
+    from yaml import CSafeLoader as SafeLoader
 except ImportError:
-    from yaml import Dumper, Loader
+    from yaml import Dumper, SafeLoader
 
 sys.path.append("../")
 from pullrequest import prartifact
@@ -273,7 +273,7 @@ def create_index_from_chart(chart_file_name):
     p = out.stdout.decode("utf-8")
     print(p)
     print(out.stderr.decode("utf-8"))
-    crt = yaml.load(p, Loader=Loader)
+    crt = yaml.load(p, Loader=SafeLoader)
     return crt
 
 
@@ -376,7 +376,7 @@ def update_chart_annotation(
         data = open(
             os.path.join("charts", category, organization, chart, "OWNERS")
         ).read()
-        out = yaml.load(data, Loader=Loader)
+        out = yaml.load(data, Loader=SafeLoader)
         vendor_name = out["vendor"]["name"]
         annotations["charts.openshift.io/provider"] = vendor_name
 
@@ -394,7 +394,7 @@ def update_chart_annotation(
     print(out.stderr.decode("utf-8"))
 
     fd = open(os.path.join(dr, chart, "Chart.yaml"))
-    data = yaml.load(fd, Loader=Loader)
+    data = yaml.load(fd, Loader=SafeLoader)
 
     if "annotations" not in data:
         data["annotations"] = annotations
