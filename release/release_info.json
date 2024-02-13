@@ -1,9 +1,15 @@
 {
-  "version": "1.6.3",
+  "version": "1.6.4",
   "info": [
-    "chore: use the same checkout configuration in test.yml as in build.yml by @OchiengEd (#306)",
-    "Revert chore: use the same checkout configuration in test.yml as in build.yml by @komish (#307)",
-    "Add contributor check gate by @komish (#308)"
+    "Update github actions to latest versions by @mgoerens (#311)",
+    "Apply formatting and linting by @komish (#313)",
+    "Add tool-enforced import sorting by @komish (#315)",
+    "Remove old version of E2E testing by @komish (#312)",
+    "Enable metadata assertion and chart lock generation by @komish (#314)",
+    "Ignore pyenv cookie files by @komish (#319)",
+    "Adds composite actions to generate and check locks by @komish (#318)",
+    "Adds scripts required to support OWNERS file testing and Workflow repository management. by @komish (#320)",
+    "Use SafeLoader when loading untrusted YAML by @mgoerens (#323)"
   ],
   "charts": {
     "development": {
