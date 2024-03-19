@@ -1,15 +1,9 @@
 {
-  "version": "1.6.4",
+  "version": "1.7.0",
   "info": [
-    "Update github actions to latest versions by @mgoerens (#311)",
-    "Apply formatting and linting by @komish (#313)",
-    "Add tool-enforced import sorting by @komish (#315)",
-    "Remove old version of E2E testing by @komish (#312)",
-    "Enable metadata assertion and chart lock generation by @komish (#314)",
-    "Ignore pyenv cookie files by @komish (#319)",
-    "Adds composite actions to generate and check locks by @komish (#318)",
-    "Adds scripts required to support OWNERS file testing and Workflow repository management. by @komish (#320)",
-    "Use SafeLoader when loading untrusted YAML by @mgoerens (#323)"
+    "Add more debug information when E2E tests fail (#326) by @mgoerens",
+    "Correct default virtualenv location (#328) by @komish",
+    "Implement bugfix for chart dependencies and gitops. (#331) by @komish"
   ],
   "charts": {
     "development": {
@@ -46,7 +40,8 @@
         ".github/workflows/metrics.yml",
         ".github/workflows/owners.yml",
         ".github/workflows/version_check.yml",
-        ".github/workflows/codeql.yml"
+        ".github/workflows/codeql.yml",
+        ".github/workflows/check-locks-on-owners-submission.yml"
       ]
     }
   }
