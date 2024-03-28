@@ -5,7 +5,7 @@ name: Red Hat OWNERS Files
 # submissions.
 
 on:
-  pull_request:
+  pull_request_target:
     paths:
     - charts/redhat/**/OWNERS
     - charts/community/redhat/**/OWNERS
@@ -26,7 +26,7 @@ jobs:
         uses: actions/github-script@v3
         continue-on-error: true
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const successLabel = '${{ env.SUCCESS_LABEL }}';
             try {
@@ -90,14 +90,26 @@ jobs:
         working-directory: scripts
         run: |
           make venv.tools
+
+      # Only used to assert content of the OWNERS file.
+      - name: Checkout Pull Request
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
+          path: "pr-branch"
+
       - name: Assert Owners File Content
         id: assert-content
+        working-directory: pr-branch
         env:
           CATEGORY: ${{ needs.gather-metadata.outputs.category }}
           ORGANIZATION: ${{ needs.gather-metadata.outputs.organization }}
           CHARTNAME: ${{ needs.gather-metadata.outputs.chartname }}
         run: |
-          ./scripts/venv.tools/bin/assert-redhat-owners-file-meta \
+          ../scripts/venv.tools/bin/assert-redhat-owners-file-meta \
             "${CATEGORY}" \
             "${ORGANIZATION}" \
             "${CHARTNAME}"
