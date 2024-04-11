@@ -5,19 +5,23 @@ import semver
 from dataclasses import dataclass, field
 
 from checkprcontent import checkpr
+from owners import owners_file
 from tools import gitutils
 from reporegex import matchers
+from report import verifier_report
 
 xRateLimit = "X-RateLimit-Limit"
 xRateRemain = "X-RateLimit-Remaining"
 
 
+# SubmissionInitError ?
 class SubmissionError(Exception):
     """Root Exception for handling any error with the submission"""
 
     pass
 
 
+# From ChartError ?
 class DuplicateChartError(SubmissionError):
     """This Exception is to be raised when the user attempts to submit a PR with more than one chart"""
 
@@ -27,6 +31,10 @@ class DuplicateChartError(SubmissionError):
 class VersionError(SubmissionError):
     """This Exception is to be raised when the version of the chart is not semver compatible"""
 
+    pass
+
+
+class WebCatalogOnlyError(SubmissionError):
     pass
 
 
@@ -109,6 +117,7 @@ class Submission:
     tarball: Tarball = field(default_factory=lambda: Tarball())
     modified_owners: list[str] = field(default_factory=list)
     modified_unknown: list[str] = field(default_factory=list)
+    is_web_catalog_only: bool = None
 
     def __post_init__(self):
         """Complete the initialization of the Submission object.
@@ -295,6 +304,77 @@ class Submission:
             msg = "No OWNERS file provided"
 
         return False, msg
+
+    def parse_web_catalog_only(self, pr_path=""):
+        """Set the web_catalog_only attribute
+
+        This is achieved by:
+        - Parsing the associated OWNERS file and check the value of the WebCatalogOnly key
+        - Parsing report file (if submitted) and check the value of the WebCatalogOnly key
+
+        Attr:
+        - pr_path (str): path under which to
+
+        Return:
+        - True if WebCatalog is set to True in both the OWNERS and in the report file.
+        - False if WebCatalogOnly is set to False in the OWNERS file
+
+        Raise:
+        Raise Exception if OWNERS doesn't contain WebCatalogOnly
+        Raise Exception if OWNERS not found
+        raise Exception is report not found -> shouldn't be the case if report.found ...
+        raise Exception if report doesn't contain WebCatalogOnly
+        if the WebCatalogOnly key don't match between the OWNERS and the report files
+        """
+
+        owners_path = os.path.join(pr_path, self.chart.get_owners_path())
+
+        found, owners_data = owners_file.get_owner_data_from_file(owners_path)
+        if not found:
+            raise WebCatalogOnlyError(f"Failed to get OWNERS data at {owners_path}")
+
+        # TODO: adapt after rework of owners_file -> should throw exception if doesn't contain web_catalog_only
+        owners_web_catalog_only = owners_file.get_web_catalog_only(owners_data)
+
+        if self.report.found:
+            report_path = os.path.join(pr_path, self.report.path)
+
+            found, report_data = verifier_report.get_report_data(report_path)
+            if not found:
+                raise WebCatalogOnlyError(f"Failed to get report data at {report_path}")
+
+            # TODO: adapt after rework of owners_file -> should throw exception if doesn't contain web_catalog_only
+            report_web_catalog_only = verifier_report.get_web_catalog_only(report_data)
+            print(
+                f"[INFO] webCatalogOnly/providerDelivery from report : {report_web_catalog_only}"
+            )
+            if not owners_web_catalog_only == report_web_catalog_only:
+                raise WebCatalogOnlyError(
+                    f"Value of web_catalog_only in OWNERS ({owners_web_catalog_only}) doesn't match the value in report ({report_web_catalog_only})"
+                )
+
+        self.is_web_catalog_only = owners_web_catalog_only
+
+    def is_valid_web_catalog_only(self, pr_path=""):
+        """Verify that the submission is coherent with being a web_catalog_only submission
+
+        A valid web_catalog_only submission must:
+        * contain only a report
+        * the report must specify a package digest
+
+        """
+        if not self.report.found:
+            return False
+
+        if len(self.modified_files) > 1:
+            return False
+
+        report_path = os.path.join(pr_path, self.report.path)
+        found, report_data = verifier_report.get_report_data(report_path)
+        if not found:
+            raise WebCatalogOnlyError(f"Failed to get report data at {report_path}")
+
+        return verifier_report.get_package_digest(report_data) is not None
 
 
 def get_file_type(file_path):
