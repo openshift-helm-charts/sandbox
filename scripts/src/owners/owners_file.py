@@ -15,13 +15,13 @@ class OwnersFileError(Exception):
 
 def get_owner_data(category, organization, chart):
     path = os.path.join("charts", category, organization, chart, "OWNERS")
-    success = True
+    success = False
 
     try:
         owner_content = get_owner_data_from_file(path)
+        success = True
     except OwnersFileError as e:
         print(f"Error getting OWNERS file data: {e}")
-        success = False
 
     return success, owner_content
 
