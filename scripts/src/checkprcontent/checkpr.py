@@ -33,7 +33,7 @@ def check_web_catalog_only(report_in_pr, num_files_in_pr, report_file_match):
     found_owners, owner_data = owners_file.get_owner_data(category, organization, chart)
 
     if found_owners:
-        owner_web_catalog_only = owners_file.get_web_catalog_only(owner_data)
+        _, owner_web_catalog_only = owners_file.get_web_catalog_only(owner_data)
         print(
             f"[INFO] webCatalogOnly/providerDelivery from OWNERS : {owner_web_catalog_only}"
         )
@@ -51,7 +51,9 @@ def check_web_catalog_only(report_in_pr, num_files_in_pr, report_file_match):
         found_report, report_data = verifier_report.get_report_data(report_file_path)
 
         if found_report:
-            report_web_catalog_only = verifier_report.get_web_catalog_only(report_data)
+            _, report_web_catalog_only = verifier_report.get_web_catalog_only(
+                report_data
+            )
             print(
                 f"[INFO] webCatalogOnly/providerDelivery from report : {report_web_catalog_only}"
             )

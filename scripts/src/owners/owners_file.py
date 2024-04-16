@@ -62,9 +62,19 @@ def get_chart(owner_data):
 
 
 def get_web_catalog_only(owner_data):
-    return owner_data.get("web_catalog_only", False) or owner_data.get(
-        "providerDelivery", False
-    )
+    success = False
+    owners_web_catalog_only = False
+    owners_providerDelivery = False
+
+    with contextlib.suppress(KeyError):
+        owners_web_catalog_only = owner_data["web_catalog_only"]
+        success = True
+
+    with contextlib.suppress(KeyError):
+        owners_providerDelivery = owner_data["providerDelivery"]
+        success = True
+
+    return success, owners_web_catalog_only or owners_providerDelivery
 
 
 def get_users_included(owner_data):

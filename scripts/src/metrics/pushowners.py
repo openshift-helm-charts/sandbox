@@ -27,7 +27,7 @@ def getFileContent(changed_file):
         return "", "", "", "", ""
 
     users_included = owners_file.get_users_included(owner_data)
-    web_catalog_only = owners_file.get_web_catalog_only(owner_data)
+    _, web_catalog_only = owners_file.get_web_catalog_only(owner_data)
     vendor_name = owners_file.get_vendor(owner_data)
     chart_name = owners_file.get_chart(owner_data)
     vendor_type = getVendorType(changed_file)
