@@ -339,7 +339,7 @@ vendor:
             conclusion = get_run_result(self.secrets, run_id)
             if conclusion == expect_result:
                 logging.info(
-                    f"PR{pr_number} Workflow run was '{expect_result}' which is expected"
+                    f"PR{pr_number if pr_number else self.secrets.pr_number} Workflow run was '{expect_result}' which is expected"
                 )
             else:
                 if failure_type == "warning":
