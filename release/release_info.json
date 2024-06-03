@@ -1,9 +1,25 @@
 {
-  "version": "1.7.0",
+  "version": "1.7.1",
   "info": [
-    "Add more debug information when E2E tests fail (#326) by @mgoerens",
-    "Correct default virtualenv location (#328) by @komish",
-    "Implement bugfix for chart dependencies and gitops. (#331) by @komish"
+    "Standardize action runner versions across workflows by @komish",
+    "Correctly determine the OWNERS file change type by @komish",
+    "Initialize the Submission data structure by @mgoerens",
+    "Allow token access to redhat OWNERS file metadata check automation by @komish",
+    "Remove unused function in 'signed_chart.py' by @mgoerens",
+    "Ping maintainers if the release job fails by @mgoerens",
+    "Rework owners_file.py and add custom exception by @mgoerens",
+    "Add debug information when tests fail to create PR by @mgoerens",
+    "Fix empty PR number in tests logs by @mgoerens",
+    "New chart fixture with plus sign in version by @jsm84",
+    "Rename crysostat fixture & rm whitespace in provider name by @jsm84",
+    "Added new test scenario plus-in-version to HC-17 by @jsm84",
+    "Cleanup unused report fixtures for HC-16 by @jsm84",
+    "Added new test scenario plus-in-version to HC-17 by @jsm84",
+    "Cleanup unused report fixtures for HC-16 by @jsm84",
+    "Inform caller if web_catatog_only key is missing by @mgoerens",
+    "Add check for web_catalog_only to Submission by @mgoerens",
+    "Inform caller if web_catatog_only key is missing by @mgoerens",
+    "Add check for web_catalog_only to Submission by @mgoerens"
   ],
   "charts": {
     "development": {
