@@ -5,8 +5,10 @@ import semver
 from dataclasses import dataclass, field
 
 from checkprcontent import checkpr
+from owners import owners_file
 from tools import gitutils
 from reporegex import matchers
+from report import verifier_report
 
 xRateLimit = "X-RateLimit-Limit"
 xRateRemain = "X-RateLimit-Remaining"
@@ -27,6 +29,10 @@ class DuplicateChartError(SubmissionError):
 class VersionError(SubmissionError):
     """This Exception is to be raised when the version of the chart is not semver compatible"""
 
+    pass
+
+
+class WebCatalogOnlyError(SubmissionError):
     pass
 
 
@@ -109,6 +115,7 @@ class Submission:
     tarball: Tarball = field(default_factory=lambda: Tarball())
     modified_owners: list[str] = field(default_factory=list)
     modified_unknown: list[str] = field(default_factory=list)
+    is_web_catalog_only: bool = None
 
     def __post_init__(self):
         """Complete the initialization of the Submission object.
@@ -295,6 +302,104 @@ class Submission:
             msg = "No OWNERS file provided"
 
         return False, msg
+
+    def parse_web_catalog_only(self, repo_path=""):
+        """Set the web_catalog_only attribute
+
+        This is achieved by:
+        - Parsing the associated OWNERS file and check the value of the WebCatalogOnly key
+        - Parsing report file (if submitted) and check the value of the WebCatalogOnly key
+
+        Args:
+            repo_path (str): path under which the repo has been cloned on the local filesystem
+
+        Returns:
+            bool: True if WebCatalog is set to True in both the OWNERS and in the report file.
+                  False if WebCatalogOnly is set to False in the OWNERS file
+
+        Raise:
+            WebCatalogOnlyError in one of the following cases:
+            * The OWNERS file doesn't exist at the expected path
+            * The OWNERS file doesn't contain WebCatalogOnly
+            * The submitted report cannot be found or read at the expected path (although
+              report.found is set to True)
+            * The submitted report doesn't contain WebCatalogOnly
+            * The WebCatalogOnly key don't match between the OWNERS and the report files
+
+        """
+        owners_path = os.path.join(repo_path, self.chart.get_owners_path())
+
+        try:
+            owners_data = owners_file.get_owner_data_from_file(owners_path)
+        except owners_file.OwnersFileError as e:
+            raise WebCatalogOnlyError(
+                f"Failed to get OWNERS data at {owners_path}"
+            ) from e
+
+        try:
+            owners_web_catalog_only = owners_file.get_web_catalog_only(
+                owners_data, raise_if_missing=True
+            )
+        except owners_file.ConfigKeyMissing as e:
+            raise WebCatalogOnlyError(
+                f"Failed to find webCatalogOnly key in OWNERS data at {owners_path}"
+            ) from e
+
+        if self.report.found:
+            report_path = os.path.join(repo_path, self.report.path)
+
+            found, report_data = verifier_report.get_report_data(report_path)
+            if not found:
+                raise WebCatalogOnlyError(f"Failed to get report data at {report_path}")
+
+            try:
+                report_web_catalog_only = verifier_report.get_web_catalog_only(
+                    report_data, raise_if_missing=True
+                )
+            except verifier_report.ConfigKeyMissing as e:
+                raise WebCatalogOnlyError(
+                    f"Failed to find webCatalogOnly key in report data at {owners_path}"
+                ) from e
+            print(
+                f"[INFO] webCatalogOnly/providerDelivery from report : {report_web_catalog_only}"
+            )
+
+            if not owners_web_catalog_only == report_web_catalog_only:
+                raise WebCatalogOnlyError(
+                    f"Value of web_catalog_only in OWNERS ({owners_web_catalog_only}) doesn't match the value in report ({report_web_catalog_only})"
+                )
+
+        self.is_web_catalog_only = owners_web_catalog_only
+
+    def is_valid_web_catalog_only(self, repo_path=""):
+        """Verify that the submission is coherent with being a WebCatalogOnly submission
+
+        A valid web_catalog_only submission must:
+        * contain only a report
+        * the report must specify a package digest
+
+        Args:
+            repo_path (str): path under which the repo has been cloned on the local filesystem
+
+        Returns:
+            bool: set to True if the submission is a valid WebCatalogOnly submission.
+
+        Raise:
+            WebCatalogOnlyError if the submitted report cannot be found or read at the expected path.
+
+        """
+        if not self.report.found:
+            return False
+
+        if len(self.modified_files) > 1:
+            return False
+
+        report_path = os.path.join(repo_path, self.report.path)
+        found, report_data = verifier_report.get_report_data(report_path)
+        if not found:
+            raise WebCatalogOnlyError(f"Failed to get report data at {report_path}")
+
+        return verifier_report.get_package_digest(report_data) is not None
 
 
 def get_file_type(file_path):

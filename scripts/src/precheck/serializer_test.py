@@ -28,7 +28,8 @@ submission_json = """
         "provenance": null
     },
     "modified_owners": [],
-    "modified_unknown": []
+    "modified_unknown": [],
+    "is_web_catalog_only": true
 }
 """
 
@@ -62,6 +63,7 @@ def test_submission_serializer():
     assert not s.tarball.found
     assert not s.tarball.path
     assert not s.tarball.provenance
+    assert s.is_web_catalog_only
 
 
 def test_submission_deserializer():
@@ -88,6 +90,7 @@ def test_submission_deserializer():
             path=None,
             provenance=None,
         ),
+        is_web_catalog_only=True,
     )
 
     assert serializer.SubmissionEncoder().encode(s) == sanitize_json_string(
