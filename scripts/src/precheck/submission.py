@@ -59,7 +59,7 @@ class Chart:
             msg = "[ERROR] A PR must contain only one chart. Current PR includes files for multiple charts."
             raise DuplicateChartError(msg)
 
-        if not semver.VersionInfo.isvalid(version):
+        if not semver.VersionInfo.is_valid(version):
             msg = (
                 f"[ERROR] Helm chart version is not a valid semantic version: {version}"
             )
