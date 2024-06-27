@@ -1,0 +1,11 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    groups:
+      core-scripts:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+    directory: "/scripts"
+    schedule:
+      interval: "monthly"
