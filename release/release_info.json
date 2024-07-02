@@ -25,7 +25,8 @@
         ".github/workflows/nightly_test.yml",
         ".github/workflows/metrics.yml",
         ".github/workflows/codeql.yml",
-        ".github/dependabot.yml"
+        ".github/dependabot.yml",
+        ".github/workflows/python-test.yml"
       ]
     },
     "stage": {
@@ -42,7 +43,8 @@
         ".github/workflows/version_check.yml",
         ".github/workflows/codeql.yml",
         ".github/workflows/check-locks-on-owners-submission.yml",
-        ".github/dependabot.yml"
+        ".github/dependabot.yml",
+        ".github/workflows/python-test.yml"
       ]
     }
   }
