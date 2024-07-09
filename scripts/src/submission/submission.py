@@ -360,7 +360,7 @@ class Submission:
         else:
             self.modified_unknown.append(file_path)
 
-    def is_valid_certification_submission(self):
+    def is_valid_certification_submission(self, ignore_owners: bool = False):
         """Check wether the files in this Submission are valid to attempt to certify a Chart
 
         We expect the user to provide either:
@@ -375,7 +375,7 @@ class Submission:
         Returns True in all other cases
 
         """
-        if self.modified_owners:
+        if self.modified_owners and not ignore_owners:
             return False, "[ERROR] Send OWNERS file by itself in a separate PR."
 
         if self.modified_unknown:
@@ -391,22 +391,27 @@ class Submission:
         return False, ""
 
     def is_valid_owners_submission(self):
-        """Check wether the file in this Submission are valid for an OWNERS PR
+        """Check wether the files in this Submission are valid for an OWNERS PR
 
-        Returns True if the PR only modified files is an OWNERS file.
+        A valid OWNERS PR contains only the OWNERS file, and is not submitted by a partner
 
-        Returns False in all other cases.
         """
+        if (self.chart.category == "partners") and self.modified_owners:
+            # The PR contains an OWNERS file for a parnter
+            msg = "[ERROR] OWNERS file should never be set directly by partners. See certification docs."
+            return False, msg
+
         if len(self.modified_owners) == 1 and len(self.modified_files) == 1:
+            # Happy path: PR contains a single modified files that is an OWNERS, and is not for a partner
             return True, ""
 
-        msg = ""
         if self.modified_owners:
+            # At least one OWNERS file, with other files (modified_files > 1)
             msg = "[ERROR] Send OWNERS file by itself in a separate PR."
-        else:
-            msg = "No OWNERS file provided"
+            return False, msg
 
-        return False, msg
+        # No OWNERS have been provided
+        return False, "No OWNERS file provided"
 
     def parse_web_catalog_only(self, repo_path=""):
         """Set the web_catalog_only attribute
@@ -475,9 +480,10 @@ class Submission:
             )
 
             if not owners_web_catalog_only == report_web_catalog_only:
-                raise WebCatalogOnlyError(
-                    f"Value of web_catalog_only in OWNERS ({owners_web_catalog_only}) doesn't match the value in report ({report_web_catalog_only})"
-                )
+                if owners_web_catalog_only:
+                    raise WebCatalogOnlyError("[ERROR] The web catalog distribution method is set for the chart but is not set in the report.")
+                if report_web_catalog_only:
+                    raise WebCatalogOnlyError("[ERROR] Report indicates web catalog only but the distribution method set for the chart is not web catalog only.")
 
         self.is_web_catalog_only = owners_web_catalog_only
 
@@ -499,17 +505,21 @@ class Submission:
 
         """
         if not self.report.found:
-            return False
+            return False, "nope"
 
         if len(self.modified_files) > 1:
-            return False
+            msg = "[ERROR] The web catalog distribution method requires the pull request to be report only."
+            return False, msg
 
         report_path = os.path.join(repo_path, self.report.path)
         found, report_data = verifier_report.get_report_data(report_path)
         if not found:
             raise WebCatalogOnlyError(f"Failed to get report data at {report_path}")
 
-        return verifier_report.get_package_digest(report_data) is not None
+        if verifier_report.get_package_digest(report_data) is None:
+            return False, "[ERROR] The web catalog distribution method requires a package digest in the report."
+
+        return True, ""
 
 
 def get_file_type(file_path):
@@ -551,7 +561,7 @@ def get_file_type(file_path):
     return "unknwown", None
 
 
-def download_index_data(repository, branch="gh_pages"):
+def download_index_data(repository, branch="gh-pages"):
     """Download the helm repository index"""
     r = requests.get(
         f"https://raw.githubusercontent.com/{repository}/{branch}/index.yaml"
