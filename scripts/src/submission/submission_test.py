@@ -356,42 +356,71 @@ class OwnersScenario:
 
 
 scenarios_owners_submission = [
-    # Valid submission contains only one OWNERS file
+    # Valid submission contains only one OWNERS file, not from a partner
     OwnersScenario(
         input_submission=submission.Submission(
             api_url="https://api.github.com/repos/openshift-helm-charts/charts/pulls/1",
+            chart=submission.Chart(
+                category="community",
+                organization=expected_organization,
+                name=expected_name,
+            ),
             modified_files=[
-                f"charts/{expected_category}/{expected_organization}/{expected_name}/OWNERS"
+                f"charts/community/{expected_organization}/{expected_name}/OWNERS"
             ],
             modified_owners=[
-                f"charts/{expected_category}/{expected_organization}/{expected_name}/OWNERS"
+                f"charts/community/{expected_organization}/{expected_name}/OWNERS"
             ],
         ),
         expected_is_valid_owners=True,
     ),
-    # Invalid submission contains multiple OWNERS file
+    # Invalid submission contains an OWNERS file from a partner
     OwnersScenario(
         input_submission=submission.Submission(
             api_url="https://api.github.com/repos/openshift-helm-charts/charts/pulls/1",
+            chart=expected_chart,
             modified_files=[
-                f"charts/{expected_category}/{expected_organization}/{expected_name}/OWNERS",
-                f"charts/{expected_category}/{expected_organization}/another_chart/OWNERS",
+                f"charts/{expected_category}/{expected_organization}/{expected_name}/OWNERS"
             ],
             modified_owners=[
-                f"charts/{expected_category}/{expected_organization}/{expected_name}/OWNERS",
-                f"charts/{expected_category}/{expected_organization}/another_chart/OWNERS",
+                f"charts/{expected_category}/{expected_organization}/{expected_name}/OWNERS"
             ],
+        ),
+        expected_is_valid_owners=False,
+        expected_reason="[ERROR] OWNERS file should never be set directly by partners. See certification docs.",
+    ),
+    # Invalid submission an OWNERS file and other files
+    OwnersScenario(
+        input_submission=submission.Submission(
+            api_url="https://api.github.com/repos/openshift-helm-charts/charts/pulls/1",
+            chart=submission.Chart(
+                category="community",
+                organization=expected_organization,
+                name=expected_name,
+                version=expected_version,
+            ),
+            modified_files=[
+                f"charts/community/{expected_organization}/{expected_name}/OWNERS",
+                f"charts/community/{expected_organization}/{expected_name}/{expected_version}/report.yaml",
+            ],
+            modified_owners=[
+                f"charts/community/{expected_organization}/{expected_name}/OWNERS",
+            ],
+            report=submission.Report(
+                found=True,
+                signed=False,
+                path=f"charts/{expected_category}/{expected_organization}/{expected_name}/{expected_version}/report.yaml",
+            ),
         ),
         expected_is_valid_owners=False,
         expected_reason="[ERROR] Send OWNERS file by itself in a separate PR.",
     ),
-    # Invalid submission contains unknown files
+    # Invalid submission doesn't contain an OWNERS file
     OwnersScenario(
         input_submission=make_new_report_only_submission(),
         expected_is_valid_owners=False,
         expected_reason="No OWNERS file provided",
     ),
-    # Invalid submission doesn't contain an OWNER file
 ]
 
 
@@ -400,8 +429,8 @@ def test_is_valid_owners(test_scenario):
     is_valid_owners, reason = (
         test_scenario.input_submission.is_valid_owners_submission()
     )
-    assert test_scenario.expected_is_valid_owners == is_valid_owners
     assert test_scenario.expected_reason in reason
+    assert test_scenario.expected_is_valid_owners == is_valid_owners
 
 
 @dataclass
