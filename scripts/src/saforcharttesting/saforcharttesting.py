@@ -24,6 +24,16 @@ metadata:
   namespace: ${name}
 """
 
+token_template = """\
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: token-${name}
+  annotations:
+    kubernetes.io/service-account.name: ${name}
+"""
+
 role_template = """\
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -163,6 +173,12 @@ def create_serviceaccount(namespace):
     if stderr.strip():
         print("[ERROR] creating ServiceAccount:", stderr)
 
+def create_tokensecret(namespace):
+    print("creating token Secret:", namespace)
+    stdout, stderr = apply_config(token_template, name=namespace)
+    print("stdout:\n", stdout, sep="")
+    if stderr.strip():
+        print("[ERROR] creating token Secret:", stderr)
 
 def create_role(namespace):
     print("creating Role:", namespace)
@@ -344,6 +360,7 @@ def main():
     if args.create:
         create_namespace(args.create)
         create_serviceaccount(args.create)
+        create_tokensecret(args.create)
         create_role(args.create)
         create_rolebinding(args.create)
         create_clusterrole(args.create)
