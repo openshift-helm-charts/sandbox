@@ -201,7 +201,7 @@ jobs:
         uses: redhat-actions/openshift-tools-installer@v1
         with:
           source: github
-          skip_cache: true
+          skip_cache: false # workaround https://github.com/redhat-actions/openshift-tools-installer/issues/105
           chart-verifier: "${{ needs.setup.outputs.verifier-action-image }}"
 
       - name: determine verify requirements
@@ -446,7 +446,7 @@ jobs:
         uses: redhat-actions/openshift-tools-installer@v1
         with:
           source: github
-          skip_cache: true
+          skip_cache: false # workaround https://github.com/redhat-actions/openshift-tools-installer/issues/105
           chart-verifier: ${{ needs.setup.outputs.verifier-action-image }}
 
       - name: Block until there is no running workflow
