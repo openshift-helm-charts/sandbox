@@ -1,8 +1,14 @@
 {
-  "version": "1.7.2",
+  "version": "1.7.3",
   "info": [
-    "Use Github context in tasks conditions in (#353) by @mgoerens",
-    "Wrap owners file content access function in try except in (#356) by @komish"
+    "Update script dependencies and update fn calls to match in (#359) by @komish",
+    "Add dependabot configuration for core scripts in (#360) by @komish",
+    "Run Python unit tests in GitHub action in (#362) by @mgoerens",
+    "Ports checks if a chart is in index; and if a release tag already exists in (#347) by @mgoerens",
+    "Fix pytest path in (#364) by @mgoerens",
+    "Ensure service account token generation for workflows in (#366) by @komish",
+    "Workaround openshift-tools-installer taking an extra 3 minutes per executions in (#367) by @komish",
+    "Allow actions to use node16 temporarily in (#368) by @komish"
   ],
   "charts": {
     "development": {
