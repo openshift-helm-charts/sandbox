@@ -51,7 +51,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-u",
-        "--api-url",
+        "--api_url",
         dest="api_url",
         type=str,
         required=True,
