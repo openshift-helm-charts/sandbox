@@ -93,6 +93,7 @@ def main():
     if s.modified_owners:
         # If the PR contains an OWNER file, craft a error message to be added as a comment in the PR
         owners_error_msg = craft_owners_error_msg(s)
+        print(owners_error_msg)
         gitutils.add_output("owners-error-message", owners_error_msg)
 
     pr_content_error_msg = ""
@@ -103,6 +104,7 @@ def main():
             gitutils.add_output("pr-content-error-message", pr_content_error_msg)
 
     if owners_error_msg or pr_content_error_msg:
+        print(f"exit with owners_error_msg={owners_error_msg}; pr_content_error_msg={pr_content_error_msg}")
         sys.exit(20)
 
     write_submission_to_file(s, args.output)
