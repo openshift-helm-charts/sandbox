@@ -2,11 +2,11 @@ import argparse
 import json
 import sys
 
-from submission import serializer, Submission, SubmissionError
+from precheck import submission, serializer
 from tools import gitutils
 
 
-def write_submission_to_file(s: Submission, artifact_path: str):
+def write_submission_to_file(s: submission.Submission, artifact_path: str):
     data = serializer.SubmissionEncoder().encode(s)
 
     with open(artifact_path, "w") as f:
@@ -20,7 +20,7 @@ def read_submission_from_file(articact_path: str):
     return s
 
 
-def craft_pr_content_error_msg(s: Submission):
+def craft_pr_content_error_msg(s: submission.Submission):
     # Checks that this PR is a valid "Chart certification" PR
     is_valid, msg = s.is_valid_certification_submission(ignore_owners=True)
     if not is_valid:
@@ -29,7 +29,7 @@ def craft_pr_content_error_msg(s: Submission):
     # Parse the modified files and determine if it is a "web_catalog_only" certification
     try:
         s.parse_web_catalog_only()
-    except SubmissionError as e:
+    except submission.SubmissionError as e:
         return False, str(e)
 
     if s.is_web_catalog_only:
@@ -76,8 +76,8 @@ def main():
 
     args = parser.parse_args()
     try:
-        s = Submission(args.api_url)
-    except SubmissionError as e:
+        s = submission.Submission(args.api_url)
+    except submission.SubmissionError as e:
         print(str(e))
         gitutils.add_output("pr-content-error-message", str(e))
         sys.exit(10)
