@@ -189,6 +189,8 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [setup, pre-check]
 
+    if: ${{ always() }}
+
     outputs:
       report_content: ${{ steps.check_report.outputs.report_content }}
       redhat_to_community: ${{ steps.check_report.outputs.redhat_to_community }}
@@ -228,12 +230,13 @@ jobs:
 
       - name: Download submission information
         uses: actions/download-artifact@v4
+        if: ${{ contains(join(needs.*.result, ','), 'success') }}
         with:
           name: submission
 
       - name: Remove 'authorized-request' label from PR
         uses: actions/github-script@v7
-        if: ${{ needs.setup.outputs.run_build == 'true' && contains( github.event.pull_request.labels.*.name, 'authorized-request') }}
+        if: ${{ needs.setup.outputs.run_build == 'true' && contains( github.event.pull_request.labels.*.name, 'authorized-request') && contains(join(needs.*.result, ','), 'success') }}
         continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -248,6 +251,7 @@ jobs:
 
       - name: install chart verifier for action
         uses: redhat-actions/openshift-tools-installer@v1
+        if: ${{ contains(join(needs.*.result, ','), 'success') }}
         with:
           source: github
           skip_cache: true
@@ -255,7 +259,7 @@ jobs:
 
       # TODO: check what needs to stay here vs what could go to pre-check
       - name: determine verify requirements
-        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        if: ${{ needs.setup.outputs.run_build == 'true' && contains(join(needs.*.result, ','), 'success') }}
         id: verify_requires
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
@@ -265,14 +269,14 @@ jobs:
 
       - name: Install oc
         id: install-oc
-        if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' }}
+        if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' && contains(join(needs.*.result, ','), 'success') }}
         uses: redhat-actions/openshift-tools-installer@v1
         with:
           oc: latest
 
       - name: Set cluster login params
         id: login-params
-        if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' }}
+        if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' && contains(join(needs.*.result, ','), 'success') }}
         run: |
           #calculate cluster params
           API_SERVER=$( echo -n ${{ secrets.API_SERVER }} | base64 -d)
@@ -280,7 +284,7 @@ jobs:
 
       - uses: redhat-actions/oc-login@v1
         id: oc_login
-        if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' }}
+        if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' && contains(join(needs.*.result, ','), 'success') }}
         with:
           openshift_server_url: ${{ steps.login-params.outputs.API_SERVER }}
           openshift_token: ${{ secrets.CLUSTER_TOKEN }}
@@ -288,7 +292,7 @@ jobs:
 
       - name: create service account
         id: create_service_account
-        if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' }}
+        if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' && contains(join(needs.*.result, ','), 'success') }}
         env:
           API_SERVER: ${{ steps.login-params.outputs.API_SERVER }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
@@ -299,7 +303,7 @@ jobs:
 
       - uses: redhat-actions/chart-verifier@v1
         id: run-verifier
-        if: ${{ steps.verify_requires.outputs.report_needed == 'true' }}
+        if: ${{ steps.verify_requires.outputs.report_needed == 'true' && contains(join(needs.*.result, ','), 'success') }}
         with:
             chart_uri: ${{ steps.verify_requires.outputs.verify_uri }}
             verify_args: ${{ steps.verify_requires.outputs.verify_args }}
@@ -308,21 +312,21 @@ jobs:
 
       - name: check-verifier-result
         id: check-verifier-result
-        if: ${{ always() && steps.run-verifier.outcome == 'failure' }}
+        if: ${{ always() && steps.run-verifier.outcome == 'failure' && contains(join(needs.*.result, ','), 'success') }}
         run: |
           error_message="The chart verifier returned an error when trying to obtain a verification report for the chart."
           echo "verifier_error_message=$error_message" >> $GITHUB_OUTPUT
 
       - name: Get profile version set in report provided by the user
         id: get-profile-version
-        if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' }}
+        if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' && contains(join(needs.*.result, ','), 'success') }}
         uses: mikefarah/yq@master
         with:
           cmd: yq '.metadata.tool.profile.version' ${{ format('./pr-branch/{0}', steps.verify_requires.outputs.provided_report_relative_path) }}
 
       - name: Get the range of Kubernetes versions set in the report provided by the user
         id: get-kube-range
-        if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' }}
+        if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' && contains(join(needs.*.result, ','), 'success') }}
         continue-on-error: true
         uses: mikefarah/yq@master
         with:
@@ -330,21 +334,21 @@ jobs:
 
       - name: Get the corresponding range of OCP versions
         id: get-ocp-range
-        if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' }}
+        if: ${{ needs.setup.outputs.run_build == 'true' && steps.verify_requires.outputs.report_provided == 'true' && contains(join(needs.*.result, ','), 'success') }}
         continue-on-error: true
         uses: ./.github/actions/get-ocp-range
         with:
           kube-version-range: ${{ steps.get-kube-range.outputs.result }}
 
       - name: Only ignore errors in get-ocp-range for profile in version v1.0
-        if: ${{ (steps.get-kube-range.outcome == 'failure' || steps.get-ocp-range.outcome == 'failure') && steps.get-profile-version.outputs.result != 'v1.0' }}
+        if: ${{ (steps.get-kube-range.outcome == 'failure' || steps.get-ocp-range.outcome == 'failure') && steps.get-profile-version.outputs.result != 'v1.0' && contains(join(needs.*.result, ','), 'success') }}
         run: |
           echo "::error file=.github/workflows/build.yaml::Failure in get-ocp-range, mandatory for profile version ${{ steps.get-profile-version.outputs.result }}"
           exit 1
 
       - name: Check Report
         id: check_report
-        if: ${{ needs.setup.outputs.run_build == 'true' }}
+        if: ${{ needs.setup.outputs.run_build == 'true' && contains(join(needs.*.result, ','), 'success') }}
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           VENDOR_TYPE: ${{ needs.pre-check.outputs.category }}
@@ -365,7 +369,7 @@ jobs:
           cd ..
 
       - name: Delete Namespace
-        if: ${{ always() && steps.oc_login.conclusion == 'success' }}
+        if: ${{ always() && steps.oc_login.conclusion == 'success' && contains(join(needs.*.result, ','), 'success') }}
         env:
           KUBECONFIG: /tmp/ci-kubeconfig
         run: |
@@ -377,7 +381,7 @@ jobs:
       - name: Save PR artifact
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-        if: ${{ always() && needs.setup.outputs.run_build == 'true' }}
+        if: ${{ always() && needs.setup.outputs.run_build == 'true' && contains(join(needs.*.result, ','), 'success') }}
         run: |
           ve1/bin/pr-artifact --directory=./pr --pr-number=${{ github.event.number }} --api-url=${{ github.event.pull_request._links.self.href }}
 

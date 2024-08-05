@@ -24,26 +24,26 @@ def craft_pr_content_error_msg(s: submission.Submission):
     # Checks that this PR is a valid "Chart certification" PR
     is_valid, msg = s.is_valid_certification_submission(ignore_owners=True)
     if not is_valid:
-        return False, msg
+        return msg
 
     # Parse the modified files and determine if it is a "web_catalog_only" certification
     try:
         s.parse_web_catalog_only()
     except submission.SubmissionError as e:
-        return False, str(e)
+        return str(e)
 
     if s.is_web_catalog_only:
         if not s.is_valid_web_catalog_only():
             msg = "nope"
-            return False, msg
+            return msg
 
-    return True, ""
+    return ""
 
 
 def craft_owners_error_msg(s):
     is_valid, msg = s.is_valid_owners_submission()
     if is_valid:
-        msg = "[ERROR] Send OWNERS file by itself in a separate PR."
+        msg = "[INFO] OWNERS file changes require manual review by maintainers."
     return msg
 
 
