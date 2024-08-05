@@ -144,6 +144,8 @@ jobs:
 
       - name: Extract PR information
         id: pre-check
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           ./ve1/bin/pre-check \
             --api_url "${{ github.event.pull_request._links.self.href }}" \
