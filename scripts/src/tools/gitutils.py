@@ -172,4 +172,5 @@ def add_changes(repo, skip_files):
 
 def add_output(name, value):
     with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+        print(f"Adding to GITHUB_OUTPUT: {name}={value}")
         print(f"{name}={value}", file=fh)
