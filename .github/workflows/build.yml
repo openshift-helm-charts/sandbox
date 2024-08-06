@@ -114,7 +114,7 @@ jobs:
       chart_entry_name: ${{ steps.pre-check.outputs.chart_entry_name }}
       release_tag: ${{ steps.pre-check.outputs.release_tag }}
       web_catalog_only: ${{ steps.pre-check.outputs.web_catalog_only }}
-      category: ${{ steps.pre-check.outputs.web_catalog_only }}
+      category: ${{ steps.pre-check.outputs.category }}
 
     steps:
       - name: Checkout
