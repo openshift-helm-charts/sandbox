@@ -87,7 +87,7 @@ def main():
     gitutils.add_output("chart_entry_name", s.chart.name)
     gitutils.add_output("release_tag", s.chart.get_release_tag())
     gitutils.add_output("web_catalog_only", s.is_web_catalog_only)
-    gitutils.add_output("category", s.chart.category)
+    gitutils.add_output("category", s.chart.get_vendor_label())
 
     owners_error_msg = ""
     if s.modified_owners:

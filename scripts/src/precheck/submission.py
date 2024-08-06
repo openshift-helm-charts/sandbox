@@ -136,6 +136,11 @@ class Chart:
     def get_owners_path(self):
         return f"charts/{self.category}/{self.organization}/{self.name}/OWNERS"
 
+    def get_vendor_label(self):
+        if self.category == "partners":
+            return "partner"
+        return self.category
+
     def get_release_tag(self):
         return f"{self.organization}-{self.name}-{self.version}"
 
