@@ -381,7 +381,7 @@ jobs:
       - name: Save PR artifact
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-        if: ${{ always() && needs.setup.outputs.run_build == 'true' && ! contains(join(needs.*.result, ','), 'failure') }}
+        if: ${{ always() && needs.setup.outputs.run_build == 'true' }}
         run: |
           ve1/bin/pr-artifact --directory=./pr --pr-number=${{ github.event.number }} --api-url=${{ github.event.pull_request._links.self.href }}
 
