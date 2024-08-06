@@ -36,6 +36,7 @@ def write_error_log(directory, *msg):
 
 def get_vendor_type(directory):
     vendor_type = os.environ.get("VENDOR_TYPE")
+    print(f"Debug: vendor_type={vendor_type}")
     if not vendor_type or vendor_type not in {"partner", "redhat", "community"}:
         msg = "[ERROR] Chart files need to be under one of charts/partners, charts/redhat, or charts/community"
         write_error_log(directory, msg)
