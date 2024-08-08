@@ -214,7 +214,7 @@ jobs:
       - name: Approve PR
         id: approve_pr
         if: ${{ steps.check_merge_and_release.outputs.merge == 'true' }}
-        uses: hmarr/auto-approve-action@v3
+        uses: hmarr/auto-approve-action@v4
         with:
           github-token:  ${{ secrets.GITHUB_TOKEN }}
 

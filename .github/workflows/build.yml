@@ -387,7 +387,7 @@ jobs:
       - name: Approve PR
         id: approve_pr
         if: ${{ steps.check_report.conclusion == 'success' }}
-        uses: hmarr/auto-approve-action@v3
+        uses: hmarr/auto-approve-action@v4
         with:
           # The token we use for this changes for the Sandbox repository because the sandbox repository
           # receives PRs from the openshift-helm-charts-bot, and that same bot cannot approve its own
@@ -451,9 +451,9 @@ jobs:
 
       - name: Block until there is no running workflow
         if: ${{ needs.setup.outputs.run_build == 'true' }}
-        uses: softprops/turnstyle@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/turnstyle@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
         if: ${{ needs.setup.outputs.run_build == 'true' }}
