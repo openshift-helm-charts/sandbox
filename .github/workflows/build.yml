@@ -548,7 +548,7 @@ jobs:
       # Only the report file is always included.
       # The release tag format is <organization_name>-<chart_name>-<chart_version>
       - name: Create GitHub release
-        if: ${{ needs.chart-verifier.outputs.web_catalog_only == 'False' }}
+        if: ${{ needs.pre-check.outputs.web_catalog_only == 'False' }}
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.pre-check.outputs.release_tag }}
