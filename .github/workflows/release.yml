@@ -214,7 +214,7 @@ jobs:
       - name: Approve PR
         id: approve_pr
         if: ${{ steps.check_merge_and_release.outputs.merge == 'true' }}
-        uses: hmarr/auto-approve-action@v3
+        uses: hmarr/auto-approve-action@v4
         with:
           github-token:  ${{ secrets.GITHUB_TOKEN }}
 
@@ -237,9 +237,8 @@ jobs:
       - name: Create the the release
         id: create_release
         if: ${{ steps.check_merge_and_release.outputs.release_tag  != '' }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ steps.check_merge_and_release.outputs.release_tag }}
           body: ${{ steps.check_merge_and_release.outputs.release_body }}
-        env:
-          GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
