@@ -33,8 +33,8 @@ def craft_pr_content_error_msg(s: submission.Submission):
         return str(e)
 
     if s.is_web_catalog_only:
-        if not s.is_valid_web_catalog_only(repo_path="pr-branch"):
-            msg = "nope"
+        is_valid, msg = s.is_valid_web_catalog_only(repo_path="pr-branch")
+        if not is_valid:
             return msg
 
     return ""

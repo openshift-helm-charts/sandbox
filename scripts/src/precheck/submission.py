@@ -490,9 +490,10 @@ class Submission:
             )
 
             if not owners_web_catalog_only == report_web_catalog_only:
-                raise WebCatalogOnlyError(
-                    f"Value of web_catalog_only in OWNERS ({owners_web_catalog_only}) doesn't match the value in report ({report_web_catalog_only})"
-                )
+                if owners_web_catalog_only:
+                    raise WebCatalogOnlyError("[ERROR] The web catalog distribution method is set for the chart but is not set in the report.")
+                if report_web_catalog_only:
+                    raise WebCatalogOnlyError("[ERROR] Report indicates web catalog only but the distribution method set for the chart is not web catalog only.")
 
         self.is_web_catalog_only = owners_web_catalog_only
 
@@ -514,17 +515,21 @@ class Submission:
 
         """
         if not self.report.found:
-            return False
+            return False, "nope"
 
         if len(self.modified_files) > 1:
-            return False
+            msg = "[ERROR] The web catalog distribution method requires the pull request to be report only."
+            return False, msg
 
         report_path = os.path.join(repo_path, self.report.path)
         found, report_data = verifier_report.get_report_data(report_path)
         if not found:
             raise WebCatalogOnlyError(f"Failed to get report data at {report_path}")
 
-        return verifier_report.get_package_digest(report_data) is not None
+        if verifier_report.get_package_digest(report_data) is None:
+            return False, "[ERROR] The web catalog distribution method requires a package digest in the report."
+
+        return True, ""
 
 
 def get_file_type(file_path):
