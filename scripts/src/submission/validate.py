@@ -1,8 +1,15 @@
+"""
+1. Pull all information related to the submitted chart from GitHub. That "comprend" the files that are added/modified by the PR, and information already present in the repo such as the ones present in the OWNERS file
+2. Validate the Submission: Check that the chart/version is not already present in the helm index, validate the web_catalog_only information are correct, validate that the version is semver compatible, validate that the required files are present, ...
+3. Save the submission object to a file.
+
+"""
+
 import argparse
 import json
 import sys
 
-from precheck import submission, serializer
+from submission import submission, serializer
 from tools import gitutils
 
 
@@ -109,7 +116,7 @@ def main():
         gitutils.add_output("owners-error-message", owners_error_msg)
 
     pr_content_error_msg = ""
-    if args.check_chart_submission: #TODO: why ?
+    if args.check_chart_submission:  # TODO: why ?
         pr_content_error_msg = craft_pr_content_error_msg(s, args.repository)
         if pr_content_error_msg:
             print(pr_content_error_msg)
