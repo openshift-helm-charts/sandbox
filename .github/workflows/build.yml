@@ -102,19 +102,19 @@ jobs:
           fi
           echo "insecure_skip_tls_verify=true" >> $GITHUB_OUTPUT
 
-  pre-check:
+  validate-submission:
     name: Extract and validate PR content
     runs-on: ubuntu-22.04
     needs: [setup]
 
     outputs:
-      pr-content-error-message: ${{ steps.pre-check.outputs.pr-content-error-message }}
-      owners-error-message: ${{ steps.pre-check.outputs.owners-error-message }}
-      pre-check-outcome: ${{ steps.pre-check.outcome }}
-      chart_entry_name: ${{ steps.pre-check.outputs.chart_entry_name }}
-      release_tag: ${{ steps.pre-check.outputs.release_tag }}
-      web_catalog_only: ${{ steps.pre-check.outputs.web_catalog_only }}
-      category: ${{ steps.pre-check.outputs.category }}
+      pr-content-error-message: ${{ steps.validate-submission.outputs.pr-content-error-message }}
+      owners-error-message: ${{ steps.validate-submission.outputs.owners-error-message }}
+      validate-submission-outcome: ${{ steps.validate-submission.outcome }}
+      chart_entry_name: ${{ steps.validate-submission.outputs.chart_entry_name }}
+      release_tag: ${{ steps.validate-submission.outputs.release_tag }}
+      web_catalog_only: ${{ steps.validate-submission.outputs.web_catalog_only }}
+      category: ${{ steps.validate-submission.outputs.category }}
 
     steps:
       - name: Checkout
@@ -143,11 +143,11 @@ jobs:
           cd ..
 
       - name: Extract PR information
-        id: pre-check
+        id: validate-submission
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          ./ve1/bin/pre-check \
+          ./ve1/bin/validate-submission \
             --api_url "${{ github.event.pull_request._links.self.href }}" \
             --output "$SUBMISSION_PATH" \
             --repository ${{ github.repository }} \
@@ -188,7 +188,7 @@ jobs:
   chart-verifier:
     name: Run chart-verifier
     runs-on: ubuntu-22.04
-    needs: [setup, pre-check]
+    needs: [setup, validate-submission]
 
     if: ${{ always() }}
 
@@ -258,7 +258,7 @@ jobs:
           skip_cache: true
           chart-verifier: "${{ needs.setup.outputs.verifier-action-image }}"
 
-      # TODO: check what needs to stay here vs what could go to pre-check
+      # TODO: check what needs to stay here vs what could go to validate-submission
       - name: determine verify requirements
         if: ${{ needs.setup.outputs.run_build == 'true' && ! contains(join(needs.*.result, ','), 'failure') }}
         id: verify_requires
@@ -352,8 +352,8 @@ jobs:
         if: ${{ needs.setup.outputs.run_build == 'true' && ! contains(join(needs.*.result, ','), 'failure') }}
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          VENDOR_TYPE: ${{ needs.pre-check.outputs.category }}
-          WEB_CATALOG_ONLY: ${{ needs.pre-check.outputs.web_catalog_only }}
+          VENDOR_TYPE: ${{ needs.validate-submission.outputs.category }}
+          WEB_CATALOG_ONLY: ${{ needs.validate-submission.outputs.web_catalog_only }}
           REPORT_GENERATED: ${{ steps.verify_requires.outputs.report_needed }}
           GENERATED_REPORT_PATH: ${{ steps.run-verifier.outputs.report_file }}
           REPORT_SUMMARY_PATH: ${{ steps.run-verifier.outputs.report_info_file }}
@@ -389,7 +389,7 @@ jobs:
   # manage-gh-pr:
   #   name: Comment and merge PR
   #   runs-on: ubuntu-22.04
-  #   needs: [setup, pre-check, chart-verifier]
+  #   needs: [setup, validate-submission, chart-verifier]
 
   #   # outputs:
   #   # if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
@@ -400,13 +400,13 @@ jobs:
         if: ${{ always() && needs.setup.outputs.run_build == 'true' }}
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          PR_CONTENT_ERROR_MESSAGE: ${{ needs.pre-check.outputs.pr-content-error-message }}
-          OWNERS_ERROR_MESSAGE: ${{ needs.pre-check.outputs.owners-error-message }}
+          PR_CONTENT_ERROR_MESSAGE: ${{ needs.validate-submission.outputs.pr-content-error-message }}
+          OWNERS_ERROR_MESSAGE: ${{ needs.validate-submission.outputs.owners-error-message }}
           COMMUNITY_MANUAL_REVIEW: ${{ steps.check_report.outputs.community_manual_review_required }}
           OC_INSTALL_RESULT: ${{ steps.install-oc.outcome }}
           VERIFIER_ERROR_MESSAGE: ${{ steps.check-verifier-result.outputs.verifier_error_message }}
         run: |
-          ve1/bin/pr-comment ${{ needs.pre-check.outputs.pre-check-outcome }} ${{ steps.run-verifier.outcome }} ${{ steps.check_report.conclusion }}
+          ve1/bin/pr-comment ${{ needs.validate-submission.outputs.validate-submission-outcome }} ${{ steps.run-verifier.outcome }} ${{ steps.check_report.conclusion }}
 
       # Note(komish): This step is a temporary fix for the metrics step in the next job
       # which expects the PR comment to exist at the specified filesystem location.
@@ -434,7 +434,7 @@ jobs:
             });
 
       - name: Add 'authorized-request' label to PR
-        if: ${{ always() && needs.pre-check.outputs.pre-check-outcome == 'success' && steps.run-verifier.outcome != 'failure' && needs.setup.outputs.run_build == 'true' }}
+        if: ${{ always() && needs.validate-submission.outputs.validate-submission-outcome == 'success' && steps.run-verifier.outcome != 'failure' && needs.setup.outputs.run_build == 'true' }}
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -481,7 +481,7 @@ jobs:
   release:
     name: Release Chart
     runs-on: ubuntu-22.04
-    needs: [setup, pre-check, chart-verifier]
+    needs: [setup, validate-submission, chart-verifier]
 
     steps:
       - name: Checkout
@@ -534,7 +534,7 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           REPORT_CONTENT: ${{ needs.chart-verifier.outputs.report_content }}
           REDHAT_TO_COMMUNITY: ${{ needs.chart-verifier.outputs.redhat_to_community }}
-          WEB_CATALOG_ONLY: ${{ needs.pre-check.outputs.web_catalog_only }}
+          WEB_CATALOG_ONLY: ${{ needs.validate-submission.outputs.web_catalog_only }}
           OCP_VERSION_RANGE: ${{ steps.get-ocp-range.outputs.ocp-version-range }}
         id: prepare-chart-release
         run: |
@@ -549,11 +549,11 @@ jobs:
       # Only the report file is always included.
       # The release tag format is <organization_name>-<chart_name>-<chart_version>
       - name: Create GitHub release
-        if: ${{ needs.pre-check.outputs.web_catalog_only == 'False' }}
+        if: ${{ needs.validate-submission.outputs.web_catalog_only == 'False' }}
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: ${{ needs.pre-check.outputs.release_tag }}
+          tag_name: ${{ needs.validate-submission.outputs.release_tag }}
           files: |
               ${{ steps.prepare-chart-release.outputs.report_file }}
               ${{ steps.prepare-chart-release.outputs.public_key_file }}
@@ -564,8 +564,8 @@ jobs:
       - name: Update Helm repository index
         if: ${{ needs.setup.outputs.run_build == 'true' }}
         env:
-          CHART_ENTRY_NAME: ${{ needs.pre-check.outputs.chart_entry_name }}
-          WEB_CATALOG_ONLY: ${{ needs.pre-check.outputs.web_catalog_only }}
+          CHART_ENTRY_NAME: ${{ needs.validate-submission.outputs.chart_entry_name }}
+          WEB_CATALOG_ONLY: ${{ needs.validate-submission.outputs.web_catalog_only }}
         run: |
           # export WEB_CATALOG_ONLY=`jq .is_web_catalog_only ${{ github.env.SUBMISSION_PATH }}`
 

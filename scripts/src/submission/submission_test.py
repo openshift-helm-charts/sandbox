@@ -15,7 +15,7 @@ import tempfile
 
 from dataclasses import dataclass, field
 
-from precheck import submission
+from submission import submission
 
 # Define assets that are being reused accross tests
 expected_category = "partners"
