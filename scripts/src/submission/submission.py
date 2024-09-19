@@ -481,9 +481,13 @@ class Submission:
 
             if not owners_web_catalog_only == report_web_catalog_only:
                 if owners_web_catalog_only:
-                    raise WebCatalogOnlyError("[ERROR] The web catalog distribution method is set for the chart but is not set in the report.")
+                    raise WebCatalogOnlyError(
+                        "[ERROR] The web catalog distribution method is set for the chart but is not set in the report."
+                    )
                 if report_web_catalog_only:
-                    raise WebCatalogOnlyError("[ERROR] Report indicates web catalog only but the distribution method set for the chart is not web catalog only.")
+                    raise WebCatalogOnlyError(
+                        "[ERROR] Report indicates web catalog only but the distribution method set for the chart is not web catalog only."
+                    )
 
         self.is_web_catalog_only = owners_web_catalog_only
 
@@ -517,7 +521,10 @@ class Submission:
             raise WebCatalogOnlyError(f"Failed to get report data at {report_path}")
 
         if verifier_report.get_package_digest(report_data) is None:
-            return False, "[ERROR] The web catalog distribution method requires a package digest in the report."
+            return (
+                False,
+                "[ERROR] The web catalog distribution method requires a package digest in the report.",
+            )
 
         return True, ""
 
