@@ -540,6 +540,9 @@ class Submission:
 
         return True, ""
 
+    def get_pr_number(self):
+        return self.api_url.split("/")[-1]
+
 
 def get_file_type(file_path):
     """Determine the category of a given file
