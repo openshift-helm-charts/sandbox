@@ -528,6 +528,9 @@ class Submission:
 
         return True, ""
 
+    def get_pr_number(self):
+        return self.api_url.split("/")[-1]
+
 
 def get_file_type(file_path):
     """Determine the category of a given file
@@ -568,7 +571,7 @@ def get_file_type(file_path):
     return "unknwown", None
 
 
-def download_index_data(repository, branch="gh-pages"):
+def download_index_data(repository: str, branch: str = "gh-pages") -> dict:
     """Download the helm repository index"""
     r = requests.get(
         f"https://raw.githubusercontent.com/{repository}/{branch}/index.yaml"

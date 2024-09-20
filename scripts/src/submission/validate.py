@@ -127,13 +127,13 @@ def main():
     gitutils.add_output("web_catalog_only", s.is_web_catalog_only)
     gitutils.add_output("category", s.chart.get_vendor_label())
 
+    write_submission_to_file(s, args.output)
+
     if owners_error_msg or pr_content_error_msg:
         print(
             f"exit with owners_error_msg={owners_error_msg}; pr_content_error_msg={pr_content_error_msg}"
         )
         sys.exit(20)
-
-    write_submission_to_file(s, args.output)
 
 
 if __name__ == "__main__":
