@@ -61,7 +61,7 @@ def prepare_failure_comment():
         msg = append_to(msg, get_verifier_errors_comment())
         msg = append_to(msg, errors)
         msg = append_to(msg, get_verifier_errors_trailer())
-        gitutils.add_output("error-message", errors)
+        # gitutils.add_output("error-message", errors)
     else:
         gitutils.add_output("error-message", get_failure_comment())
     return msg
