@@ -373,6 +373,14 @@ jobs:
             --api-url=${{ github.event.pull_request._links.self.href }}
           cd ..
 
+      - name: Upload chart_report errors
+        uses: actions/upload-artifact@v4
+        if: ${{ always() && steps.check_report.outcome == 'failure' }}
+        with:
+          name: chart_report_errors
+          path: pr/errors
+          if-no-files-found: ignore
+
       - name: Delete Namespace
         if: ${{ always() && steps.oc_login.conclusion == 'success' }}
         env:
@@ -428,10 +436,19 @@ jobs:
           ../ve1/bin/pip3 install .
           cd ..
 
+      # Submission information should always be present
       - name: Download submission information
         uses: actions/download-artifact@v4
         with:
           name: submission
+
+      # Chart report errors are only present if any error has occured during the chart_report
+      - name: Download chart_report errors
+        uses: actions/download-artifact@v4
+        if: ${{ needs.chart-verifier.outputs.check_report-outcome || 'skipped' == 'failure' }}
+        with:
+          name: chart_report_errors
+          path: pr/
 
       - name: Prepare PR comment
         id: pr_comment
