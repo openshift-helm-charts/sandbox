@@ -373,6 +373,14 @@ jobs:
             --api-url=${{ github.event.pull_request._links.self.href }}
           cd ..
 
+      - name: Upload chart_report errors
+        uses: actions/upload-artifact@v4
+        if: ${{ always() && steps.check_report.outcome == 'failure' }}
+        with:
+          name: chart_report_errors
+          path: pr/errors
+          if-no-files-found: ignore
+
       - name: Delete Namespace
         if: ${{ always() && steps.oc_login.conclusion == 'success' }}
         env:
@@ -432,6 +440,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: submission
+
+      - name: Download chart_report errors
+        uses: actions/download-artifact@v4
+        with:
+          name: chart_report_errors
 
       - name: Prepare PR comment
         id: pr_comment
