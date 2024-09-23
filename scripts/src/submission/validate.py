@@ -101,9 +101,11 @@ def main():
     )
 
     args = parser.parse_args()
+    s = submission.Submission(args.api_url)
     try:
-        s = submission.Submission(args.api_url)
+        s._parse_modified_files()
     except submission.SubmissionError as e:
+        write_submission_to_file(s, args.output)
         print(str(e))
         gitutils.add_output("pr-content-error-message", str(e))
         sys.exit(10)
