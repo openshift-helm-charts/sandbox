@@ -381,6 +381,7 @@ jobs:
         with:
           name: chart_report_errors
           path: pr/errors
+          if-no-files-found: error
         continue-on-error: true
 
       - name: Delete Namespace
