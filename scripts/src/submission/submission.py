@@ -237,7 +237,6 @@ class Submission:
         if not self.modified_files:
             self.modified_files = []
             self._get_modified_files()
-            self._parse_modified_files()
 
     def _get_modified_files(self):
         """Query the GitHub API in order to retrieve the list of files that are added / modified by
