@@ -387,7 +387,7 @@ class Submission:
 
         return False, msg
 
-    def parse_web_catalog_only(self, repo_path=""):
+    def parse_web_catalog_only(self, repo_path: str = ""):
         """Set the web_catalog_only attribute
 
         This is achieved by:
@@ -449,13 +449,18 @@ class Submission:
             )
 
             if not owners_web_catalog_only == report_web_catalog_only:
-                raise WebCatalogOnlyError(
-                    f"Value of web_catalog_only in OWNERS ({owners_web_catalog_only}) doesn't match the value in report ({report_web_catalog_only})"
-                )
+                if owners_web_catalog_only:
+                    raise WebCatalogOnlyError(
+                        "[ERROR] The web catalog distribution method is set for the chart but is not set in the report."
+                    )
+                if report_web_catalog_only:
+                    raise WebCatalogOnlyError(
+                        "[ERROR] Report indicates web catalog only but the distribution method set for the chart is not web catalog only."
+                    )
 
         self.is_web_catalog_only = owners_web_catalog_only
 
-    def is_valid_web_catalog_only(self, repo_path=""):
+    def is_valid_web_catalog_only(self, repo_path: str = "") -> tuple[bool, str]:
         """Verify that the submission is coherent with being a WebCatalogOnly submission
 
         A valid web_catalog_only submission must:
@@ -466,24 +471,36 @@ class Submission:
             repo_path (str): path under which the repo has been cloned on the local filesystem
 
         Returns:
-            bool: set to True if the submission is a valid WebCatalogOnly submission.
+            (bool, str): set to True if the submission is a valid WebCatalogOnly submission.
+                         set to False otherwise, with the corresponding error message.
 
         Raise:
             WebCatalogOnlyError if the submitted report cannot be found or read at the expected path.
 
         """
+        # (mgoerens) There are currently no end to end tests that checks for this scenario
         if not self.report.found:
-            return False
+            return (
+                False,
+                "[ERROR] The web catalog distribution method requires the pull request to contain a report.",
+            )
 
         if len(self.modified_files) > 1:
-            return False
+            msg = "[ERROR] The web catalog distribution method requires the pull request to be report only."
+            return False, msg
 
         report_path = os.path.join(repo_path, self.report.path)
         found, report_data = verifier_report.get_report_data(report_path)
         if not found:
             raise WebCatalogOnlyError(f"Failed to get report data at {report_path}")
 
-        return verifier_report.get_package_digest(report_data) is not None
+        if verifier_report.get_package_digest(report_data) is None:
+            return (
+                False,
+                "[ERROR] The web catalog distribution method requires a package digest in the report.",
+            )
+
+        return True, ""
 
 
 def get_file_type(file_path):
