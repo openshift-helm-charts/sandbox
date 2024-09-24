@@ -389,23 +389,23 @@ class Submission:
 
         return False, ""
 
-    def is_valid_owners_submission(self):
+    def is_valid_owners_submission(self) -> tuple[bool, str]:
         """Check wether the files in this Submission are valid for an OWNERS PR
 
         A valid OWNERS PR contains only the OWNERS file, and is not submitted by a partner
 
         """
         if (self.chart.category == "partners") and self.modified_owners:
-            # The PR contains an OWNERS file for a parnter
+            # The PR contains an OWNERS file for a partner
             msg = "[ERROR] OWNERS file should never be set directly by partners. See certification docs."
             return False, msg
 
         if len(self.modified_owners) == 1 and len(self.modified_files) == 1:
             # Happy path: PR contains a single modified files that is an OWNERS, and is not for a partner
-            return True, ""
+            return True, "[INFO] OWNERS file changes require manual review by maintainers."
 
         if self.modified_owners:
-            # At least one OWNERS file, with other files (modified_files > 1)
+            # At least one OWNERS file, with other files (modified_files > 1) - or multiple OWNERS files
             msg = "[ERROR] Send OWNERS file by itself in a separate PR."
             return False, msg
 
@@ -507,6 +507,7 @@ class Submission:
             WebCatalogOnlyError if the submitted report cannot be found or read at the expected path.
 
         """
+        # (mgoerens) There are currently no end to end tests that checks for this scenario
         if not self.report.found:
             return False, "nope"
 
