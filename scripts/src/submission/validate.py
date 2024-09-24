@@ -59,7 +59,12 @@ def craft_pr_content_error_msg(s: submission.Submission, repository: str):
 
 
 def craft_owners_error_msg(s):
-    _, msg = s.is_valid_owners_submission()
+    is_valid, msg = s.is_valid_owners_submission()
+    if is_valid:
+        if s.chart.category == "partners":
+            msg = "[ERROR] OWNERS file should never be set directly by partners. See certification docs."
+        else:
+            msg = "[INFO] OWNERS file changes require manual review by maintainers."
     return msg
 
 
