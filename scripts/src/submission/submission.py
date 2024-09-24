@@ -518,15 +518,37 @@ def get_file_type(file_path):
     return "unknwown", None
 
 
-def download_index_data(repository, branch="gh_pages"):
-    """Download the helm repository index"""
-    r = requests.get(
-        f"https://raw.githubusercontent.com/{repository}/{branch}/index.yaml"
-    )
+def download_index_data(
+    repository: str, branch: str = "gh-pages", ignore_missing: bool = False
+) -> dict:
+    """Download the helm repository index
 
-    if r.status_code == 200:
-        data = yaml.load(r.text, Loader=Loader)
+    Args:
+        repository (str): Name of the GitHub repository to download the index file from.
+                            (e.g. "openshift-helm-charts/charts")
+        branch (str): GitHub branch to download the index file from. Defaults to "gh-pages".
+        ignore_missing (bool): Set to True to return a valid empty index, in the case the
+                            download of index.yaml fails.
+
+    Returns:
+        dict: The helm repository index
+
+    Raise:
+        HelmIndexError if the download fails. If not on the production repository, doesn't raise
+            and returns an empty index file instead.
+        HelmIndexError if the index file is not valid YAML.
+
+    """
+    index_url = f"https://raw.githubusercontent.com/{repository}/{branch}/index.yaml"
+    r = requests.get(index_url)
+
+    data = {"apiVersion": "v1", "entries": {}}
+    if r.status_code != 200 and ignore_missing:
+        raise HelmIndexError(f"Error retrieving index file at {index_url}")
     else:
-        data = {}
+        try:
+            data = yaml.load(r.text, Loader=Loader)
+        except yaml.YAMLError as e:
+            raise HelmIndexError(f"Error parsing index file at {index_url}") from e
 
     return data
