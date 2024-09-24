@@ -359,13 +359,18 @@ class Submission:
         else:
             self.modified_unknown.append(file_path)
 
-    def is_valid_certification_submission(self, ignore_owners: bool = False):
+    def is_valid_certification_submission(self, ignore_owners: bool = False) -> tuple[bool, str]:
         """Check wether the files in this Submission are valid to attempt to certify a Chart
 
         We expect the user to provide either:
         * Only a report file
         * Only a chart - either as source or tarball
         * Both the report and the chart
+
+        Note: While an OWNERS file should never be present in this type of submission, the case of
+        an invalid Submission containing a mix of OWNERS and other files is handled in the
+        is_valid_owners_submission method. The flag "ignore_owners" allows for skipping this
+        speficic check.
 
         Returns False if:
         * The user attempts to create the OWNERS file for its project.
