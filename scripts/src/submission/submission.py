@@ -68,7 +68,29 @@ class Chart:
     name: str = None
     version: str = None
 
-    def register_chart_info(self, category, organization, name, version):
+    def register_chart_info(
+        self, category: str, organization: str, name: str, version: str = None
+    ):
+        """Initialize the chart's category, organization, name and version
+
+        Providing a version is not mandatory. In case of a Submission that only contains an OWNERS
+        file, a version is not present.
+
+        This function ensures that once set, the chart's information are not modified, as a PR must
+        only relate to a unique chart.
+
+        Args:
+            category (str): Type of profile (community, partners, or redhat)
+            organization (str): Name of the organization (ex: hashicorp)
+            chart (str): Name of the chart (ex: vault)
+            version (str): The version of the chart (ex: 1.4.0)
+
+        Raises:
+            DuplicateChartError if the caller attempts to modify the chart's information
+            ChartError if the redhat prefix is incorrectly set
+            VersionError if the provided version is not semver compatible
+
+        """
         if (
             (self.category and self.category != category)
             or (self.organization and self.organization != organization)
@@ -77,12 +99,6 @@ class Chart:
         ):
             msg = "[ERROR] A PR must contain only one chart. Current PR includes files for multiple charts."
             raise DuplicateChartError(msg)
-
-        if not semver.VersionInfo.is_valid(version):
-            msg = (
-                f"[ERROR] Helm chart version is not a valid semantic version: {version}"
-            )
-            raise VersionError(msg)
 
         # Red Hat charts must carry the Red Hat prefix.
         if organization == "redhat":
@@ -98,7 +114,13 @@ class Chart:
         self.category = category
         self.organization = organization
         self.name = name
-        self.version = version
+
+        if version:
+            if not semver.VersionInfo.is_valid(version):
+                msg = f"[ERROR] Helm chart version is not a valid semantic version: {version}"
+                raise VersionError(msg)
+
+            self.version = version
 
     def get_owners_path(self):
         return f"charts/{self.category}/{self.organization}/{self.name}/OWNERS"
