@@ -59,9 +59,7 @@ def craft_pr_content_error_msg(s: submission.Submission, repository: str):
 
 
 def craft_owners_error_msg(s):
-    is_valid, msg = s.is_valid_owners_submission()
-    if is_valid:
-        msg = "[INFO] OWNERS file changes require manual review by maintainers."
+    _, msg = s.is_valid_owners_submission()
     return msg
 
 
@@ -124,10 +122,11 @@ def main():
             print(pr_content_error_msg)
             gitutils.add_output("pr-content-error-message", pr_content_error_msg)
 
+    # Some subsequent steps require those github outputs
     gitutils.add_output("chart_entry_name", s.chart.name)
     gitutils.add_output("release_tag", s.chart.get_release_tag())
     gitutils.add_output("web_catalog_only", s.is_web_catalog_only)
-    gitutils.add_output("category", s.chart.get_vendor_label())
+    gitutils.add_output("category", s.chart.get_vendor_type())
 
     write_submission_to_file(s, args.output)
 

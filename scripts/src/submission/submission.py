@@ -111,17 +111,6 @@ class Chart:
             msg = f"[ERROR] The redhat- prefix is reserved for charts provided by Red Hat. Your chart: {name}"
             raise ChartError(msg)
 
-        # Red Hat charts must carry the Red Hat prefix.
-        if organization == "redhat":
-            if not name.startswith("redhat-"):
-                msg = f"[ERROR] Charts provided by Red Hat must have their name begin with the redhat- prefix. I.e. redhat-{name}"
-                raise ChartError(msg)
-
-        # Non Red Hat charts must not carry the Red Hat prefix.
-        if organization != "redhat" and name.startswith("redhat-"):
-            msg = f"[ERROR] The redhat- prefix is reserved for charts provided by Red Hat. Your chart: {name}"
-            raise ChartError(msg)
-
         self.category = category
         self.organization = organization
         self.name = name
@@ -136,7 +125,8 @@ class Chart:
     def get_owners_path(self):
         return f"charts/{self.category}/{self.organization}/{self.name}/OWNERS"
 
-    def get_vendor_label(self):
+    def get_vendor_type(self) -> str:
+        """Derive the vendor type from the chart's category."""
         if self.category == "partners":
             return "partner"
         return self.category
@@ -399,23 +389,23 @@ class Submission:
 
         return False, ""
 
-    def is_valid_owners_submission(self):
+    def is_valid_owners_submission(self) -> tuple[bool, str]:
         """Check wether the files in this Submission are valid for an OWNERS PR
 
         A valid OWNERS PR contains only the OWNERS file, and is not submitted by a partner
 
         """
         if (self.chart.category == "partners") and self.modified_owners:
-            # The PR contains an OWNERS file for a parnter
+            # The PR contains an OWNERS file for a partner
             msg = "[ERROR] OWNERS file should never be set directly by partners. See certification docs."
             return False, msg
 
         if len(self.modified_owners) == 1 and len(self.modified_files) == 1:
             # Happy path: PR contains a single modified files that is an OWNERS, and is not for a partner
-            return True, ""
+            return True, "[INFO] OWNERS file changes require manual review by maintainers."
 
         if self.modified_owners:
-            # At least one OWNERS file, with other files (modified_files > 1)
+            # At least one OWNERS file, with other files (modified_files > 1) - or multiple OWNERS files
             msg = "[ERROR] Send OWNERS file by itself in a separate PR."
             return False, msg
 
@@ -517,6 +507,7 @@ class Submission:
             WebCatalogOnlyError if the submitted report cannot be found or read at the expected path.
 
         """
+        # (mgoerens) There are currently no end to end tests that checks for this scenario
         if not self.report.found:
             return False, "nope"
 

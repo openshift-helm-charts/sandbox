@@ -10,7 +10,7 @@ import requests
 import semantic_version
 import semver
 import yaml
-from environs import Env, EnvValidationError
+from environs import Env  # , EnvValidationError
 
 try:
     from yaml import CLoader as Loader
@@ -516,10 +516,11 @@ def main():
     generated_report_path = os.environ.get("GENERATED_REPORT_PATH")
     generated_report_info_path = os.environ.get("REPORT_SUMMARY_PATH")
     env = Env()
-    try:
-        web_catalog_only = env.bool("WEB_CATALOG_ONLY", False)
-    except EnvValidationError:
-        web_catalog_only = False
+    web_catalog_only = env.bool("WEB_CATALOG_ONLY", False)
+    # try:
+    #     web_catalog_only = env.bool("WEB_CATALOG_ONLY", False)
+    # except EnvValidationError:
+    #     web_catalog_only = False
 
     submitted_report_path = os.path.join(
         "charts", category, organization, chart, version, "report.yaml"
