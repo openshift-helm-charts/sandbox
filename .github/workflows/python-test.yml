@@ -3,8 +3,8 @@ name: Python Test
 on:
   pull_request:
     paths:
-    # Only the precheck module currently provides unit tests
-    - 'scripts/src/precheck/*'
+    # Only the submission module currently provides unit tests
+    - 'scripts/src/submission/*'
 
 jobs:
   enforce:
@@ -26,4 +26,4 @@ jobs:
         cd ..
     - name: Run pytest
       run: |
-        ./ve1/bin/pytest scripts/src/precheck/
+        ./ve1/bin/pytest scripts/src/submission/
