@@ -525,7 +525,7 @@ def get_file_type(file_path):
     return "unknwown", None
 
 
-def download_index_data(repository, branch="gh_pages"):
+def download_index_data(repository: str, branch: str = "gh-pages") -> dict:
     """Download the helm repository index"""
     r = requests.get(
         f"https://raw.githubusercontent.com/{repository}/{branch}/index.yaml"
@@ -534,6 +534,6 @@ def download_index_data(repository, branch="gh_pages"):
     if r.status_code == 200:
         data = yaml.load(r.text, Loader=Loader)
     else:
-        data = {}
+        data = {"apiVersion": "v1", "entries": {}}
 
     return data
