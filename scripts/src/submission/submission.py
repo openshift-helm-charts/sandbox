@@ -399,25 +399,43 @@ class Submission:
     def is_valid_owners_submission(self) -> tuple[bool, str]:
         """Check wether the files in this Submission are valid for an OWNERS PR
 
-        A valid OWNERS PR contains only the OWNERS file, and is not submitted by a partner
+        Returns True if the PR only modified files is an OWNERS file.
 
+        Returns False in all other cases.
         """
-        if (self.chart.category == "partners") and self.modified_owners:
-            # The PR contains an OWNERS file for a partner
-            msg = "[ERROR] OWNERS file should never be set directly by partners. See certification docs."
-            return False, msg
-
         if len(self.modified_owners) == 1 and len(self.modified_files) == 1:
-            # Happy path: PR contains a single modified files that is an OWNERS, and is not for a partner
-            return True, "[INFO] OWNERS file changes require manual review by maintainers."
+            return True, ""
 
+        msg = ""
         if self.modified_owners:
-            # At least one OWNERS file, with other files (modified_files > 1) - or multiple OWNERS files
             msg = "[ERROR] Send OWNERS file by itself in a separate PR."
-            return False, msg
+        else:
+            msg = "No OWNERS file provided"
 
-        # No OWNERS have been provided
-        return False, "No OWNERS file provided"
+        return False, msg
+
+    # def is_valid_owners_submission(self) -> tuple[bool, str]:
+    #     """Check wether the files in this Submission are valid for an OWNERS PR
+
+    #     A valid OWNERS PR contains only the OWNERS file, and is not submitted by a partner
+
+    #     """
+    #     if (self.chart.category == "partners") and self.modified_owners:
+    #         # The PR contains an OWNERS file for a partner
+    #         msg = "[ERROR] OWNERS file should never be set directly by partners. See certification docs."
+    #         return False, msg
+
+    #     if len(self.modified_owners) == 1 and len(self.modified_files) == 1:
+    #         # Happy path: PR contains a single modified files that is an OWNERS, and is not for a partner
+    #         return True, "[INFO] OWNERS file changes require manual review by maintainers."
+
+    #     if self.modified_owners:
+    #         # At least one OWNERS file, with other files (modified_files > 1) - or multiple OWNERS files
+    #         msg = "[ERROR] Send OWNERS file by itself in a separate PR."
+    #         return False, msg
+
+    #     # No OWNERS have been provided
+    #     return False, "No OWNERS file provided"
 
     def parse_web_catalog_only(self, repo_path: str = ""):
         """Set the web_catalog_only attribute
