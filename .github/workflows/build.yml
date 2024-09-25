@@ -486,7 +486,7 @@ jobs:
             });
 
       - name: Add 'authorized-request' label to PR
-        if: ${{ needs.validate-submission.outputs.validate-submission-outcome == 'success' && needs.chart-verifier.outputs.run-verifier-outcome != 'failure' && needs.setup.outputs.run_build == 'true' }}
+        if: ${{ needs.validate-submission.outputs.validate-submission-outcome == 'success' && needs.chart-verifier.outputs.run-verifier-outcome == 'success' && needs.setup.outputs.run_build == 'true' }}
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
