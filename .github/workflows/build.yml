@@ -114,7 +114,7 @@ jobs:
       chart_entry_name: ${{ steps.validate-submission.outputs.chart_entry_name }}
       release_tag: ${{ steps.validate-submission.outputs.release_tag }}
       web_catalog_only: ${{ steps.validate-submission.outputs.web_catalog_only }}
-      category: ${{ steps.validate-submission.outputs.category }}
+      vendor_type: ${{ steps.validate-submission.outputs.vendor_type }}
 
     steps:
       - name: Checkout
@@ -194,13 +194,6 @@ jobs:
     outputs:
       report_content: ${{ steps.check_report.outputs.report_content }}
       redhat_to_community: ${{ steps.check_report.outputs.redhat_to_community }}
-      # message_file: ${{ steps.pr_comment.outputs.message-file }}
-      # message_text_base64: ${{ steps.encode_pr_comment.outputs.message-text-base64 }}
-      # web_catalog_only: ${{ steps.check_pr_content.outputs.web_catalog_only }}
-      # chart_entry_name: ${{ steps.check_pr_content.outputs.chart-entry-name }}
-      # release_tag: ${{ steps.check_pr_content.outputs.release_tag }}
-      # ocp-version-range: ${{ steps.get-ocp-range.outputs.ocp-version-range }}
-
       community_manual_review_required: ${{ steps.check_report.outputs.community_manual_review_required }}
       install-oc-outcome: ${{ steps.install-oc.outcome }}
       verifier_error_message: ${{ steps.check-verifier-result.outputs.verifier_error_message }}
@@ -359,7 +352,7 @@ jobs:
         if: ${{ needs.setup.outputs.run_build == 'true' }}
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          VENDOR_TYPE: ${{ needs.validate-submission.outputs.category }}
+          VENDOR_TYPE: ${{ needs.validate-submission.outputs.vendor_type }}
           WEB_CATALOG_ONLY: ${{ needs.validate-submission.outputs.web_catalog_only }}
           REPORT_GENERATED: ${{ steps.verify_requires.outputs.report_needed }}
           GENERATED_REPORT_PATH: ${{ steps.run-verifier.outputs.report_file }}
@@ -367,8 +360,6 @@ jobs:
           WORKFLOW_WORKING_DIRECTORY: "../pr"
           OCP_VERSION_RANGE: ${{ steps.get-ocp-range.outputs.ocp-version-range }}
         run: |
-          # export VENDOR_TYPE=`jq .chart.category ${{ github.env.SUBMISSION_PATH }}`
-          # export WEB_CATALOG_ONLY=`jq .is_web_catalog_only ${{ github.env.SUBMISSION_PATH }}`
           cd pr-branch
           ../ve1/bin/chart-pr-review \
             --directory=../pr \

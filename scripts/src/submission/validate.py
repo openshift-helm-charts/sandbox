@@ -94,14 +94,6 @@ def main():
         required=True,
         help="Path to artifact file to write Submission json representation",
     )
-    parser.add_argument(
-        "-c",
-        "--chart_submission",
-        dest="check_chart_submission",
-        default=False,
-        action="store_true",
-        help="Signify that the PR referenced by api_url is expected to be a certification submission",
-    )
 
     args = parser.parse_args()
     s = submission.Submission(args.api_url)
@@ -120,18 +112,16 @@ def main():
         print(owners_error_msg)
         gitutils.add_output("owners-error-message", owners_error_msg)
 
-    pr_content_error_msg = ""
-    if args.check_chart_submission:  # TODO: why ?
-        pr_content_error_msg = craft_pr_content_error_msg(s, args.repository)
-        if pr_content_error_msg:
-            print(pr_content_error_msg)
-            gitutils.add_output("pr-content-error-message", pr_content_error_msg)
+    pr_content_error_msg = craft_pr_content_error_msg(s, args.repository)
+    if pr_content_error_msg:
+        print(pr_content_error_msg)
+        gitutils.add_output("pr-content-error-message", pr_content_error_msg)
 
     # Some subsequent steps require those github outputs
     gitutils.add_output("chart_entry_name", s.chart.name)
     gitutils.add_output("release_tag", s.chart.get_release_tag())
     gitutils.add_output("web_catalog_only", s.is_web_catalog_only)
-    gitutils.add_output("category", s.chart.get_vendor_type())
+    gitutils.add_output("vendor_type", s.chart.get_vendor_type())
 
     write_submission_to_file(s, args.output)
 
