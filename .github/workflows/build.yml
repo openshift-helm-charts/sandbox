@@ -438,7 +438,7 @@ jobs:
         with:
           name: submission
 
-      # Chart report errors are only present if any error has occured during the chart_report
+      # Chart report errors are only present if an error has occured during the chart_report
       - name: Download chart_report errors
         uses: actions/download-artifact@v4
         if: ${{ needs.chart-verifier.outputs.upload-chart-report-errors-outcome == 'success' }}
@@ -488,7 +488,6 @@ jobs:
 
       - name: Add 'authorized-request' label to PR
         if: ${{ needs.validate-submission.outputs.validate-submission-outcome == 'success' && needs.chart-verifier.outputs.run-verifier-outcome != 'failure' && needs.setup.outputs.run_build == 'true' }}
-        # if: ${{ needs.validate-submission.outputs.validate-submission-outcome == 'success' && needs.chart-verifier.outputs.run-verifier-outcome || 'skipped' == 'success' && needs.setup.outputs.run_build == 'true' }}
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -617,8 +616,6 @@ jobs:
           CHART_ENTRY_NAME: ${{ needs.validate-submission.outputs.chart_entry_name }}
           WEB_CATALOG_ONLY: ${{ needs.validate-submission.outputs.web_catalog_only }}
         run: |
-          # export WEB_CATALOG_ONLY=`jq .is_web_catalog_only ${{ github.env.SUBMISSION_PATH }}`
-
           INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "gh-pages"; else echo "${GITHUB_REF##*/}-gh-pages"; fi)
 
           echo "[INFO] Creating Git worktree for index branch"

@@ -275,7 +275,7 @@ class Submission:
                     if "filename" in file:
                         self.modified_files.append(file["filename"])
 
-    def _parse_modified_files(self):
+    def parse_modified_files(self):
         """Classify the list of modified files.
 
         Modified files are categorized into 5 groups, mapping to 5 class attributes:
