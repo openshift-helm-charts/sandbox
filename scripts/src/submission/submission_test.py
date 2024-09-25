@@ -415,7 +415,8 @@ scenarios_web_catalog_only = [
         owners_web_catalog_only="true",
         report_web_catalog_only="false",
         excepted_exception=pytest.raises(
-            submission.WebCatalogOnlyError, match="doesn't match the value"
+            submission.WebCatalogOnlyError,
+            match="The web catalog distribution method is set for the chart but is not set in the report.",
         ),
     ),
     # Submission contains a report file with WebCatalogOnly set to False, not matching the content of OWNERS
@@ -424,7 +425,8 @@ scenarios_web_catalog_only = [
         owners_web_catalog_only="false",
         report_web_catalog_only="true",
         excepted_exception=pytest.raises(
-            submission.WebCatalogOnlyError, match="doesn't match the value"
+            submission.WebCatalogOnlyError,
+            match="Report indicates web catalog only but the distribution method set for the chart is not web catalog only.",
         ),
     ),
     # Submission doesn't relate to an existing OWNERS
@@ -554,7 +556,8 @@ class IsWebCatalogOnlyScenario:
     input_submission: submission.Submission
     create_report: bool = True
     report_has_digest: bool = None
-    expected_output: bool = None
+    expected_is_valid_web_catalog_only: bool = None
+    expected_reason: str = ""
 
 
 scenarios_is_web_catalog_only = [
@@ -562,19 +565,21 @@ scenarios_is_web_catalog_only = [
     IsWebCatalogOnlyScenario(
         input_submission=make_new_report_only_submission(),
         report_has_digest=True,
-        expected_output=True,
+        expected_is_valid_web_catalog_only=True,
     ),
     # Submission contains only a report, but report contains no digest
     IsWebCatalogOnlyScenario(
         input_submission=make_new_report_only_submission(),
         report_has_digest=False,
-        expected_output=False,
+        expected_is_valid_web_catalog_only=False,
+        expected_reason="The web catalog distribution method requires a package digest in the report.",
     ),
     # Submission contains no report
     IsWebCatalogOnlyScenario(
         input_submission=make_new_tarball_only_submission(),
         create_report=False,
-        expected_output=False,
+        expected_is_valid_web_catalog_only=False,
+        expected_reason="The web catalog distribution method requires the pull request to contain a report.",
     ),
     # Submission contains a report and other files
     IsWebCatalogOnlyScenario(
@@ -597,7 +602,8 @@ scenarios_is_web_catalog_only = [
             ),
         ),
         report_has_digest=True,
-        expected_output=False,
+        expected_is_valid_web_catalog_only=False,
+        expected_reason="The web catalog distribution method requires the pull request to be report only.",
     ),
 ]
 
@@ -637,10 +643,14 @@ def test_is_valid_web_catalog_only(test_scenario):
                 )
             report_file.close()
 
-        assert (
+        is_valid_web_catalog_only, reason = (
             test_scenario.input_submission.is_valid_web_catalog_only(repo_path=temp_dir)
-            == test_scenario.expected_output
         )
+        assert (
+            test_scenario.expected_is_valid_web_catalog_only
+            == is_valid_web_catalog_only
+        )
+        assert test_scenario.expected_reason in reason
 
 
 def create_new_index(charts: list[submission.Chart] = []):
