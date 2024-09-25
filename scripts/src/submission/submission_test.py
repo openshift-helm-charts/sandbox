@@ -445,18 +445,25 @@ scenarios_web_catalog_only = [
             submission.WebCatalogOnlyError, match="Failed to get report data"
         ),
     ),
-    # The OWNERS file for this chart doesn't contain the WebCatalogOnly key
+    # The OWNERS file for this chart doesn't contain the WebCatalogOnly key, defaulting to False, and matching the report value
     WebCatalogOnlyScenario(
         input_submission=make_new_report_only_submission(),
-        owners_web_catalog_only=None,
+        owners_web_catalog_only="false",
         report_web_catalog_only="false",
+        expected_output=False,
+    ),
+    # The OWNERS file for this chart doesn't contain the WebCatalogOnly key, defaulting to False, and not matching the report value
+    WebCatalogOnlyScenario(
+        input_submission=make_new_report_only_submission(),
+        owners_web_catalog_only="false",
+        report_web_catalog_only="true",
         excepted_exception=pytest.raises(submission.WebCatalogOnlyError),
     ),
     # Submission contains a report, that doesn't contain the WebCatalogOnly key
     WebCatalogOnlyScenario(
         input_submission=make_new_report_only_submission(),
-        owners_web_catalog_only=None,
-        report_web_catalog_only="false",
+        owners_web_catalog_only="false",
+        report_web_catalog_only=None,
         excepted_exception=pytest.raises(submission.WebCatalogOnlyError),
     ),
     # Submission doesn't contain a report, OWNERS file has WebCatalogOnly set to True

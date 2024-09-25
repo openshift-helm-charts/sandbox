@@ -439,10 +439,15 @@ class Submission:
             owners_web_catalog_only = owners_file.get_web_catalog_only(
                 owners_data, raise_if_missing=True
             )
-        except owners_file.ConfigKeyMissing as e:
-            raise WebCatalogOnlyError(
-                f"Failed to find webCatalogOnly key in OWNERS data at {owners_path}"
-            ) from e
+        except owners_file.ConfigKeyMissing:
+            print(
+                f"[INFO] webCatalogOnly key not found in OWNERS data at {owners_path}. Assuming False"
+            )
+            owners_web_catalog_only = False
+        else:
+            print(
+                f"[INFO] webCatalogOnly/providerDelivery from OWNERS : {owners_web_catalog_only}"
+            )
 
         if self.report.found:
             report_path = os.path.join(repo_path, self.report.path)
