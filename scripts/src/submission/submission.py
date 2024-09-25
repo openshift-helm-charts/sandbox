@@ -11,7 +11,7 @@ except ImportError:
 
 from dataclasses import dataclass, field
 
-from checkprcontent import checkpr
+from reporegex import matchers
 from owners import owners_file
 from tools import gitutils
 from reporegex import matchers
@@ -572,7 +572,7 @@ def get_file_type(file_path):
     - or another "unknown" category
 
     """
-    pattern, reportpattern, tarballpattern = checkpr.get_file_match_compiled_patterns()
+    pattern, reportpattern, tarballpattern = matchers.get_file_match_compiled_patterns()
     owners_pattern = re.compile(
         matchers.submission_path_matcher(include_version_matcher=False) + r"/OWNERS"
     )

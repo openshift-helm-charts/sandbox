@@ -7,7 +7,7 @@ import sys
 import requests
 
 sys.path.append("../")
-from checkprcontent import checkpr
+from reporegex import matchers
 from tools import gitutils
 
 pr_files = []
@@ -19,7 +19,7 @@ xRateRemain = "X-RateLimit-Remaining"
 # TODO(baijum): Move this code under chartsubmission.chart module
 def get_modified_charts(api_url):
     files = get_modified_files(api_url)
-    pattern, _, _ = checkpr.get_file_match_compiled_patterns()
+    pattern, _, _ = matchers.get_file_match_compiled_patterns()
     for file in files:
         match = pattern.match(file)
         if match:
