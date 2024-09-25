@@ -32,7 +32,7 @@ import time
 import urllib.parse
 
 import yaml
-from environs import Env  # , EnvValidationError
+from environs import Env
 
 try:
     from yaml import CDumper as Dumper
@@ -449,10 +449,6 @@ def main():
 
     env = Env()
     web_catalog_only = env.bool("WEB_CATALOG_ONLY", False)
-    # try:
-    #     web_catalog_only = env.bool("WEB_CATALOG_ONLY", False)
-    # except EnvValidationError:
-    #     web_catalog_only = False
     ocp_version_range = os.environ.get("OCP_VERSION_RANGE", "N/A")
 
     print(f"[INFO] webCatalogOnly/providerDelivery is {web_catalog_only}")

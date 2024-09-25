@@ -209,12 +209,6 @@ def main():
     vendor_label = s.chart.organization
     chart_name = s.chart.name
 
-    # s = validate.read_submission_from_file(articact_path=submission_path)
-
-    # issue_number = open("./pr/NR").read().strip()
-    # vendor_label = open("./pr/vendor").read().strip()
-    # chart_name = open("./pr/chart").read().strip()
-
     community_manual_review = os.environ.get("COMMUNITY_MANUAL_REVIEW", False)
     oc_install_result = os.environ.get("OC_INSTALL_RESULT")
 
