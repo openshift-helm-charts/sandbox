@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 
 import requests
 import yaml
-from environs import Env, EnvValidationError
+from environs import Env
 
 try:
     from yaml import CDumper as Dumper
@@ -217,10 +217,7 @@ def main():
     chart_entry = _decode_chart_entry(args.chart_entry_encoded)
 
     env = Env()
-    try:
-        web_catalog_only = env.bool("WEB_CATALOG_ONLY", False)
-    except EnvValidationError:
-        web_catalog_only = False
+    web_catalog_only = env.bool("WEB_CATALOG_ONLY", False)
 
     index_data = download_index(args.index_file, args.repository, args.index_branch)
     update_index(
