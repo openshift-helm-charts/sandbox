@@ -386,12 +386,12 @@ jobs:
           ve1/bin/sa-for-chart-testing --delete charts-${{ github.event.number }}
 
       # TODO: test remove altogether: rght now only ensure report.yaml file exists
-      - name: Save PR artifact
-        env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-        if: ${{ always() && needs.setup.outputs.run_build == 'true' }}
-        run: |
-          ve1/bin/pr-artifact --directory=./pr --pr-number=${{ github.event.number }} --api-url=${{ github.event.pull_request._links.self.href }}
+      # - name: Save PR artifact
+      #   env:
+      #     BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      #   if: ${{ always() && needs.setup.outputs.run_build == 'true' }}
+      #   run: |
+      #     ve1/bin/pr-artifact --directory=./pr --pr-number=${{ github.event.number }} --api-url=${{ github.event.pull_request._links.self.href }}
 
   manage-gh-pr:
     name: Comment and merge PR
