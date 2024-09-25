@@ -150,8 +150,7 @@ jobs:
           ./ve1/bin/validate-submission \
             --api_url "${{ github.event.pull_request._links.self.href }}" \
             --output "$SUBMISSION_PATH" \
-            --repository ${{ github.repository }} \
-            --chart_submission
+            --repository ${{ github.repository }}
       
       - name: Upload PR information
         uses: actions/upload-artifact@v4
