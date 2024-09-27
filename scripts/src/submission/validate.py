@@ -33,10 +33,17 @@ def craft_pr_content_error_msg(s: submission.Submission, repository: str) -> str
     except submission.SubmissionError as e:
         raise ParseFilesError(str(e))
 
-    # Checks that this PR is a valid "Chart certification" PR
-    is_valid, msg = s.is_valid_certification_submission(ignore_owners=True)
-    if not is_valid:
+    if s.modified_unknown:
+        msg = (
+            "[ERROR] PR includes one or more files not related to charts: "
+            + ", ".join(s.modified_unknown)
+        )
         return msg
+
+    # # Checks that this PR is a valid "Chart certification" PR
+    # is_valid, msg = s.is_valid_certification_submission(ignore_owners=True)
+    # if not is_valid:
+    #     return msg
 
     # Parse the modified files and determine if it is a "web_catalog_only" certification
     try:
