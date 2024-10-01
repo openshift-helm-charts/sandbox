@@ -9,7 +9,7 @@ Feature: Report sha value in report
     Then the user sees the pull request is merged
     And the index.yaml file is updated with an entry for the submitted chart
 
-    @partners @full @reportSha
+    @partners @full @testme @reportSha
     Examples:
       | vendor_type  | vendor    | report_path               |
       | partners     | hashicorp | tests/data/HC-19/report_sha_good/report.yaml    |
@@ -23,12 +23,12 @@ Feature: Report sha value in report
     Then the pull request is not merged
     And user gets the "<message>" in the pull request comment
 
-    @partners @full @smoke @reportSha
+    @partners @full @testme @smoke @reportSha
     Examples:
       | vendor_type  | vendor    | report_path                                          | message                                         |
       | partners     | hashicorp | tests/data/HC-19/report_sha_bad/report.yaml          | digest in report did not match report content  |
 
-    @partners @full @reportSha
+    @partners @full @testme @reportSha
     Examples:
       | vendor_type  | vendor    | report_path                                          | message                                         |
       | partners     | hashicorp | tests/data/HC-19/report_edited_sha_bad/report.yaml   | digest in report did not match report content  |

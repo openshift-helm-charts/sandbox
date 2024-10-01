@@ -9,17 +9,17 @@ Feature: Multiple charts submission in one PR
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
     
-        @partners @full @smoke
+        @partners @full @smoke @testme
         Examples:
             | vendor_type  | vendor    | report_path_1                         | report_path_2                        | message                                                                         |
             | partners     | hashicorp | tests/data/common/partner/report.yaml | tests/data/HC-18/partner/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @redhat @full
+        @redhat @full @testme
         Examples:
             | vendor_type  | vendor    | report_path_1                        | report_path_2                       | message                                                                         |
             | redhat       | redhat    | tests/data/common/redhat/report.yaml | tests/data/HC-18/redhat/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @community @full
+        @community @full @testme
         Examples:
             | vendor_type  | vendor    | report_path_1                           | report_path_2                          | message                                                                         |
             | community    | redhat    | tests/data/common/community/report.yaml | tests/data/HC-18/community/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
@@ -31,17 +31,17 @@ Feature: Multiple charts submission in one PR
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
     
-        @partners @full
+        @partners @full @testme
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @redhat @full
+        @redhat @full @testme
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | redhat       | redhat    | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @community @full
+        @community @full @testme
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | community    | redhat    | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
@@ -53,17 +53,17 @@ Feature: Multiple charts submission in one PR
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
     
-        @partners @full
+        @partners @full @testme
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @redhat @full @smoke
+        @redhat @full @testme @smoke
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | redhat       | redhat    | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @community @full
+        @community @full @testme
         Examples:
             | vendor_type  | vendor    | chart_path_1                | chart_path_2                | message                                                                         |
             | community    | redhat    | tests/data/vault-0.17.0.tgz | tests/data/vault-0.18.0.tgz | A PR must contain only one chart. Current PR includes files for multiple charts |
@@ -75,17 +75,17 @@ Feature: Multiple charts submission in one PR
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
     
-        @partners @full
+        @partners @full @testme
         Examples:
             | vendor_type  | vendor    | chart_path                  | report_path                          | message                                                                         |
             | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/HC-18/partner/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @redhat @full
+        @redhat @full @testme
         Examples:
             | vendor_type  | vendor    | chart_path                  | report_path                         | message                                                                         |
             | redhat       | redhat    | tests/data/vault-0.17.0.tgz | tests/data/HC-18/redhat/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @community @full @smoke
+        @community @full @testme @smoke
         Examples:
             | vendor_type  | vendor    | chart_path                  | report_path                            | message                                                                         |
             | community    | redhat    | tests/data/vault-0.17.0.tgz | tests/data/HC-18/community/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
@@ -97,17 +97,17 @@ Feature: Multiple charts submission in one PR
         Then the pull request is not merged
         And user gets the "<message>" in the pull request comment
     
-        @partners @full
+        @partners @full @testme
         Examples:
             | vendor_type  | vendor    | chart_path                  | report_path                          | message                                                                         |
             | partners     | hashicorp | tests/data/vault-0.17.0.tgz | tests/data/HC-18/partner/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @redhat @full
+        @redhat @full @testme
         Examples:
             | vendor_type  | vendor    | chart_path                  | report_path                         | message                                                                         |
             | redhat       | redhat    | tests/data/vault-0.17.0.tgz | tests/data/HC-18/redhat/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |
         
-        @community @full
+        @community @full @testme
         Examples:
             | vendor_type  | vendor    | chart_path                  | report_path                            | message                                                                         |
             | community    | redhat    | tests/data/vault-0.17.0.tgz | tests/data/HC-18/community/report.yaml | A PR must contain only one chart. Current PR includes files for multiple charts |

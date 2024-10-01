@@ -6,7 +6,7 @@ Feature: OWNERS file submissions
         When the vendor label set to "<vendor_label>" and vendor name set to "<vendor_name>"
         Then validation CI should conclude with result "<result>"
             
-        @owners @full @smoke
+        @owners @full @testme @smoke
         Examples:
             | chart_name      | vendor_label | vendor_name   | result  |
             | redhat-prefixed | redhat       | Red Hat       | success |
