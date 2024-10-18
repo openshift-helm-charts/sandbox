@@ -573,7 +573,7 @@ def get_file_type(file_path: str) -> tuple[str, re.Match[str]]:
         if owners_match:
             return "owners", owners_match
 
-    return "unknwown", None
+    return "unknown", None
 
 
 def download_index_data(

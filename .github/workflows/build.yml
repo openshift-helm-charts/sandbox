@@ -161,7 +161,7 @@ jobs:
       
       - name: Upload PR information
         uses: actions/upload-artifact@v4
-        if: ${{ always() }}
+        if: ${{ always() && steps.validate-submission.outputs.submission_file_present == 'true' }}
         with:
           name: submission
           path: ${{ env.SUBMISSION_PATH }}
@@ -400,7 +400,7 @@ jobs:
       message_file: ${{ steps.pr_comment.outputs.message-file }}
       message_text_base64: ${{ steps.encode_pr_comment.outputs.message-text-base64 }}
 
-    # Run manage-gh-pr as long as setup was successfull, independently from potential errors in validate-submission or chart-verifier
+    # Run manage-gh-pr as long as setup was successful, independently from potential errors in validate-submission or chart-verifier
     if: ${{ always() && needs.setup.result == 'success' }}
 
     steps:
