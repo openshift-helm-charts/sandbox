@@ -307,7 +307,7 @@ class Submission:
                 self.set_tarball(file_path, match)
             elif file_category == "owners":
                 self.modified_owners.append(file_path)
-            elif file_category == "unknwown":
+            elif file_category == "unknown":
                 self.modified_unknown.append(file_path)
 
     def set_report(self, file_path: str):
@@ -573,7 +573,7 @@ def get_file_type(file_path: str) -> tuple[str, re.Match[str]]:
         if owners_match:
             return "owners", owners_match
 
-    return "unknwown", None
+    return "unknown", None
 
 
 def download_index_data(

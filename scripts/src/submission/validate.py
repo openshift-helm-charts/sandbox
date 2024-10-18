@@ -144,6 +144,7 @@ def main():
     except ParseFilesError as e:
         # Save submission and exit early in case of an error during parsing of the modified files
         write_submission_to_file(s, args.output)
+        gitutils.add_output("submission_file_present", "true")
         print(str(e))
         gitutils.add_output("pr-content-error-message", str(e))
         sys.exit(10)
@@ -166,6 +167,7 @@ def main():
     gitutils.add_output("vendor_type", s.chart.get_vendor_type())
 
     write_submission_to_file(s, args.output)
+    gitutils.add_output("submission_file_present", "true")
 
     if owners_error_msg or pr_content_error_msg:
         print(
