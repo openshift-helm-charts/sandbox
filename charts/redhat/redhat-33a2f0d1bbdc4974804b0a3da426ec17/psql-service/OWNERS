@@ -1,0 +1,10 @@
+chart:
+  name: psql-service
+  shortDescription: Test chart for testing chart submission workflows.
+publicPgpKey: null
+providerDelivery: False
+users:
+- githubUsername: openshift-helm-charts-bot
+vendor:
+  label: redhat-33a2f0d1bbdc4974804b0a3da426ec17
+  name: redhat-33a2f0d1bbdc4974804b0a3da426ec17
