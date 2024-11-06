@@ -11,6 +11,7 @@ except ImportError:
 
 from dataclasses import dataclass, field
 
+from checkprcontent import checkpr
 from owners import owners_file
 from tools import gitutils
 from reporegex import matchers
@@ -121,7 +122,7 @@ class Chart:
 
             self.version = version
 
-    def get_owners_path(self) -> str:
+    def get_owners_path(self):
         return f"charts/{self.category}/{self.organization}/{self.name}/OWNERS"
 
     def get_vendor_type(self) -> str:
@@ -130,10 +131,10 @@ class Chart:
             return "partner"
         return self.category
 
-    def get_release_tag(self) -> str:
+    def get_release_tag(self):
         return f"{self.organization}-{self.name}-{self.version}"
 
-    def check_index(self, index: dict):
+    def check_index(self, index):
         """Check if the chart is present in the Helm index
 
         Args:
@@ -236,6 +237,7 @@ class Submission:
         if not self.modified_files:
             self.modified_files = []
             self._get_modified_files()
+            self._parse_modified_files()
 
     def _get_modified_files(self):
         """Query the GitHub API in order to retrieve the list of files that are added / modified by
@@ -274,7 +276,7 @@ class Submission:
                     if "filename" in file:
                         self.modified_files.append(file["filename"])
 
-    def parse_modified_files(self):
+    def _parse_modified_files(self):
         """Classify the list of modified files.
 
         Modified files are categorized into 5 groups, mapping to 5 class attributes:
@@ -307,10 +309,10 @@ class Submission:
                 self.set_tarball(file_path, match)
             elif file_category == "owners":
                 self.modified_owners.append(file_path)
-            elif file_category == "unknown":
+            elif file_category == "unknwown":
                 self.modified_unknown.append(file_path)
 
-    def set_report(self, file_path: str):
+    def set_report(self, file_path):
         """Action to take when a file related to the chart-verifier is found.
 
         This can either be the report.yaml itself, or the signing key report.yaml.asc
@@ -325,7 +327,7 @@ class Submission:
         else:
             self.modified_unknown.append(file_path)
 
-    def set_source(self, file_path: str):
+    def set_source(self, file_path):
         """Action to take when a file related to the chart's source is found.
 
         Note that while the source of the Chart can be composed of many files, only the Chart.yaml
@@ -336,7 +338,7 @@ class Submission:
             self.source.found = True
             self.source.path = file_path
 
-    def set_tarball(self, file_path: str, tarball_match: re.Match[str]):
+    def set_tarball(self, file_path, tarball_match):
         """Action to take when a file related to the tarball is found.
 
         This can either be the .tgz tarball itself, or the .prov provenance key.
@@ -361,7 +363,7 @@ class Submission:
     def is_valid_certification_submission(
         self, ignore_owners: bool = False
     ) -> tuple[bool, str]:
-        """Check whether the files in this Submission are valid to attempt to certify a Chart
+        """Check wether the files in this Submission are valid to attempt to certify a Chart
 
         We expect the user to provide either:
         * Only a report file
@@ -371,7 +373,7 @@ class Submission:
         Note: While an OWNERS file should never be present in this type of submission, the case of
         an invalid Submission containing a mix of OWNERS and other files is handled in the
         is_valid_owners_submission method. The flag "ignore_owners" allows for skipping this
-        specific check.
+        speficic check.
 
         Returns False if:
         * The user attempts to create the OWNERS file for its project.
@@ -395,8 +397,8 @@ class Submission:
 
         return False, ""
 
-    def is_valid_owners_submission(self) -> tuple[bool, str]:
-        """Check whether the files in this Submission are valid for an OWNERS PR
+    def is_valid_owners_submission(self):
+        """Check wether the file in this Submission are valid for an OWNERS PR
 
         Returns True if the PR only modified files is an OWNERS file.
 
@@ -533,11 +535,8 @@ class Submission:
 
         return True, ""
 
-    def get_pr_number(self):
-        return self.api_url.split("/")[-1]
 
-
-def get_file_type(file_path: str) -> tuple[str, re.Match[str]]:
+def get_file_type(file_path):
     """Determine the category of a given file
 
     As part of a PR, a modified file can relate to one of 5 categories:
@@ -548,7 +547,7 @@ def get_file_type(file_path: str) -> tuple[str, re.Match[str]]:
     - or another "unknown" category
 
     """
-    pattern, reportpattern, tarballpattern = matchers.get_file_match_compiled_patterns()
+    pattern, reportpattern, tarballpattern = checkpr.get_file_match_compiled_patterns()
     owners_pattern = re.compile(
         matchers.submission_path_matcher(include_version_matcher=False) + r"/OWNERS"
     )
@@ -573,7 +572,7 @@ def get_file_type(file_path: str) -> tuple[str, re.Match[str]]:
         if owners_match:
             return "owners", owners_match
 
-    return "unknown", None
+    return "unknwown", None
 
 
 def download_index_data(
@@ -601,9 +600,8 @@ def download_index_data(
     r = requests.get(index_url)
 
     data = {"apiVersion": "v1", "entries": {}}
-    if r.status_code != 200:
-        if not ignore_missing:
-            raise HelmIndexError(f"Error retrieving index file at {index_url}")
+    if r.status_code != 200 and not ignore_missing:
+        raise HelmIndexError(f"Error retrieving index file at {index_url}")
     else:
         try:
             data = yaml.load(r.text, Loader=Loader)

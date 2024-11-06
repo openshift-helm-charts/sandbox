@@ -35,7 +35,6 @@ jobs:
     name: Workflow Test
     needs: [check-contributor]
     runs-on: ubuntu-22.04
-    timeout-minutes: 600
     if: |
       github.event.pull_request.draft == false &&
       needs.check-contributor.outputs.is-repo-owner == 'true'
