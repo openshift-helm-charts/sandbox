@@ -1,12 +1,20 @@
 {
-  "version": "1.7.4",
+  "version": "1.7.5",
   "info": [
-    "Remove openshift-tools-installer workaround (#372) by @komish",
-    "Extract temporary service account token by name directly (#373) by @komish",
-    "Bump psutil from 5.9.8 to 6.0.0 in /scripts in the core-scripts group (#361) by @dependabot",
-    "Add redhat prefix check (#363) by @mgoerens",
-    "Update actions still running in Node16 to their Node20 equivalents (#376) by @komish",
-    "Standardize runner images to ubuntu-22.04 (#377) by @komish"
+    "Bump the core-scripts group in /scripts with 8 updates (#380) by @dependabot",
+    "Rename precheck module (#383) by @mgoerens",
+    "Remove unused GitHub output (#382) by @mgoerens",
+    "Set version as optional when for Charts (#385) by @mgoerens",
+    "Assume webCatalogOnly=False if not found in OWNERS (#384) by @mgoerens",
+    "Add method to get the vendor type of a Chart (#386) by @mgoerens",
+    "Match error message with end to end tests (#388) by @mgoerens",
+    "Allow ignoring the presence of an OWNERS file (#390) by @mgoerens",
+    "Generate a valid empty index when none is found (#389) by @mgoerens",
+    "Extract PR validation from chart-verifier job (#392) by @mgoerens",
+    "Increase timeout of nightly pipeline to 10 hours (#395) by @mgoerens",
+    "Revert nightly blockers (#397) by @komish",
+    "fix missing RELEASE_TAG value for index update commits (#398) by @komish",
+    "Bump the core-scripts group across 1 directory with 9 updates (#396) by @dependabot"
   ],
   "charts": {
     "development": {
