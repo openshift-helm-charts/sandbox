@@ -26,6 +26,12 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Restore cached virtualenv
+        uses: actions/cache/restore@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('scripts/requirements.txt') }}
+          path: ve1
+
       - name: Set up Python 3.x Part 2
         run: |
           # set up python
@@ -34,6 +40,12 @@ jobs:
           ../ve1/bin/pip3 install -r requirements.txt
           ../ve1/bin/pip3 install .
           cd ..
+
+      - name: Saved cached virtualenv
+        uses: actions/cache/save@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('scripts/requirements.txt') }}
+          path: ve1
 
       - name: Check for CI changes
         id: check_ci_changes
@@ -128,6 +140,12 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Restore cached virtualenv
+        uses: actions/cache/restore@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('scripts/requirements.txt') }}
+          path: ve1
+
       - name: Set up Python 3.x Part 2
         run: |
           # set up python
@@ -136,6 +154,12 @@ jobs:
           ../ve1/bin/pip3 install -r requirements.txt
           ../ve1/bin/pip3 install .
           cd ..
+
+      - name: Saved cached virtualenv
+        uses: actions/cache/save@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('scripts/requirements.txt') }}
+          path: ve1
 
       - name: Check PR Content
         id: check_pr_content
@@ -428,10 +452,11 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           path: "pr-branch"
 
-      - name: Set up Python 3.x Part 1
-        uses: actions/setup-python@v5
+      - name: Restore cached virtualenv
+        uses: actions/cache/restore@v4
         with:
-          python-version: "3.10"
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('scripts/requirements.txt') }}
+          path: ve1
 
       - name: Set up Python 3.x Part 2
         run: |
@@ -441,6 +466,12 @@ jobs:
           ../ve1/bin/pip3 install -r requirements.txt
           ../ve1/bin/pip3 install .
           cd ..
+
+      - name: Saved cached virtualenv
+        uses: actions/cache/save@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('scripts/requirements.txt') }}
+          path: ve1
 
       - name: install chart verifier for action
         uses: redhat-actions/openshift-tools-installer@v1
