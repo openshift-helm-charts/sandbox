@@ -319,7 +319,11 @@ jobs:
         run: |
           API_SERVER=$( echo -n ${{ secrets.API_SERVER }} | base64 -d)
           oc login --token=${{ secrets.CLUSTER_TOKEN }} --server=${API_SERVER} --insecure-skip-tls-verify=${{ needs.setup.outputs.insecure_skip_tls_verify }}
-          ve1/bin/sa-for-chart-testing --delete charts-${{ github.event.number }}
+          oc delete clusterrolebinding charts-${{ github.event.number }}
+          oc delete clusterrole charts-${{ github.event.number }}
+          oc delete namespace charts-${{ github.event.number }}
+
+          # ve1/bin/sa-for-chart-testing --delete charts-${{ github.event.number }}
 
       - name: Save PR artifact
         env:

@@ -349,8 +349,13 @@ def main():
         write_sa_token(args.create, args.token)
         switch_project_context(args.create, args.token, args.server)
     elif args.delete:
-        delete_clusterrolebinding(args.delete)
-        delete_clusterrole(args.delete)
-        delete_namespace(args.delete)
+
+        subprocess.run(["oc", "delete", "clusterrolebinding", args.delete], capture_output=True)
+        subprocess.run(["oc", "delete", "clusterrole", args.delete], capture_output=True)
+        subprocess.run(["oc", "delete", "namespace", args.delete], capture_output=True)
+
+        # delete_clusterrolebinding(args.delete)
+        # delete_clusterrole(args.delete)
+        # delete_namespace(args.delete)
     else:
         parser.print_help()
