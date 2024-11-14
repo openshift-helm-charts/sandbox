@@ -29,6 +29,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python 3.x Part 1
+        id: setup_python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
@@ -41,6 +42,12 @@ jobs:
           ../ve1/bin/pip3 install -r requirements.txt
           ../ve1/bin/pip3 install .
           cd ..
+
+      - name: Saved cached virtualenv
+        uses: actions/cache/save@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('scripts/requirements.txt') }}
+          path: ve1
 
       - name: Check for CI changes
         id: check_ci_changes
@@ -130,9 +137,16 @@ jobs:
           path: "pr-branch"
 
       - name: Set up Python 3.x Part 1
+        id: setup_python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+
+      - name: Restore cached virtualenv
+        uses: actions/cache/restore@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('scripts/requirements.txt') }}
+          path: ve1
 
       - name: Set up Python 3.x Part 2
         run: |
@@ -221,9 +235,16 @@ jobs:
           path: "pr-branch"
 
       - name: Set up Python 3.x Part 1
+        id: setup_python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+
+      - name: Restore cached virtualenv
+        uses: actions/cache/restore@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('scripts/requirements.txt') }}
+          path: ve1
 
       - name: Set up Python 3.x Part 2
         run: |
@@ -416,9 +437,16 @@ jobs:
           path: "pr-branch"
 
       - name: Set up Python 3.x Part 1
+        id: setup_python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+
+      - name: Restore cached virtualenv
+        uses: actions/cache/restore@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('scripts/requirements.txt') }}
+          path: ve1
 
       - name: Set up Python 3.x Part 2
         run: |
@@ -545,9 +573,16 @@ jobs:
           path: "pr-branch"
 
       - name: Set up Python 3.x Part 1
+        id: setup_python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+
+      - name: Restore cached virtualenv
+        uses: actions/cache/restore@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('scripts/requirements.txt') }}
+          path: ve1
 
       - name: Set up Python 3.x Part 2
         run: |
