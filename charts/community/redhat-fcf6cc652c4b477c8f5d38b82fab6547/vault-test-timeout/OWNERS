@@ -1,0 +1,10 @@
+chart:
+  name: vault-test-timeout
+  shortDescription: Test chart for testing chart submission workflows.
+publicPgpKey: null
+providerDelivery: False
+users:
+- githubUsername: openshift-helm-charts-bot
+vendor:
+  label: redhat-fcf6cc652c4b477c8f5d38b82fab6547
+  name: redhat-fcf6cc652c4b477c8f5d38b82fab6547
