@@ -156,9 +156,7 @@ jobs:
       - name: Set up Python 3.x Part 1
         if: |
           steps.check_test.outputs.run_tests == 'true'
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+        uses: ./.github/actions/setup-python
 
       - name: Set up Python 3.x Part 2
         if: |
@@ -363,9 +361,7 @@ jobs:
       - name: Set up Python 3.x Part 1
         if: |
           steps.check_test.outputs.run_tests == 'true'
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+        uses: ./.github/actions/setup-python
 
       - name: Set up Python 3.x Part 2
         if: |
