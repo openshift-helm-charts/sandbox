@@ -137,7 +137,7 @@ scenarios_submission_init = [
             chart=expected_chart,
             source=submission.Source(
                 found=True,
-                path=f"charts/{expected_category}/{expected_organization}/{expected_name}/{expected_version}/src/Chart.yaml",
+                path=f"charts/{expected_category}/{expected_organization}/{expected_name}/{expected_version}/src",
             ),
         ),
     ),
