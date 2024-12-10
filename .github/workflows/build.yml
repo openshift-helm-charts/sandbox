@@ -264,7 +264,8 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         working-directory: ./pr-branch
         run: |
-          ../ve1/bin/get-verify-params --directory=pr --api-url=${{ github.event.pull_request._links.self.href }}
+          # runner.workspace
+          ../ve1/bin/get-verify-params --directory=pr
 
       - name: Install oc
         id: install-oc

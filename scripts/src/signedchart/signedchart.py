@@ -28,6 +28,7 @@ def check_and_prepare_signed_chart(api_url, report_path, owner_path, key_file_pa
     return signed_chart, key_in_owners, keys_match
 
 
+# TODO: MOVE ? Refacator ?
 def get_verifier_flags(tar_file, owners_file, temp_dir):
     prov_file = f"{tar_file}.prov"
     if os.path.exists(prov_file):
