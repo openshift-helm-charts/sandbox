@@ -234,6 +234,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: submission
+          path: "~"
 
       - name: Remove 'authorized-request' label from PR
         uses: actions/github-script@v7
