@@ -9,7 +9,7 @@ env:
   # This artifact is created in the 'validate-submission' job. It contains a JSON representation of
   # the Submision object. It can be read by other jobs to access those information rather than
   # fetch them from the GitHub API a second time.
-  SUBMISSION_PATH: "submission.json"
+  SUBMISSION_PATH: "~/submission.json"
 
 jobs:
   setup:
