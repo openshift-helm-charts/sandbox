@@ -10,8 +10,8 @@ env:
   # the Submision object. It can be read by other jobs to access those information rather than
   # fetch them from the GitHub API a second time.
   SUBMISSION_FILENAME: "submission.json"
-  SUBMISSION_BASEDIR: "/tmp"
-  SUBMISSION_PATH: "/tmp/submission.json"
+  SUBMISSION_BASEDIR: "${{ github.workspace }}"
+  SUBMISSION_PATH: "${{ github.workspace }}/submission.json"
   SUBMISSION_ARTIFACT_NAME: submission
 
 jobs:
