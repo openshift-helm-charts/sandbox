@@ -267,9 +267,11 @@ jobs:
       - name: Install oc
         id: install-oc
         if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' }}
-        uses: redhat-actions/openshift-tools-installer@v1
-        with:
-          oc: latest
+        run: |
+          wget --quiet https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
+          tar -zxvf openshift-client-linux.tar.gz oc -C /usr/local/bin/
+          rm -f openshift-client-linux.tar.gz
+          oc version --client
 
       - name: Set cluster login params
         id: login-params
