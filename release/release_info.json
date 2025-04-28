@@ -1,10 +1,13 @@
 {
-  "version": "1.7.6",
+  "version": "1.7.7",
   "info": [
-    "Consolidate setup-python version definition to one place (#405) by @komish",
-    "implement matrix-testing with a reusable behave workflow (#403) by @komish",
-    "ignore not found errors for ignored files that are not found in dest repo (#404) by @komish",
-    "Bump the core-scripts group in /scripts with 5 updates (#406) by @dependabot"
+    "Reduce concurrency to lower API rate limiting frequency (#412) by @komish",
+    "Further reduce concurrency to 2 (#416) by @mgoerens",
+    "Failover register original branch in repo_manager (#413) by @mgoerens",
+    "Re-add submission refactor (#409) by @mgoerens",
+    "Increase retry timeout when polling CI run result (#423) by @mgoerens",
+    "Finish consolidating the python setup steps (#419) by @mgoerens",
+    "Install oc without external action (#402) by @mgoerens"
   ],
   "charts": {
     "development": {
