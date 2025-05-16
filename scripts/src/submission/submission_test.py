@@ -237,6 +237,12 @@ scenarios_submission_init = [
         ],
         excepted_exception=pytest.raises(submission.ChartError),
     ),
+    # Invalid PR doesn't contain any files
+    SubmissionInitScenario(
+        api_url="https://api.github.com/repos/openshift-helm-charts/charts/pulls/103",
+        modified_files=[],
+        excepted_exception=pytest.raises(submission.SubmissionError),
+    ),
 ]
 
 
