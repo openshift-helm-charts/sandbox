@@ -307,6 +307,10 @@ class Submission:
         * The tarball file is named incorrectly
 
         """
+        if not self.modified_files:
+            msg = "PR doesn't contain any files"
+            raise SubmissionError(msg)
+
         for file_path in self.modified_files:
             file_category, match = get_file_type(file_path)
             if file_category == "report":
