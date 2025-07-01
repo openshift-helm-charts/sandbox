@@ -26,6 +26,10 @@ jobs:
       (github.event.action != 'labeled' || github.event.label.name == 'force-publish') &&
       github.actor != 'redhat-mercury-bot'
     steps:
+      - run: |
+          echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
+          echo "[DEBUG] github.ref value is ${{ github.ref }}"
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -114,6 +118,10 @@ jobs:
       vendor_type: ${{ steps.validate-submission.outputs.vendor_type }}
 
     steps:
+      - run: |
+          echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
+          echo "[DEBUG] github.ref value is ${{ github.ref }}"
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -200,6 +208,10 @@ jobs:
       ocp-version-range: ${{ steps.get-ocp-range.outputs.ocp-version-range }}
 
     steps:
+      - run: |
+          echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
+          echo "[DEBUG] github.ref value is ${{ github.ref }}"
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -392,6 +404,10 @@ jobs:
     if: ${{ always() && needs.setup.result == 'success' }}
 
     steps:
+      - run: |
+          echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
+          echo "[DEBUG] github.ref value is ${{ github.ref }}"
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -516,6 +532,10 @@ jobs:
     needs: [setup, validate-submission, chart-verifier, manage-gh-pr]
 
     steps:
+      - run: |
+          echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
+          echo "[DEBUG] github.ref value is ${{ github.ref }}"
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -593,6 +613,9 @@ jobs:
           WEB_CATALOG_ONLY: ${{ needs.validate-submission.outputs.web_catalog_only }}
           RELEASE_TAG: ${{ needs.validate-submission.outputs.release_tag }}
         run: |
+          echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
+          echo "[DEBUG] github.ref value is ${{ github.ref }}"
+
           INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "gh-pages"; else echo "${GITHUB_REF##*/}-gh-pages"; fi)
 
           echo "[INFO] Creating Git worktree for index branch"
