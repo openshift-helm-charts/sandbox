@@ -38,10 +38,10 @@ jobs:
         slack-text: |
           Failing to generate chart locks! '${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}'
     - name: create issue if notification failure
-      id: allback-notify
+      id: fallback-notify
       if: failure() && steps.notify.outcome == 'failure'
       run: |
-        gh issue create --title "Chart lock generation sanity check is failing" --body "${{ env.COMMENT_BODY }}"
+        gh issue create --title "Chart lock generation sanity check is failing" --body "${COMMENT_BODY}"
       env:
         GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         COMMENT_BODY: |

@@ -37,7 +37,9 @@ jobs:
       
       - name: Result from "Send Message to helm_dev slack channel"
         if: needs.nightly-test.result != 'success'
-        run: echo "The result was ${{ steps.notify_to_dev.outputs.slack-result }}"
+        env:
+          SEND_MESSAGE_OUTCOME: ${{ steps.notify_to_dev.outputs.slack-result }}
+        run: echo "The result was ${SEND_MESSAGE_OUTCOME}"
       
       - name: Send message to helm_notify slack channel
         id: notify
@@ -50,4 +52,6 @@ jobs:
       
       - name: Result from "Send Message to helm_notify slack channel"
         if: needs.nightly-test.result == 'success'
-        run: echo "The result was ${{ steps.notify.outputs.slack-result }}"
+        env:
+          SEND_MESSAGE_OUTCOME: ${{ steps.notify.outputs.slack-result }}
+        run: echo "The result was ${SEND_MESSAGE_OUTCOME}"
