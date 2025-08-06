@@ -54,13 +54,18 @@ jobs:
         if: ${{ steps.check_pr_content.outputs.collect_metrics == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # TODO: consolidate these two keys based on environment.
+          SEGMENT_WRITE_KEY: ${{ secrets.SEGMENT_WRITE_KEY }}
+          SEGMENT_WRITE_TEST_KEY: ${{ secrets.SEGMENT_TEST_WRITE_KEY }}
+          ADDED: ${{ steps.filesChangedOrModified.outputs.added }}
+          MODIFIED: ${{ steps.filesChangedOrModified.outputs.modified }}
         run: |
           if [ $GITHUB_REPOSITORY == "openshift-helm-charts/charts" ]; then
-              WRITE_KEY=${{ secrets.SEGMENT_WRITE_KEY }}
+              WRITE_KEY="${SEGMENT_WRITE_KEY}"
               ID_PREFIX="helm-metric-pr"
               echo "Use segment production write key"
           else
-              WRITE_KEY=${{ secrets.SEGMENT_TEST_WRITE_KEY }}
+              WRITE_KEY="${SEGMENT_WRITE_TEST_KEY}"
               ID_PREFIX="helm-test-metric-pr"
               echo "Use segment test write key"
           fi
@@ -70,8 +75,8 @@ jobs:
               ve1/bin/pushowners --write-key="${WRITE_KEY}" \
                                 --metric-type="push_request" \
                                 --repository="${GITHUB_REPOSITORY}" \
-                                --added="${{ steps.filesChangedOrModified.outputs.added }}" \
-                                --modified="${{ steps.filesChangedOrModified.outputs.modified }}" \
+                                --added="${ADDED}" \
+                                --modified="${MODIFIED}" \
                                 --prefix="${ID_PREFIX}"
           else
               echo "Do not collect metrics, required segment write key is not set"

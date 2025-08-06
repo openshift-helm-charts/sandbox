@@ -55,14 +55,18 @@ jobs:
         # The return code from this script is what's important in this workflow.
         id: check-contributor
         continue-on-error: true
+        env:
+          CONTRIBUTOR: ${{ inputs.user }}
         run: |
-          ./ve1/bin/user-is-repo-owner ${{ inputs.user }}
+          ./ve1/bin/user-is-repo-owner "${CONTRIBUTOR}"
       
       - name: Add result to output
         id: populate-output
         # Outcome is the result of the workflow before continue-on-error is applied.
+        env:
+          CONTRIBUTOR_IS_OWNER: ${{ steps.check-contributor.outcome == 'success' }} 
         run: |
-          echo "is-repo-owner=${{ steps.check-contributor.outcome == 'success' }}" >> $GITHUB_OUTPUT
+          echo "is-repo-owner=${CONTRIBUTOR_IS_OWNER}" >> $GITHUB_OUTPUT
       
       - name: Fail if requested and the user is not a repo owner
         if: inputs.fail-workflow-if-not && steps.populate-output.outputs.is-repo-owner != 'true'
