@@ -1,13 +1,14 @@
 {
-  "version": "1.7.7",
+  "version": "1.8.0",
   "info": [
-    "Reduce concurrency to lower API rate limiting frequency (#412) by @komish",
-    "Further reduce concurrency to 2 (#416) by @mgoerens",
-    "Failover register original branch in repo_manager (#413) by @mgoerens",
-    "Re-add submission refactor (#409) by @mgoerens",
-    "Increase retry timeout when polling CI run result (#423) by @mgoerens",
-    "Finish consolidating the python setup steps (#419) by @mgoerens",
-    "Install oc without external action (#402) by @mgoerens"
+    "Refactor get verify params (#418) by @mgoerens",
+    "Instanciate new empty lists for each instance of WorkflowRepoManager (#415) by @mgoerens",
+    "Cache virtualenv between jobs (#401) by @mgoerens",
+    "Ensure empty PRs are flagged as invalid (#431) by @mgoerens",
+    "Bump the core-scripts group across 1 directory with 21 updates (#435) by @dependabot[bot]",
+    "Increase concurrency back to 4 (#434) by @mgoerens",
+    "Add debug for tracking GITHUB_REF value (#433) by @mgoerens",
+    "Refactor workflows to rely in environment variables for inputs (#438) by @komish"
   ],
   "charts": {
     "development": {
