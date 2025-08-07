@@ -57,11 +57,14 @@ jobs:
         working-directory: ./pr-branch
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          PR_API_URL: ${{ github.event.pull_request._links.self.href }}
+          SENDER: ${{ github.event.sender.login }}
+          PR_BASE_REPO: ${{ github.event.pull_request.base.repo.full_name }}
         run: |
           # if dev repo is targetted check if release file only is included in PR and if so that user is authorized.
-          ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
-              --sender=${{ github.event.sender.login }} \
-              --pr_base_repo='${{ github.event.pull_request.base.repo.full_name }}'
+          ./ve1/bin/release-checker --api-url="${PR_API_URL}" \
+              --sender="${SENDER}" \
+              --pr_base_repo="${PR_BASE_REPO}"
 
       # This task handles the final step of workflow releases: the merging of
       # Auto Release PRs.
@@ -80,14 +83,21 @@ jobs:
         env:
           BOT_NAME: ${{ secrets.BOT_NAME }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          PR_API_URL: ${{ github.event.pull_request._links.self.href }}
+          SENDER: ${{ github.event.sender.login }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          PR_BODY:  ${{ github.event.pull_request.body }}
+          PR_BASE_REPO: ${{ github.event.pull_request.base.repo.full_name }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
           # check if PR was created as part of release processing
-          ./ve1/bin/release-checker --api-url=${{ github.event.pull_request._links.self.href }} \
-              --sender='${{ github.event.sender.login }}' \
-              --pr_branch='${{ github.event.pull_request.head.ref }}' \
-              --pr_body="${{ github.event.pull_request.body }}" \
-              --pr_base_repo='${{ github.event.pull_request.base.repo.full_name }}' \
-              --pr_head_repo='${{ github.event.pull_request.head.repo.full_name }}'
+          ./ve1/bin/release-checker \
+              --api-url="${PR_API_URL}" \
+              --sender="${SENDER}" \
+              --pr_branch="${PR_BRANCH}" \
+              --pr_body="${PR_BODY}" \
+              --pr_base_repo="${PR_BASE_REPO}" \
+              --pr_head_repo="${PR_HEAD_REPO}"
 
       - name: Reflect on PR Content
         id: reflect_on_pr_content
@@ -183,10 +193,11 @@ jobs:
         id: check_version_updated
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          PR_VERSION: ${{ needs.determine-workflow-conditions.outputs.pr-version }}
         run: |
           # check if version file was changed
           ./ve1/bin/release-checker \
-              --version=${{ needs.determine-workflow-conditions.outputs.pr-version }}
+              --version="${PR_VERSION}"
 
       - name: Sync the repositories
         id: sync_repositories
@@ -195,16 +206,20 @@ jobs:
         env:
           BOT_NAME: ${{ secrets.BOT_NAME }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          PR_VERSION: ${{ needs.determine-workflow-conditions.outputs.pr-version }}
+          PR_BODY: ${{ needs.determine-workflow-conditions.outputs.pr-body }}
+          TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
+          TARGET_REPO: ${{ github.event.pull_request.base.repo.full_name }}
         run: |
          ./ve1/bin/releaser \
-            --version=${{ needs.determine-workflow-conditions.outputs.pr-version }}\
+            --version="${PR_VERSION}" \
             --pr_dir="./pr-branch" \
             --development_dir="./dev-repo" \
             --charts_dir="./charts-repo" \
             --stage_dir="./stage-repo" \
-            --dev_pr_body="${{ needs.determine-workflow-conditions.outputs.pr-body }}" \
-            --target_branch="${{ github.event.pull_request.base.ref }}" \
-            --target_repository="${{ github.event.pull_request.base.repo.full_name }}"
+            --dev_pr_body="${PR_BODY}" \
+            --target_branch="${TARGET_BRANCH}" \
+            --target_repository="${TARGET_REPO}"
 
   determine-merge-and-release-conditions:
     name: Determine merge and release conditions
@@ -231,6 +246,10 @@ jobs:
           STAGE_PR_ERROR: ${{ needs.sync-repos.outputs.stage-pr-threw-error }}
           DEV_PR_NOT_NEEDED: ${{ needs.sync-repos.outputs.dev-pr-not-need }}
           DEV_PR_FOR_RELEASE: ${{ needs.determine-workflow-conditions.outputs.is-dev-release-branch }}
+          PR_BODY: ${{ needs.determine-workflow-conditions.outputs.pr-body }}
+          PR_VERSION: ${{ needs.determine-workflow-conditions.outputs.pr-version }}
+          RELEASE_BODY: ${{ github.event.pull_request.body }}
+          RELEASE_TAG: ${{ needs.determine-workflow-conditions.outputs.auto-release-pr-version }}
         run: |
           # determine what should be done next
           # mitigate unmatched quote error in bash
@@ -250,14 +269,14 @@ jobs:
               fi
               if [ "${DEV_PR_NOT_NEEDED}" == 'true' ]; then
                   echo "No dev PR so create release"
-                  echo "release_body=${{ needs.determine-workflow-conditions.outputs.pr-body }}" | tee -a $GITHUB_OUTPUT
-                  echo "release_tag=${{ needs.determine-workflow-conditions.outputs.pr-version }}" | tee -a $GITHUB_OUTPUT
+                  echo "release_body=${PR_BODY}" | tee -a $GITHUB_OUTPUT
+                  echo "release_tag=${PR_VERSION}" | tee -a $GITHUB_OUTPUT
               fi
           elif [ "${DEV_PR_FOR_RELEASE}" == 'true' ]; then
               echo "Dev PR so create release"
               echo "merge=true" | tee -a $GITHUB_OUTPUT
-              echo "release_body=${{ github.event.pull_request.body }}" | tee -a $GITHUB_OUTPUT
-              echo "release_tag=${{ needs.determine-workflow-conditions.outputs.auto-release-pr-version }}" |tee -a $GITHUB_OUTPUT
+              echo "release_body=${RELEASE_BODY}" | tee -a $GITHUB_OUTPUT
+              echo "release_tag=${RELEASE_TAG}" |tee -a $GITHUB_OUTPUT
           fi
 
   approve-merge-release:
@@ -305,8 +324,9 @@ jobs:
         needs.determine-merge-and-release-conditions.outputs.should-merge == 'true'
       env:
         BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        PR_API_URL: ${{ github.event.pull_request._links.self.href }}
       run: |
-        ./ve1/bin/check-auto-merge --api-url=${{ github.event.pull_request._links.self.href }}
+        ./ve1/bin/check-auto-merge --api-url="${PR_API_URL}"
 
     - name: Create the the release
       id: create_release
