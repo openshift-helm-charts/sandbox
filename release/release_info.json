@@ -1,14 +1,9 @@
 {
-  "version": "1.8.0",
+  "version": "1.8.1",
   "info": [
-    "Refactor get verify params (#418) by @mgoerens",
-    "Instanciate new empty lists for each instance of WorkflowRepoManager (#415) by @mgoerens",
-    "Cache virtualenv between jobs (#401) by @mgoerens",
-    "Ensure empty PRs are flagged as invalid (#431) by @mgoerens",
-    "Bump the core-scripts group across 1 directory with 21 updates (#435) by @dependabot[bot]",
-    "Increase concurrency back to 4 (#434) by @mgoerens",
-    "Add debug for tracking GITHUB_REF value (#433) by @mgoerens",
-    "Refactor workflows to rely in environment variables for inputs (#438) by @komish"
+    "Fixes missing backslash in newline-separated command (#444) by @komish",
+    "Ensure extracted oc binary ends up in dir specified (#445) by @komish",
+    "Bump runner image to Ubuntu 24.04 from 22.04 (#443) by @komish"
   ],
   "charts": {
     "development": {
