@@ -298,7 +298,7 @@ jobs:
         if: ${{ steps.verify_requires.outputs.cluster_needed == 'true' }}
         run: |
           wget --quiet https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz
-          tar -zxvf openshift-client-linux.tar.gz oc -C /usr/local/bin/
+          tar -zxvf openshift-client-linux.tar.gz --directory /usr/local/bin/ oc
           rm -f openshift-client-linux.tar.gz
           oc version --client
 
