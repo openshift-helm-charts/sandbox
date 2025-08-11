@@ -15,7 +15,7 @@ on:
 jobs:
   metrics:
     name: Collect and Send Metrics
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       SEGMENT_WRITE_KEY: ${{ secrets.SEGMENT_WRITE_KEY }}
       SEGMENT_TEST_WRITE_KEY: ${{ secrets.SEGMENT_TEST_WRITE_KEY }}
