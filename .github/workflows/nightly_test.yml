@@ -24,7 +24,7 @@ jobs:
     if: always()
     name: Communicate Outcome
     needs: [nightly-test]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Send message to helm_dev slack channel
         id: notify_to_dev
