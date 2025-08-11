@@ -19,7 +19,7 @@ jobs:
   determine-workflow-conditions:
     name: Determine Workflow Conditions
     needs: [check-contributor]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: |
       github.event.pull_request.draft == false &&
       needs.check-contributor.outputs.is-repo-owner == 'true'
@@ -137,7 +137,7 @@ jobs:
     needs:
     - determine-workflow-conditions
     - run-tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: needs.determine-workflow-conditions.outputs.is-charts-release-branch == 'true'
     steps:
     - name: Approve PR
