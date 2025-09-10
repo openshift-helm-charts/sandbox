@@ -1,6 +1,9 @@
 name: CI
 
 on:
+  # NOTE: There are implementation details in this workflow that require the
+  # triggering event be pull_request_target. See RESOLVED_GITHUB_REF before
+  # changing the events that can trigger this workflow.
   pull_request_target:
     types: [opened, synchronize, reopened, edited, ready_for_review, labeled]
 
@@ -11,6 +14,13 @@ env:
   # fetch them from the GitHub API a second time.
   SUBMISSION_PATH: "${{ github.workspace }}/submission.json"
   SUBMISSION_ARTIFACT_NAME: submission
+  # RESOLVED_GITHUB_REF works around an GitHub Actions bug where the GitHub
+  # Runner does not properly populate the GITHUB_REF value. For this workflow,
+  # we reconstruct a ref but only in cases where GITHUB_REF is missing.
+  #
+  # See https://github.com/openshift-helm-charts/development/issues/432 for more
+  # information.
+  RESOLVED_GITHUB_REF: ${{ github.ref || format('refs/heads/${0}', (github.event.pull_request.base.ref || ''))  }}
 
 jobs:
   setup:
@@ -30,11 +40,10 @@ jobs:
       # as this task is here for debugging purposes that are ongoing.
       - run: |
           echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
-          echo "[DEBUG] github.ref value is ${CONTEXT_REF}"
-          echo "[DEBUG] github.event.pull_request.base.ref is ${EVENT_BASE_REF}"
+          echo "[DEBUG] github.ref value is ${CONTEXT_GITHUB_REF}"
+          echo "[DEBUG] RESOLVED_GITHUB_REF is ${RESOLVED_GITHUB_REF}"
         env:
-          CONTEXT_REF: ${{ github.ref }}
-          EVENT_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          CONTEXT_GITHUB_REF: ${{ github.ref }}
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -138,6 +147,7 @@ jobs:
       - run: |
           echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
           echo "[DEBUG] github.ref value is ${CONTEXT_GITHUB_REF}"
+          echo "[DEBUG] RESOLVED_GITHUB_REF is ${RESOLVED_GITHUB_REF}"
         env:
           CONTEXT_GITHUB_REF: ${{ github.ref }}
 
@@ -233,9 +243,10 @@ jobs:
       # as this task is here for debugging purposes that are ongoing.
       - run: |
           echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
-          echo "[DEBUG] github.ref value is ${CONTEXT_REF}"
+          echo "[DEBUG] github.ref value is ${CONTEXT_GITHUB_REF}"
+          echo "[DEBUG] RESOLVED_GITHUB_REF is ${RESOLVED_GITHUB_REF}"
         env:
-          CONTEXT_REF: ${{ github.ref }}
+          CONTEXT_GITHUB_REF: ${{ github.ref }}
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -447,6 +458,7 @@ jobs:
       - run: |
           echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
           echo "[DEBUG] github.ref value is ${CONTEXT_GITHUB_REF}"
+          echo "[DEBUG] RESOLVED_GITHUB_REF is ${RESOLVED_GITHUB_REF}"
         env:
           CONTEXT_GITHUB_REF: ${{ github.ref }}
 
@@ -585,6 +597,7 @@ jobs:
       - run: |
           echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
           echo "[DEBUG] github.ref value is ${CONTEXT_GITHUB_REF}"
+          echo "[DEBUG] RESOLVED_GITHUB_REF is ${RESOLVED_GITHUB_REF}"
         env:
           CONTEXT_GITHUB_REF: ${{ github.ref }}
 
@@ -676,8 +689,9 @@ jobs:
         run: |
           echo "[DEBUG] GITHUB_REF value is ${GITHUB_REF}"
           echo "[DEBUG] github.ref value is ${CONTEXT_GITHUB_REF}"
+          echo "[DEBUG] RESOLVED_GITHUB_REF is ${RESOLVED_GITHUB_REF}"
 
-          INDEX_BRANCH=$(if [ "${GITHUB_REF}" = "refs/heads/main" ]; then echo "gh-pages"; else echo "${GITHUB_REF##*/}-gh-pages"; fi)
+          INDEX_BRANCH=$(if [ "${RESOLVED_GITHUB_REF}" = "refs/heads/main" ]; then echo "gh-pages"; else echo "${RESOLVED_GITHUB_REF##*/}-gh-pages"; fi)
 
           echo "[INFO] Creating Git worktree for index branch"
           INDEX_DIR=$(mktemp -d)
