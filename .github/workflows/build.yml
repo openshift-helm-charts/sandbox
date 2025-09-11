@@ -20,7 +20,7 @@ env:
   #
   # See https://github.com/openshift-helm-charts/development/issues/432 for more
   # information.
-  RESOLVED_GITHUB_REF: ${{ github.ref || format('refs/heads/${0}', (github.event.pull_request.base.ref || ''))  }}
+  RESOLVED_GITHUB_REF: ${{ github.ref || format('refs/heads/{0}', (github.event.pull_request.base.ref || ''))  }}
 
 jobs:
   setup:
