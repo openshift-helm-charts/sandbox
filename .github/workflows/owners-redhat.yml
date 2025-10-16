@@ -56,15 +56,6 @@ jobs:
         run: |
           make venv.tools
       
-      - name: Gather Metadata
-        id: gather-metadata
-        env:
-          API_URL: ${{ github.event.pull_request._links.self.href }}
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: |
-          ./scripts/venv.tools/bin/extract-metadata-from-pr \
-            --emit-to-github-output \
-            "${API_URL}"
   ensure-prefix-in-path:
     name: Ensure chart name prefix
     runs-on: ubuntu-24.04
